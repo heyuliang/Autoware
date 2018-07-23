@@ -13,4 +13,7 @@ uint8 stopline_state
   uint8 TYPE_STOPLINE=1
   uint8 TYPE_STOP=2
 # 1 is stopline, 2 is stop which 2 can only be released manually.
+uint8 positionstop_state
+  uint8 POS_KEEP=0
+  uint8 POS_STOP=1
 uint64 event_state
