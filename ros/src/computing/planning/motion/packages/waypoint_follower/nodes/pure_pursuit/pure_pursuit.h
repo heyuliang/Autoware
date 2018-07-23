@@ -102,6 +102,7 @@ public:
   }
   // processing
   bool canGetCurvature(double *output_kappa);
+  void getNextWaypoint();
 
 private:
   // constant
