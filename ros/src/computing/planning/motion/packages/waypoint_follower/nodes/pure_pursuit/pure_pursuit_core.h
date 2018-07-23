@@ -32,10 +32,11 @@
 #define PURE_PURSUIT_CORE_H
 
 // ROS includes
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/TwistStamped.h>
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 
 // User defined includes
@@ -81,7 +82,7 @@ private:
   ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
 
   // subscriber
-  ros::Subscriber sub1_, sub2_, sub3_, sub4_;
+  ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_;
 
   // constant
   const int LOOP_RATE_;  // processing frequency
@@ -91,6 +92,7 @@ private:
   bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
   double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;
+  bool positionstop_state_;
 
   int32_t param_flag_;               // 0 = waypoint, 1 = Dialog
   double const_lookahead_distance_;  // meter
@@ -103,6 +105,7 @@ private:
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg);
+  void callbackFromState(const std_msgs::StringConstPtr &msg);
 
   // initializer
   void initForROS();

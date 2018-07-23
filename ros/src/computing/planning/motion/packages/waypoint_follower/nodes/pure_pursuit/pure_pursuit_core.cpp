@@ -48,6 +48,7 @@ PurePursuitNode::PurePursuitNode()
   , const_velocity_(5.0)
   , lookahead_distance_ratio_(2.0)
   , minimum_lookahead_distance_(6.0)
+  , positionstop_state_(false)
 {
   initForROS();
 
@@ -73,6 +74,7 @@ void PurePursuitNode::initForROS()
   sub2_ = nh_.subscribe("current_pose", 10, &PurePursuitNode::callbackFromCurrentPose, this);
   sub3_ = nh_.subscribe("config/waypoint_follower", 10, &PurePursuitNode::callbackFromConfig, this);
   sub4_ = nh_.subscribe("current_velocity", 10, &PurePursuitNode::callbackFromCurrentVelocity, this);
+  sub5_ = nh_.subscribe("/decision_maker/state", 10, &PurePursuitNode::callbackFromState, this);
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
@@ -104,8 +106,16 @@ void PurePursuitNode::run()
     pp_.setLookaheadDistance(computeLookaheadDistance());
     pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
 
-    double kappa = 0;
-    bool can_get_curvature = pp_.canGetCurvature(&kappa);
+    static double kappa = 1e-8;
+    bool can_get_curvature = true;
+    if (positionstop_state_)
+    {
+      pp_.getNextWaypoint();
+    }
+    else
+    {
+      can_get_curvature = pp_.canGetCurvature(&kappa);
+    }
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
 
@@ -244,6 +254,23 @@ void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &m
 
   pp_.setCurrentWaypoints(msg->waypoints);
   is_waypoint_set_ = true;
+}
+
+void PurePursuitNode::callbackFromState(const std_msgs::StringConstPtr &msg)
+{
+  const bool is_ps = (msg->data == "PositionStop");
+  const bool is_mc = (msg->data == "MissionComplete");
+  const bool is_em = (msg->data == "Emergency");
+  const bool is_ma = (msg->data == "MissionAborted");
+  const bool is_kt = (msg->data == "KTurn");
+  if (is_ps)
+  {
+    positionstop_state_ = true;
+  }
+  else if (is_mc || is_em || is_ma || is_kt)
+  {
+    positionstop_state_ = false;
+  }
 }
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
