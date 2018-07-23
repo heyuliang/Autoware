@@ -16,4 +16,7 @@ uint8 stopline_state
 uint8 positionstop_state
   uint8 POS_KEEP=0
   uint8 POS_STOP=1
+uint8 kturn_state
+  uint8 KT_KEEP=0
+  uint8 KT_TURN=1
 uint64 event_state
