@@ -37,6 +37,11 @@ include_directories(
         ${Boost_INCLUDE_DIRS}
 )
 
+add_executable(waypoint_manager nodes/waypoint_manager/waypoint_manager.cpp)
+target_link_libraries(waypoint_manager ${catkin_LIBRARIES})
+add_dependencies(waypoint_manager
+        ${catkin_EXPORTED_TARGETS})
+
 add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader_core.cpp nodes/waypoint_loader/velocity_replanner.cpp nodes/waypoint_loader/waypoint_loader_node.cpp)
 target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
 add_dependencies(waypoint_loader
