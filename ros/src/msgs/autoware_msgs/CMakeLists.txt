@@ -52,7 +52,6 @@ add_message_files(
             VehicleStatus.msg
             TrafficLightResult.msg
             TrafficLightResultArray.msg
-
             AccelCmd.msg
             AdjustXY.msg
             BrakeCmd.msg
@@ -62,6 +61,7 @@ add_message_files(
             TrafficLight.msg
             StateCmd.msg
             State.msg
+            
             ## Sync
             SyncTimeMonitor.msg
             SyncTimeDiff.msg

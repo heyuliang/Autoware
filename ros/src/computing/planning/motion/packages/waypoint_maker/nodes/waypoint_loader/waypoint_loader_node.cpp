@@ -37,7 +37,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "waypoint_loader");
   waypoint_maker::WaypointLoaderNode wln;
-  ros::spin();
-
+  wln.run();
   return 0;
 }

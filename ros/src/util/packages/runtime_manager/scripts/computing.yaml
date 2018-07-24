@@ -769,16 +769,8 @@ subs :
        - name : waypoint_manager
          desc : waypoint_manager desc sample
          cmd  : roslaunch waypoint_maker waypoint_manager.launch
-         param: waypoint_velocity_visualizer
-       - name : waypoint_loader
-         desc : waypoint_loader desc sample
-         cmd  : roslaunch waypoint_maker waypoint_loader.launch
-         param: waypoint_loader
+         param: waypoint_manager
          gui  :
-           dialog_width  : 700
-           dialog_height : 550
-           multi_lane_csv :
-             prop  : 1
            replanning_mode :
              flags : [ nl ]
            resample_mode :
@@ -820,6 +812,13 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
+       - name : waypoint_loader
+         desc : waypoint_loader desc sample
+         cmd  : roslaunch waypoint_maker waypoint_loader.launch
+         param: waypoint_loader
+         gui  :
+           multi_lane_csv :
+             prop  : 1
            dialog : MyDialogWaypointLoader
        - name : waypoint_saver
          desc : waypoint_saver desc sample
@@ -3152,6 +3151,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+<<<<<<< 84bf8deb86e50da1a7564ae052bd5b421f0a4fef
     - name : maxVelocity
       desc : maximum allowed velocity in meter/second
       label: Max Velocity
@@ -3677,6 +3677,8 @@ params :
         dash     : ''
         delim    : ':='
 
+=======
+>>>>>>> Porting the replan function
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
@@ -3722,6 +3724,7 @@ params :
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
 
+<<<<<<< 84bf8deb86e50da1a7564ae052bd5b421f0a4fef
   - name  : waypoint_loader
     topic : /config/waypoint_loader
     msg   : ConfigWaypointLoader
@@ -3735,6 +3738,12 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+=======
+  - name  : waypoint_manager
+    topic : /config/waypoint_manager
+    msg   : ConfigWaypointReplanner
+    vars  :
+>>>>>>> Porting the replan function
     - name      : replanning_mode
       desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
@@ -3827,6 +3836,18 @@ params :
       min       : 0
       max       : 30
       v         : 5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : waypoint_loader
+    vars  :
+    - name      : multi_lane_csv
+      desc      : driving_lane_csv desc sample
+      label     : 'multi_lane'
+      kind      : path
+      path_type : multi
+      v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
