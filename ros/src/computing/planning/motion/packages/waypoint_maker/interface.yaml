@@ -1,9 +1,12 @@
+- name: /waypoint_manager
+  publish: [/based/lane_waypoints_array]
+  subscribe: [/based/lane_waypoints_raw, /decision_maker/state]
 - name: /waypoint_clicker
   publish: [/waypoint_guide]
   subscribe: [/clicked_point, /vector_map_info/point, /vector_map_info/lane,
     /vector_map_info/node]
 - name: /waypoint_loader
-  publish: [/lane_waypoint_array]
+  publish: [/based/lane_waypoints_raw]
   subscribe: []
 - name: /waypoints_marker_publisher
   publish: [/local_waypoints_mark, /global_waypoints_mark]

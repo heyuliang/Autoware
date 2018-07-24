@@ -613,6 +613,10 @@ subs :
     - name : waypoint_maker
       desc : waypoint_maker desc sample
       subs :
+       - name : waypoint_manager
+         desc : waypoint_manager desc sample
+         cmd  : roslaunch waypoint_maker waypoint_manager.launch
+         param: waypoint_velocity_visualizer
        - name : waypoint_loader
          desc : waypoint_loader desc sample
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
@@ -1080,7 +1084,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type

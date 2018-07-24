@@ -54,7 +54,7 @@ void WaypointLoaderNode::initPubSub()
   }
   else
   {
-    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
+    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
   }
   config_sub_ = nh_.subscribe("/config/waypoint_loader", 1, &WaypointLoaderNode::configCallback, this);
   output_cmd_sub_ =
