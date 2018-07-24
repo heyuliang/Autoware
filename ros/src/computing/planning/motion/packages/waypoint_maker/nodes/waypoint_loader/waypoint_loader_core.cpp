@@ -47,6 +47,7 @@ WaypointLoaderNode::~WaypointLoaderNode()
 void WaypointLoaderNode::initPubSub()
 {
   private_nh_.param<bool>("disable_decision_maker", disable_decision_maker_, true);
+  private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, "/tmp/driving_lane.csv");
   // setup publisher
   if (disable_decision_maker_)
   {
@@ -56,29 +57,19 @@ void WaypointLoaderNode::initPubSub()
   {
     lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
   }
-  config_sub_ = nh_.subscribe("/config/waypoint_loader", 1, &WaypointLoaderNode::configCallback, this);
   output_cmd_sub_ =
       nh_.subscribe("/config/waypoint_loader_output", 1, &WaypointLoaderNode::outputCommandCallback, this);
 }
 
-void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
+void WaypointLoaderNode::run()
 {
-  // parameter settings
-  replanning_mode_ = conf->replanning_mode;
-  multi_lane_csv_ = conf->multi_lane_csv;
-}
-
-void WaypointLoaderNode::configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
-{
-  initParameter(conf);
-  replanner_.initParameter(conf);
-
   multi_file_path_.clear();
   parseColumns(multi_lane_csv_, &multi_file_path_);
   autoware_msgs::LaneArray lane_array;
   createLaneArray(multi_file_path_, &lane_array);
   lane_pub_.publish(lane_array);
   output_lane_array_ = lane_array;
+  ros::spin();
 }
 
 void WaypointLoaderNode::outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd)
@@ -118,10 +109,6 @@ void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, 
   {
     autoware_msgs::lane lane;
     createLaneWaypoint(el, &lane);
-    if (replanning_mode_)
-    {
-      replanner_.replanLaneWaypointVel(&lane);
-    }
     lane_array->lanes.push_back(lane);
   }
 }

@@ -33,8 +33,10 @@
 
 #include <ros/ros.h>
 #include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/ConfigWaypointReplanner.h>
+#include <autoware_msgs/ConfigWaypointFollower.h>
 #include <std_msgs/String.h>
-//#include "velocity_replanner.h"
+#include "waypoint_replanner.h"
 
 namespace waypoint_maker
 {
@@ -49,14 +51,21 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
   ros::Publisher lane_pub_;
-  ros::Subscriber lane_sub_;
-  ros::Subscriber state_sub_;
+  ros::Subscriber lane_sub_, state_sub_, config_sub_, wfconfig_sub_;
+  double pstop_distance_;
   unsigned int lane_idx_;
+  bool replanning_mode_;
+  WaypointReplanner replanner_;
   std::vector<autoware_msgs::LaneArray> devided_lane_array_;
-  bool devideLane(const autoware_msgs::LaneArray::ConstPtr& lane_array,
+  void devideLane(const autoware_msgs::LaneArray::ConstPtr& lane_array,
     std::vector<autoware_msgs::LaneArray> *devided_lane_array);
+  void setPositionStop(autoware_msgs::LaneArray *lane_array);
+  void replan(autoware_msgs::LaneArray *lane_array);
+  void publishLaneArray();
   void laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array);
   void stateCallback(const std_msgs::String::ConstPtr& state);
+  void configCallback(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf);
+  void wfConfigCallback(const autoware_msgs::ConfigWaypointFollower::ConstPtr& conf);
 };
 
 }
