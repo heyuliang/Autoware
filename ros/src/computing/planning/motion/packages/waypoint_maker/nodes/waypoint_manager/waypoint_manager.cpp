@@ -35,7 +35,7 @@ namespace waypoint_maker
 
 WaypointManager::WaypointManager() : lane_idx_(0), replanning_mode_(false), pstop_distance_(6.0)
 {
-  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>(/*based*/"lane_waypoints_array", 10, true);
+  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
   lane_sub_ = nh_.subscribe("/based/lane_waypoints_raw", 1, &WaypointManager::laneCallback, this);
   state_sub_ = nh_.subscribe("/decision_maker/state", 1, &WaypointManager::stateCallback, this);
   config_sub_ = nh_.subscribe("/config/waypoint_manager", 1, &WaypointManager::configCallback, this);
@@ -81,7 +81,7 @@ void WaypointManager::setPositionStop(autoware_msgs::LaneArray *lane_array)
     {
       continue;
     }
-    el.waypoints[valid_index].wpstate.positionstop_state = autoware_msgs::WaypointState::POS_STOP;
+    el.waypoints[valid_index].wpstate.event_state = autoware_msgs::WaypointState::TYPE_EVENT_POSITION_STOP;
   }
 }
 
