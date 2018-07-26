@@ -8,9 +8,13 @@ uint8 STR_RIGHT=2
 uint8 STR_STRAIGHT=3
 
 uint8 accel_state
-uint8 stopline_state
-  uint8 TYPE_NULL=0
-  uint8 TYPE_STOPLINE=1
-  uint8 TYPE_STOP=2
-# 1 is stopline, 2 is stop which 2 can only be released manually.
-uint64 event_state
+uint8 stop_state
+# 1 is stopline, 2 is stop which can only be released manually.
+uint8 TYPE_STOPLINE=1
+uint8 TYPE_STOP=2
+
+uint8 event_state
+uint8 TYPE_EVENT_NULL = 0
+uint8 TYPE_EVENT_GOAL = 1
+uint8 TYPE_EVENT_MIDDLE_GOAL = 2
+uint8 TYPE_EVENT_POSITION_STOP = 3
