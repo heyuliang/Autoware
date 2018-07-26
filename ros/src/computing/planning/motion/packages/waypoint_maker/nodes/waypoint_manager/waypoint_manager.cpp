@@ -35,7 +35,7 @@ namespace waypoint_maker
 
 WaypointManager::WaypointManager() : replanning_mode_(false)
 {
-  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>(/*based*/"lane_waypoints_array", 10, true);
+  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
   lane_sub_ = nh_.subscribe("/based/lane_waypoints_raw", 1, &WaypointManager::laneCallback, this);
   config_sub_ = nh_.subscribe("/config/waypoint_manager", 1, &WaypointManager::configCallback, this);
 }
