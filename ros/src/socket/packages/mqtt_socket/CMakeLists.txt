@@ -4,6 +4,7 @@ project(mqtt_socket)
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
+        rospy
         roslib
         std_msgs
         autoware_msgs

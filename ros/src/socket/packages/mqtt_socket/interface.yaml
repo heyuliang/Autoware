@@ -1,6 +1,9 @@
+- name: /mqtt_sender
+  publish: [/can_info, /target_velocity_array, /twist_cmd, /state, /drive_mode, /current_pose]
+  subscribe: []
 - name: /mqtt_receiver
   publish: [/remote_cmd]
-  subscribe: [/vehicle/1/remote_cmd]
-- name: /mqtt_pose_receiver
-  publish: [/current_pose]
-  subscribe: [/vehicle/1/current_pose, /tf/baselink, /tf/map]
+  subscribe: []
+- name: /mqtt_socket
+  publish: [/remote_cmd]
+  subscribe: [/vehicle_status, /twist_cmd, /state, /current_pose]
