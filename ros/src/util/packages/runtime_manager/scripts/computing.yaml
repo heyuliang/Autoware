@@ -620,6 +620,9 @@ subs :
          gui  :
            replanning_mode :
              flags : [ nl ]
+           constant_vmax_mode:
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
            resample_mode :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
@@ -2889,6 +2892,14 @@ params :
       label     : 'replanning_mode'
       kind      : checkbox
       v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : constant_vmax_mode
+      desc      : Enable constant velocity max mode
+      label     : constant velocity max mode
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='

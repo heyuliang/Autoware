@@ -54,6 +54,7 @@ private:
   bool resample_mode_;
   int end_point_offset_;
   double vel_param_;
+  bool constant_vmax_mode_;
 
 public:
   WaypointReplanner();
@@ -74,9 +75,16 @@ protected:
                                                                   unsigned long index) const;
 
   void createRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius);
-  const double calcVelParam() const;
+  const double calcVelParam(const double vmax) const;
   void createCurveList(const std::vector<double>& curve_radius,
                        std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
+
+  void createVmaxList(const autoware_msgs::lane& lane, const std::unordered_map<unsigned long, std::pair<unsigned long, double> > &curve_list,
+                      unsigned long offset, std::unordered_map<unsigned long, std::pair<unsigned long, double> > *vmax_list);
+  double searchVmaxByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
+                            const autoware_msgs::lane &lane) const;
+  void setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vel,
+                            autoware_msgs::lane* lane);
 
   void limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vmin,
                             autoware_msgs::lane* lane);

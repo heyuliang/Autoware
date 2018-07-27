@@ -62,19 +62,15 @@ void WaypointReplanner::initParameter(const autoware_msgs::ConfigWaypointReplann
   resample_interval_ = conf->resample_interval;
   velocity_offset_ = conf->velocity_offset;
   end_point_offset_ = conf->end_point_offset;
+  constant_vmax_mode_ = conf->constant_vmax_mode;
   r_inf_ = 10 * r_th_;
-  vel_param_ = calcVelParam();
 }
 
 void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
 {
-  if (vel_param_ == DBL_MAX)
-  {
-    ROS_ERROR("velocity parameter is invalid: please change Rth or Rmin");
-    return;
-  }
   std::vector<double> curve_radius;
   std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
+  std::unordered_map<unsigned long, std::pair<unsigned long, double> > vmax_list;
 
   if (resample_mode_)
   {
@@ -82,16 +78,28 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
   }
   createRadiusList(*lane, &curve_radius);
   createCurveList(curve_radius, &curve_list);
+
+  createVmaxList(*lane, curve_list, velocity_offset_, &vmax_list);
   // set velocity_max for all_point
   for (auto& el : lane->waypoints)
   {
     el.twist.twist.linear.x = velocity_max_;
   }
+  for (const auto& el : vmax_list)
+  {
+    const double vmax = el.second.second;
+    const unsigned long start_idx = el.second.first;
+    const unsigned long end_idx =
+      (el.first == lane->waypoints.size() - 1) ? el.first : curve_list[el.first].first;
+    setVelocityByRange(start_idx, end_idx, velocity_offset_, vmax, lane);
+  }
   // set velocity by curve
   for (const auto& el : curve_list)
   {
+    const double& vmax = vmax_list[el.first].second;
     const double& radius = el.second.second;
-    const double vmin = velocity_max_ - vel_param_ * (r_th_ - radius);
+    vel_param_ = calcVelParam(vmax);
+    const double vmin = vmax - vel_param_ * (r_th_ - radius);
     limitVelocityByRange(el.first, el.second.first, velocity_offset_, vmin, lane);
   }
   // set velocity on start & end of lane
@@ -114,7 +122,9 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
   {
     boost::circular_buffer<geometry_msgs::Point> curve_point = getCrvPointsOnResample(*lane, original_lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
-
+    lane->waypoints.back().twist.twist = original_lane.waypoints[i - 1].twist.twist;
+    lane->waypoints.back().wpstate = original_lane.waypoints[i - 1].wpstate;
+    lane->waypoints.back().change_flag = original_lane.waypoints[i - 1].change_flag;
     // if going straight
     if (curve_param.empty())
     {
@@ -125,10 +135,8 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
     {
       resampleOnCurve(curve_point[1], curve_param, lane);
     }
-
-    lane->waypoints.back().wpstate = original_lane.waypoints[i].wpstate;
-    lane->waypoints.back().change_flag = original_lane.waypoints[i].change_flag;
   }
+  lane->waypoints.back().twist.twist = original_lane.waypoints.back().twist.twist;
   lane->waypoints.back().wpstate = original_lane.waypoints.back().wpstate;
   lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
@@ -257,13 +265,13 @@ void WaypointReplanner::createRadiusList(const autoware_msgs::lane& lane, std::v
   }
 }
 
-const double WaypointReplanner::calcVelParam() const
+const double WaypointReplanner::calcVelParam(const double vmax) const
 {
   if (fabs(r_th_ - r_min_) < 1e-8)
   {
     return DBL_MAX;  // error
   }
-  return (velocity_max_ - velocity_min_) / (r_th_ - r_min_);
+  return (vmax - velocity_min_) / (r_th_ - r_min_);
 }
 
 void WaypointReplanner::createCurveList(
@@ -301,6 +309,74 @@ void WaypointReplanner::createCurveList(
   }
 }
 
+void WaypointReplanner::createVmaxList(const autoware_msgs::lane& lane, const std::unordered_map<unsigned long, std::pair<unsigned long, double> > &curve_list,
+                    unsigned long offset, std::unordered_map<unsigned long, std::pair<unsigned long, double> > *vmax_list)
+{
+  unsigned long start_idx = 0;
+  unsigned int list_idx = 0;
+  const unsigned long last_idx = lane.waypoints.size() - 1;
+  std::vector<unsigned long> id_list;
+  if (!curve_list.empty())
+  {
+    id_list.resize(curve_list.size());
+  }
+  for (const auto& el : curve_list)
+  {
+    id_list[list_idx++] = el.first;
+  }
+  std::sort(id_list.begin(), id_list.end());
+
+
+  for (const auto& el : id_list)
+  {
+    const std::pair<unsigned long, double> &pair = curve_list.at(el);
+    if (start_idx != el)
+    {
+      double vmax = searchVmaxByRange(start_idx, el, offset, lane);
+      vmax = (constant_vmax_mode_ || vmax > velocity_max_) ? velocity_max_ : vmax;
+      (*vmax_list)[el] = std::make_pair(start_idx, vmax);
+    }
+    start_idx = pair.first + 1;
+  }
+  if (start_idx != 0 && start_idx < last_idx)
+  {
+    double vmax = searchVmaxByRange(start_idx, last_idx, offset, lane);
+    vmax = (constant_vmax_mode_ || vmax > velocity_max_) ? velocity_max_ : vmax;
+    (*vmax_list)[last_idx] = std::make_pair(start_idx, vmax);
+  }
+}
+
+double WaypointReplanner::searchVmaxByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
+                          const autoware_msgs::lane &lane) const
+{
+  if (offset > 0)
+  {
+    start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
+    end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
+  }
+  double vmax = 0.0;
+  for (unsigned long idx = start_idx; idx <= end_idx; idx++)
+  {
+    const double vel = fabs(lane.waypoints[idx].twist.twist.linear.x);
+    vmax = (vmax < vel) ? vel : vmax;
+  }
+  return vmax;
+}
+
+void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
+                                             double vel, autoware_msgs::lane* lane)
+{
+  if (offset > 0)
+  {
+    start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
+    end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
+  }
+  for (unsigned long idx = start_idx; idx <= end_idx; idx++)
+  {
+    lane->waypoints[idx].twist.twist.linear.x = vel;
+  }
+}
+
 void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
                                              double vmin, autoware_msgs::lane* lane)
 {
@@ -332,7 +408,10 @@ void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::
     unsigned long next = idx + sgn[j];
     for (unsigned long i = 1; i < end_idx[j]; i++, next += sgn[j])
     {
-      v = sqrt(2 * acc[j] * resample_interval_ + v * v);
+      const geometry_msgs::Point& p0 = lane->waypoints[next - sgn[j]].pose.pose.position;
+      const geometry_msgs::Point& p1 = lane->waypoints[next].pose.pose.position;
+      const double dist = std::hypot(p0.x - p1.x, p0.y - p1.y);
+      v = sqrt(2 * acc[j] * dist + v * v);
       if (v > velocity_max_ || v > lane->waypoints[next].twist.twist.linear.x)
       {
         break;
