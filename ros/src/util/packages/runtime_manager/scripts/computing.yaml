@@ -3151,7 +3151,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-<<<<<<< 84bf8deb86e50da1a7564ae052bd5b421f0a4fef
     - name : maxVelocity
       desc : maximum allowed velocity in meter/second
       label: Max Velocity
@@ -3677,8 +3676,6 @@ params :
         dash     : ''
         delim    : ':='
 
-=======
->>>>>>> Porting the replan function
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
@@ -3724,26 +3721,10 @@ params :
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
 
-<<<<<<< 84bf8deb86e50da1a7564ae052bd5b421f0a4fef
-  - name  : waypoint_loader
-    topic : /config/waypoint_loader
-    msg   : ConfigWaypointLoader
-    vars  :
-    - name      : multi_lane_csv
-      desc      : driving_lane_csv desc sample
-      label     : 'multi_lane'
-      kind      : path
-      path_type : multi
-      v         : /tmp/driving_lane.csv
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-=======
   - name  : waypoint_manager
     topic : /config/waypoint_manager
     msg   : ConfigWaypointReplanner
     vars  :
->>>>>>> Porting the replan function
     - name      : replanning_mode
       desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
