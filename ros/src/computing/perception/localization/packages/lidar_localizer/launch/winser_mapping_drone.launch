@@ -8,9 +8,9 @@
   <arg name="scan_num" default="100" />
   <arg name="window_size" default="30" />
   <arg name="use_slam" default="true" />
-  <arg name="output_dir" default="/media/kitsukawa/work/winser/" />
+  <arg name="output_dir" default="/media/kitsukawa/work/winser/20180712_ait/" />
 
-  <include file="$(find lidar_localizer)/launch/tf_winser_vehicle.launch" />
+<!--  <include file="$(find lidar_localizer)/launch/tf_winser_vehicle.launch" />-->
 
 <!--  <node pkg="topic_tools" type="relay" name="relay" args="/applanix/nmea_sentence /nmea_sentence" />-->
 

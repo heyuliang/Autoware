@@ -36,6 +36,7 @@ endif ()
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
+        geometry_msgs
         nav_msgs
         tf
         pcl_ros
@@ -91,6 +92,10 @@ add_dependencies(approximate_ndt_mapping ${catkin_EXPORTED_TARGETS})
 add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
 target_link_libraries(tf_mapping ${catkin_LIBRARIES})
 add_dependencies(tf_mapping ${catkin_EXPORTED_TARGETS})
+
+add_executable(pose_visualizer nodes/tf_mapping/pose_visualizer.cpp)
+target_link_libraries(pose_visualizer ${catkin_LIBRARIES})
+add_dependencies(pose_visualizer ${catkin_EXPORTED_TARGETS})
 
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})

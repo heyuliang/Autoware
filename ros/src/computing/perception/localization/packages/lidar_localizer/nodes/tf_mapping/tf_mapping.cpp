@@ -4,6 +4,8 @@
 #include <string>
 #include <queue>
 
+#include <sys/stat.h>
+
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -28,8 +30,6 @@ static bool USE_SLAM;
 
 static tf::TransformListener *tf_listener, *tf_listener_gps;
 static tf::TransformListener *tf_listener_test;
-
-static std::string filename_map_gps, filename_slam;
 
 static ros::Publisher map_pub;
 static ros::Publisher ndt_pose_pub, velodyne_pose_pub;
@@ -60,6 +60,10 @@ static tf::StampedTransform previous_gps_transform, previous_slam_transform, pre
 
 static double previous_x, previous_y, previous_z, previous_roll, previous_pitch, previous_yaw;
 
+static std::string filename_map_gps, filename_pose_gps, filename_map_slam, filename_pose_slam;
+static std::ofstream ofs_map_gps, ofs_pose_gps, ofs_map_slam, ofs_pose_slam;
+
+/*
 double compute_mean_yaw(std::queue<tf::StampedTransform> input)
 {
   double sum_yaw = 0.0;
@@ -77,6 +81,7 @@ double compute_mean_yaw(std::queue<tf::StampedTransform> input)
 
   return mean_yaw;
 }
+*/
 
 pcl::PointCloud<pcl::PointXYZI> mergeQueueSubmap(std::queue<pcl::PointCloud<pcl::PointXYZI>> input)
 {
@@ -169,11 +174,6 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
 
   map_gps += gps_transformed_scan;
 
-  // Set log file name.
-  std::ofstream ofs_map_gps;
-  filename_map_gps = OUTPUT_DIR + "map_gps.csv";
-  ofs_map_gps.open(filename_map_gps.c_str(), std::ios::app);
-
   if (!ofs_map_gps)
   {
     std::cerr << "Could not open " << filename_map_gps << "." << std::endl;
@@ -182,9 +182,9 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
 
   for (int i = 0; i < (int)gps_transformed_scan.points.size(); i++)
   {
-    ofs_map_gps << std::fixed << std::setprecision(5) << gps_transformed_scan.points[i].x << ","
-                << std::fixed << std::setprecision(5) << gps_transformed_scan.points[i].y << ","
-                << std::fixed << std::setprecision(5) << gps_transformed_scan.points[i].z << ","
+    ofs_map_gps << std::fixed << std::setprecision(10) << gps_transformed_scan.points[i].x << ","
+                << std::fixed << std::setprecision(10) << gps_transformed_scan.points[i].y << ","
+                << std::fixed << std::setprecision(10) << gps_transformed_scan.points[i].z << ","
                 << gps_transformed_scan.points[i].intensity << std::endl;
   }
 
@@ -204,13 +204,10 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
   gps_z = gps_transform.getOrigin().z();
   tf::Matrix3x3(gps_transform.getRotation()).getRPY(gps_roll, gps_pitch, gps_yaw);
 
-  std::ofstream ofs_pose_gps;
-  std::string filename_pose_gps = OUTPUT_DIR + "pose_gps.csv";
-  ofs_pose_gps.open(filename_pose_gps.c_str(), std::ios::app);
 
   if (!ofs_pose_gps)
   {
-    std::cerr << "Could not open " << filename_slam << "." << std::endl;
+    std::cerr << "Could not open " << filename_pose_slam << "." << std::endl;
     exit(1);
   }
 
@@ -221,12 +218,12 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
   tf::Matrix3x3(gps_transform.getRotation()).getRPY(gps_pose_roll, gps_pose_pitch, gps_pose_yaw);
 
   ofs_pose_gps << gps_transform.stamp_ << ","
-               << std::fixed << std::setprecision(5) << gps_pose_x << ","
-               << std::fixed << std::setprecision(5) << gps_pose_y << ","
-               << std::fixed << std::setprecision(5) << gps_pose_z << ","
-               << std::fixed << std::setprecision(5) << gps_pose_roll << ","
-               << std::fixed << std::setprecision(5) << gps_pose_pitch << ","
-               << std::fixed << std::setprecision(5) << gps_pose_yaw << std::endl;
+               << std::fixed << std::setprecision(10) << gps_pose_x << ","
+               << std::fixed << std::setprecision(10) << gps_pose_y << ","
+               << std::fixed << std::setprecision(10) << gps_pose_z << ","
+               << std::fixed << std::setprecision(10) << gps_pose_roll << ","
+               << std::fixed << std::setprecision(10) << gps_pose_pitch << ","
+               << std::fixed << std::setprecision(10) << gps_pose_yaw << std::endl;
 
   if(USE_SLAM == true && map_slam.points.size() != 0) {
     ndt.setTransformationEpsilon(trans_eps);
@@ -323,42 +320,36 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
       map_slam += *slam_transformed_scan;
 
 
-      std::ofstream ofs_slam;
-      filename_slam = OUTPUT_DIR + "map_slam.csv";
-      ofs_slam.open(filename_slam.c_str(), std::ios::app);
-
-      if (!ofs_slam) {
-        std::cerr << "Could not open " << filename_slam << "." << std::endl;
+      if (!ofs_map_slam) {
+        std::cerr << "Could not open " << filename_map_slam << "." << std::endl;
         exit(1);
       }
 
       for (int i = 0; i < (int) slam_transformed_scan->points.size(); i++) {
-        ofs_slam << std::fixed << std::setprecision(5) << slam_transformed_scan->points[i].x << ","
-                 << std::fixed << std::setprecision(5) << slam_transformed_scan->points[i].y << ","
-                 << std::fixed << std::setprecision(5) << slam_transformed_scan->points[i].z << ","
-                 << slam_transformed_scan->points[i].intensity << std::endl;
+        ofs_map_slam << std::fixed << std::setprecision(10) << slam_transformed_scan->points[i].x << ","
+                     << std::fixed << std::setprecision(10) << slam_transformed_scan->points[i].y << ","
+                     << std::fixed << std::setprecision(10) << slam_transformed_scan->points[i].z << ","
+                     << slam_transformed_scan->points[i].intensity << std::endl;
       }
 
-      std::cout << "Wrote " << slam_transformed_scan->points.size() << " points to " << filename_slam << "."
+      std::cout << "Wrote " << slam_transformed_scan->points.size() << " points to " << filename_map_slam << "."
                 << std::endl;
     }
-    std::ofstream ofs_slam_pose;
-    std::string filename_slam_pose = OUTPUT_DIR + "slam_pose.csv";
-    ofs_slam_pose.open(filename_slam_pose.c_str(), std::ios::app);
 
-    if (!ofs_slam_pose)
+
+    if (!ofs_pose_slam)
     {
-      std::cerr << "Could not open " << filename_slam_pose << "." << std::endl;
+      std::cerr << "Could not open " << filename_pose_slam << "." << std::endl;
       exit(1);
     }
 
-    ofs_slam_pose << gps_transform.stamp_ << ","
-                 << std::fixed << std::setprecision(5) << ndt_pose_msg.pose.position.x << ","
-                 << std::fixed << std::setprecision(5) << ndt_pose_msg.pose.position.y << ","
-                 << std::fixed << std::setprecision(5) << ndt_pose_msg.pose.position.z << ","
-                 << std::fixed << std::setprecision(5) << roll << ","
-                 << std::fixed << std::setprecision(5) << pitch << ","
-                 << std::fixed << std::setprecision(5) << yaw << std::endl;
+    ofs_pose_slam << gps_transform.stamp_ << ","
+                  << std::fixed << std::setprecision(10) << ndt_pose_msg.pose.position.x << ","
+                  << std::fixed << std::setprecision(10) << ndt_pose_msg.pose.position.y << ","
+                  << std::fixed << std::setprecision(10) << ndt_pose_msg.pose.position.z << ","
+                  << std::fixed << std::setprecision(10) << roll << ","
+                  << std::fixed << std::setprecision(10) << pitch << ","
+                  << std::fixed << std::setprecision(10) << yaw << std::endl;
 
     // publish map
     while ((int) queue_submap.size() > WINDOW_SIZE) {
@@ -383,15 +374,6 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
 
   }
 
-
-  /*
-  if((int)queue_transform.size() >= WINDOW_SIZE){
-    queue_transform.pop();
-  }
-  queue_transform.push(transform);
-  mean_yaw = compute_mean_yaw(queue_transform);
-*/
-
 }
 
 int main(int argc, char **argv)
@@ -415,6 +397,30 @@ int main(int argc, char **argv)
   std::cout << "window_size: " << WINDOW_SIZE << std::endl;
   std::cout << "use_slam: " << USE_SLAM << std::endl;
   std::cout << "output_dir: " << OUTPUT_DIR << std::endl;
+
+  char buffer[80];
+  std::time_t now = std::time(NULL);
+  std::tm* pnow = std::localtime(&now);
+  std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+  OUTPUT_DIR = OUTPUT_DIR + std::string(buffer);
+
+  if(mkdir(OUTPUT_DIR.c_str(), S_IRWXU) == 0){
+    std::cout << "Created output directory: " << OUTPUT_DIR << std::endl;
+  }else{
+    std::cout << "Failed create output directory. Exit." << std::endl;
+    exit(1);
+  }
+
+  // Set log file name.
+  filename_map_gps = OUTPUT_DIR + "/map_gps.csv";
+  filename_pose_gps = OUTPUT_DIR + "/pose_gps.csv";
+  filename_map_slam = OUTPUT_DIR + "/map_slam.csv";
+  filename_pose_slam = OUTPUT_DIR + "/pose_slam.csv";
+
+  ofs_map_gps.open(filename_map_gps.c_str(), std::ios::app);
+  ofs_pose_gps.open(filename_pose_gps.c_str(), std::ios::app);
+  ofs_map_slam.open(filename_map_slam.c_str(), std::ios::app);
+  ofs_pose_slam.open(filename_pose_slam.c_str(), std::ios::app);
 
   // transform between gps to base_link
   Eigen::Translation3f translation_gps_to_base_link(0.0, 0.0, 0.0);
