@@ -37,32 +37,110 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
-namespace gmsl_camera
+namespace autoware_driveworks_interface
 {
-class GMSLCameraNode
+class ImageProperties
 {
 public:
-  GMSLCameraNode();
-  ~GMSLCameraNode();
+  ImageProperties(){
+}
+  ImageProperties(uint32_t _height, uint32_t _width, double _scale, std::string _encoding)
+  {
+    camera_height_ = _height;
+    camera_width_ = _width;
+    image_scale_ = _scale;
+    encoding_ = _encoding;
+  }
+  ~ImageProperties(){
+}
+
+  uint32_t camera_height_;
+  uint32_t camera_width_;
+  double image_scale_;
+  std::string encoding_;
+};
+
+class DriveworksGMSLHandler
+{
+public:
+  DriveworksGMSLHandler();
+
+  ~DriveworksGMSLHandler();
 
   void run();
-  void g_runSetter(bool);
   int argc_;
   char **argv_;
+  bool initDW();
+  void postProcessGMSLCameraImage(void*);
+  void releaseGMSLCamera();
+  void *getGMSLCameraImage();
+#define DEFAULT_SCALE 0.5
+  ImageProperties getImageProp()
+  {
+	ImageProperties _img_prop;
+	  _img_prop.camera_height_ =imageHeight;
+	  _img_prop.camera_width_ = imageWidth;
+	  _img_prop.image_scale_ = DEFAULT_SCALE;
+	  _img_prop.encoding_ = "rgb8";
+	  return _img_prop;
+  }
 
 private:
-  // handle
-  ros::NodeHandle nh_;
-  ros::NodeHandle private_nh_;
-
   bool gTakeScreenshot = false;
   int gScreenshotCount = 0;
   uint32_t imageWidth;
   uint32_t imageHeight;
 
-  // initializer
-  void initForROS();
-  void initForDW();
+};
+class GMSLInterface
+{
+private:
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
+  ImageProperties img_prop_;
+  DriveworksGMSLHandler handle_;
+  int counter_;
+public:
+  void init()
+  {
+    if (!handle_.initDW())
+    {
+      exit(1);
+    }
+    counter_ = 0;
+
+    std::string topic(std::string("image_raw"));
+    pub_ = nh_.advertise<sensor_msgs::Image>(topic, 100);
+  }
+
+  void *getGMSLCameraImage()
+  {
+    return handle_.getGMSLCameraImage();
+  }
+
+  void createROSMessageImage(sensor_msgs::Image &msg, const std::string &frame_id, void *rgb8_data,
+                                    const ImageProperties &img_prop);
+  void publishROSMessageImage(sensor_msgs::Image &msg){
+	pub_.publish(msg);
+  }
+  void setImageProp(){
+	img_prop_ = handle_.getImageProp(); 
+}
+  void setImageProp(const ImageProperties &prop)
+  {
+    img_prop_ = prop;
+  }
+  ImageProperties getImageProp(void)
+  {
+    return img_prop_;
+  }
+ 
+ void postProcessGMSLCameraImage(void *data){
+	  handle_.postProcessGMSLCameraImage(data);
+}
+  void releaseGMSLCamera(){
+	handle_.releaseGMSLCamera();
+}
 };
 }
 #endif
