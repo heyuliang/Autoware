@@ -231,14 +231,14 @@ void PurePursuit::getNextWaypoint()
   return;
 }
 
-bool PurePursuit::canGetCurvature(double *output_kappa)
+int PurePursuit::canGetCurvature(double *output_kappa)
 {
   // search next waypoint
   getNextWaypoint();
   if (next_waypoint_number_ == -1)
   {
     ROS_INFO("lost next waypoint");
-    return false;
+    return 0;
   }
   // check whether curvature is valid or not
   bool is_valid_curve = false;
@@ -252,7 +252,7 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
   }
   if (!is_valid_curve)
   {
-    return false;
+    return -1;
   }
   // if is_linear_interpolation_ is false or next waypoint is first or last
   if (!is_linear_interpolation_ || next_waypoint_number_ == 0 ||
@@ -260,7 +260,7 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
   {
     next_target_position_ = current_waypoints_.at(next_waypoint_number_).pose.pose.position;
     *output_kappa = calcCurvature(next_target_position_);
-    return true;
+    return 1;
   }
 
   // linear interpolation and calculate angular velocity
@@ -269,13 +269,13 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
   if (!interpolation)
   {
     ROS_INFO_STREAM("lost target! ");
-    return false;
+    return 0;
   }
 
   // ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
 
   *output_kappa = calcCurvature(next_target_position_);
-  return true;
+  return 1;
 }
 
 }  // waypoint_follower
