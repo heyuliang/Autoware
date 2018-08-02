@@ -101,7 +101,7 @@ public:
     return minimum_lookahead_distance_;
   }
   // processing
-  bool canGetCurvature(double *output_kappa);
+  int canGetCurvature(double *output_kappa);
   void getNextWaypoint();
 
 private:

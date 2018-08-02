@@ -108,13 +108,20 @@ void PurePursuitNode::run()
 
     static double kappa = 1e-8;
     bool can_get_curvature = true;
-    if (positionstop_state_)
+    /*if (positionstop_state_)
     {
       pp_.getNextWaypoint();
     }
     else
     {
-      can_get_curvature = pp_.canGetCurvature(&kappa);
+      can_get_curvature = (pp_.canGetCurvature(&kappa) == 1) ? true : false;
+    }*/
+    double kappa_tmp = kappa;
+    int ret = pp_.canGetCurvature(&kappa_tmp);
+    if (ret >= 0)
+    {
+      kappa = kappa_tmp;
+      can_get_curvature = static_cast<bool>(ret);
     }
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
