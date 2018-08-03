@@ -93,24 +93,23 @@ void WaypointManager::replan(autoware_msgs::LaneArray* lane_array)
   }
   for (auto &el : lane_array->lanes)
   {
-    replanner_.replanLaneWaypointVel(&el);
+    if (replanning_mode_)
+    {
+      replanner_.replanLaneWaypointVel(&el);
+    }
+    else
+    {
+      replanner_.changeVelPositive(&el);
+    }
   }
 }
 
 void WaypointManager::publishLaneArray()
 {
   autoware_msgs::LaneArray array(devided_lane_array_[lane_idx_]);
-  if (replanning_mode_)
-  {
-    replan(&array);
-    setPositionStop(&array);
-    lane_pub_.publish(array);
-  }
-  else
-  {
-    setPositionStop(&array);
-    lane_pub_.publish(array);
-  }
+  replan(&array);
+  setPositionStop(&array);
+  lane_pub_.publish(array);
 }
 
 void WaypointManager::laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array)
