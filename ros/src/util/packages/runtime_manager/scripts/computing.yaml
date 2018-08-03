@@ -662,6 +662,10 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
+       - name : waypoint_relay
+         desc : waypoint_relay desc sample
+         cmd  : roslaunch waypoint_maker waypoint_relay.launch
+         param: waypoint_relay
        - name : waypoint_loader
          desc : waypoint_loader desc sample
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
@@ -2991,6 +2995,25 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : waypoint_relay
+    vars  :
+    - name      : input_topic
+      desc      : input lane_array topic
+      label     : input topic
+      kind      : str
+      v         : /based/lane_waypoints_array
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : output_topic
+      desc      : output lane_array topic
+      label     : output topic
+      kind      : str
+      v         : /lane_waypoints_array
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : waypoint_loader
     vars  :
     - name      : multi_lane_csv
@@ -3002,15 +3025,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disable_decision_maker
-      desc      : if you not check this, you have to run a decisionmaker node.
-      label     : 'disable_decision_maker'
-      kind      : checkbox
-      v         : true
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
 
   - name  : waypoint_velocity_visualizer
     vars  :
