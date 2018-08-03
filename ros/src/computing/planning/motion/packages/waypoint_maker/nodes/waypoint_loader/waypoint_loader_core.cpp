@@ -46,17 +46,9 @@ WaypointLoaderNode::~WaypointLoaderNode()
 
 void WaypointLoaderNode::initPubSub()
 {
-  private_nh_.param<bool>("disable_decision_maker", disable_decision_maker_, true);
   private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, "/tmp/driving_lane.csv");
   // setup publisher
-  if (disable_decision_maker_)
-  {
-    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
-  }
-  else
-  {
-    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
-  }
+  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
   output_cmd_sub_ =
       nh_.subscribe("/config/waypoint_loader_output", 1, &WaypointLoaderNode::outputCommandCallback, this);
 }
