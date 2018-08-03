@@ -819,7 +819,6 @@ int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const 
   for (uint32_t i = range_min; i < range_max; i++)
   {
     const geometry_msgs::Pose& lane_pose = current_lane.waypoints.at(i).pose.pose;
-    bool valid_direction = true;
     const geometry_msgs::Point converted_p = convertPointIntoRelativeCoordinate(lane_pose.position, current_pose);
     const double angle = getRelativeAngle(lane_pose, current_pose);
     if (converted_p.x * sgn > 0 && angle < 90)

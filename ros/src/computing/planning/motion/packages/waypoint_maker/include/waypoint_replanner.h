@@ -61,12 +61,14 @@ public:
   ~WaypointReplanner();
   void initParameter(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf);
   void replanLaneWaypointVel(autoware_msgs::lane* lane);
+  void changeVelPositive(autoware_msgs::lane* lane);
 
 protected:
   void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane);
-  void resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::lane* lane);
+  void resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::lane* lane, int dir);
   void resampleOnCurve(const geometry_msgs::Point& target_point, const std::vector<double>& param,
-                       autoware_msgs::lane* lane);
+                       autoware_msgs::lane* lane, int dir);
+  geometry_msgs::Point calcRelativePoint(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose);
 
   const boost::circular_buffer<geometry_msgs::Point> getCrvPointsOnResample(const autoware_msgs::lane& lane,
                                                                             const autoware_msgs::lane& original_lane,
