@@ -138,6 +138,20 @@ geometry_msgs::Point WaypointReplanner::calcRelativePoint(const geometry_msgs::P
   return tf_point_msg;
 }
 
+geometry_msgs::Point WaypointReplanner::calcRelativePoint(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
+{
+  tf::Transform inverse;
+  tf::poseMsgToTF(pose, inverse);
+  tf::Transform transform = inverse.inverse();
+
+  tf::Point p;
+  pointMsgToTF(input_point, p);
+  tf::Point tf_p = transform * p;
+  geometry_msgs::Point tf_point_msg;
+  pointTFToMsg(tf_p, tf_point_msg);
+  return tf_point_msg;
+}
+
 void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane)
 {
   if (lane->waypoints.size() < 2)
