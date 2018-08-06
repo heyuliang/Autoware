@@ -172,7 +172,7 @@ bool TwistGate::is_using_decisionmaker()
 
     for (const auto& i : node_list)
     {
-      if (i.find("decision_maker") != std::string::npos)
+      if (i == "/decision_maker")
       {
         using_decision_maker_flag = true;
         break;
@@ -187,9 +187,8 @@ void TwistGate::check_state()
 {
   if (is_using_decisionmaker() && !is_state_drive_)
   {
-    twist_gate_msg_.twist_cmd.twist.linear.x = 0.0;
-    twist_gate_msg_.ctrl_cmd.linear_velocity = 0.0;
-    twist_gate_msg_.ctrl_cmd.linear_acceleration = 0.0;
+    twist_gate_msg_.twist_cmd.twist = geometry_msgs::Twist();
+    twist_gate_msg_.ctrl_cmd = autoware_msgs::ControlCommand();
   }
 }
 
