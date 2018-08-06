@@ -151,7 +151,7 @@ set(REQUIRED_LIBS
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
 	Boost::serialization
-	g2o_core
+	${G2O_LIBRARIES}
 )
 
 
