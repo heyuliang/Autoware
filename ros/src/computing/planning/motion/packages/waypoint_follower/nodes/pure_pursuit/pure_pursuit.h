@@ -101,8 +101,7 @@ public:
     return minimum_lookahead_distance_;
   }
   // processing
-  int canGetCurvature(double *output_kappa);
-  void getNextWaypoint();
+  bool canGetCurvature(double *output_kappa);
 
 private:
   // constant
@@ -120,6 +119,7 @@ private:
   std::vector<autoware_msgs::waypoint> current_waypoints_;
 
   // functions
+  void getNextWaypoint();
   double calcCurvature(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;
 };

@@ -108,21 +108,7 @@ void PurePursuitNode::run()
 
     static double kappa = 1e-8;
     bool can_get_curvature = true;
-    /*if (positionstop_state_)
-    {
-      pp_.getNextWaypoint();
-    }
-    else
-    {
-      can_get_curvature = (pp_.canGetCurvature(&kappa) == 1) ? true : false;
-    }*/
-    double kappa_tmp = kappa;
-    int ret = pp_.canGetCurvature(&kappa_tmp);
-    if (ret >= 0)
-    {
-      kappa = kappa_tmp;
-      can_get_curvature = static_cast<bool>(ret);
-    }
+    can_get_curvature = pp_.canGetCurvature(&kappa);
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
 
@@ -254,27 +240,47 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg)
 {
-  if (!msg->waypoints.empty())
-    command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
-  else
-    command_linear_velocity_ = 0;
-
-  pp_.setCurrentWaypoints(msg->waypoints);
+  command_linear_velocity_ = (!msg->waypoints.empty()) ? msg->waypoints.at(0).twist.twist.linear.x : 0;
+  autoware_msgs::lane expanded_lane(*msg);
+  connectVirtualLastWaypoints(&expanded_lane);
+  pp_.setCurrentWaypoints(expanded_lane.waypoints);
   is_waypoint_set_ = true;
+}
+
+void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)
+{
+  if (lane->waypoints.size() < 2)
+  {
+    return;
+  }
+  const geometry_msgs::Pose& p0 = lane->waypoints[0].pose.pose;
+  const geometry_msgs::Pose& p1 = lane->waypoints[1].pose.pose;
+  const geometry_msgs::Pose& pn = lane->waypoints.back().pose.pose;
+  const geometry_msgs::Point rlt = calcRelativeCoordinate(p1.position, p0);
+  const int dir = (rlt.x > 0) ? 1 : -1;
+  const double interval = getPlaneDistance(p0.position, p1.position);
+
+  autoware_msgs::waypoint virtual_last_waypoint;
+  virtual_last_waypoint.pose.pose.orientation = pn.orientation;
+  virtual_last_waypoint.twist.twist.linear.x = 0.0;
+
+  geometry_msgs::Point virtual_last_point_rlt;
+  for (double dist = minimum_lookahead_distance_; dist > 0.0; dist -= interval)
+  {
+    virtual_last_point_rlt.x += interval * dir;
+    virtual_last_waypoint.pose.pose.position = calcAbsoluteCoordinate(virtual_last_point_rlt, pn);
+    lane->waypoints.push_back(virtual_last_waypoint);
+  }
 }
 
 void PurePursuitNode::callbackFromState(const std_msgs::StringConstPtr &msg)
 {
-  const bool is_ps = (msg->data == "PositionStop");
-  const bool is_mc = (msg->data == "MissionComplete");
-  const bool is_em = (msg->data == "Emergency");
-  const bool is_ma = (msg->data == "MissionAborted");
-  const bool is_kt = (msg->data == "KTurn");
+  const bool is_ps = (msg->data.find("PositionStop") != std::string::npos);
   if (is_ps)
   {
     positionstop_state_ = true;
   }
-  else if (is_mc || is_em || is_ma || is_kt)
+  else
   {
     positionstop_state_ = false;
   }

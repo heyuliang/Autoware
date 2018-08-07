@@ -115,6 +115,7 @@ private:
   void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
   void publishDeviationCurrentPosition(const geometry_msgs::Point &point,
                                        const std::vector<autoware_msgs::waypoint> &waypoints) const;
+  void connectVirtualLastWaypoints(autoware_msgs::lane* expanded_lane);
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;
