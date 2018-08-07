@@ -28,6 +28,7 @@ MapBuilder2::MapBuilder2() :
 
 MapBuilder2::~MapBuilder2()
 {
+//	delete(imageView);
 }
 
 

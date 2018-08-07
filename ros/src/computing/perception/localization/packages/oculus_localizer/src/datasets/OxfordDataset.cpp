@@ -284,25 +284,18 @@ OxfordDataset::loadModel(const string &modelDir)
 	cv::Mat img0 = cv::imread(d0.getPath());
 	oxfCamera.width = img0.cols;
 	oxfCamera.height = img0.rows;
+
+	if (oxfCamera.width * oxfCamera.height != distortionLUT_center_x.cols)
+		throw runtime_error("Mismatched image size and model size");
+	distortionLUT_center_x = distortionLUT_center_x.reshape(0, oxfCamera.height);
+	distortionLUT_center_y = distortionLUT_center_y.reshape(0, oxfCamera.height);
+
 }
 
 
 cv::Mat
 OxfordDataset::undistort (cv::Mat &src)
 {
-	// Hint: use cv::remap
-	if (oxfCamera.width==-1) {
-		oxfCamera.width=src.cols;
-		oxfCamera.height=src.rows;
-
-		if (oxfCamera.width * oxfCamera.height != distortionLUT_center_x.cols)
-			throw runtime_error("Mismatched image size and model size");
-		distortionLUT_center_x = distortionLUT_center_x.reshape(0, oxfCamera.height);
-		distortionLUT_center_y = distortionLUT_center_y.reshape(0, oxfCamera.height);
-	}
-
-	assert(distortionLUT_center_x.cols == oxfCamera.width);
-
 	cv::Mat target;
 	cv::remap(src, target, distortionLUT_center_x, distortionLUT_center_y, cv::INTER_LINEAR);
 	return target;

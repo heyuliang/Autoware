@@ -24,25 +24,8 @@ using namespace std;
 
 
 VMap::VMap() :
-
-	keyframeInvIdx_mtx(new mutex),
-	mappointInvIdx_mtx(new mutex)
-
-{
-	imageDB = new ImageDatabase(this);
-}
-
-
-//VMap::VMap(
-//	const cv::Mat &m,
-//	cv::Ptr<cv::FeatureDetector> fdetect,
-//	cv::Ptr<cv::DescriptorMatcher> dmatcher) :
-//		featureDetector(fdetect),
-//		descriptorMatcher(dmatcher)
-//{
-//	mask = m.clone();
-//	imageDB = new ImageDatabase(this);
-//}
+	VMap(cv::Mat(), FeatureDetectorT::ORB, DescriptorMatcherT::BruteForce)
+{}
 
 
 VMap::VMap (const cv::Mat &_mask, FeatureDetectorT _fdetector, DescriptorMatcherT _dmatcher) :
@@ -65,6 +48,11 @@ VMap::~VMap()
 {
 	delete(imageDB);
 }
+
+
+void
+VMap::setMask(cv::Mat m)
+{ mask = m.clone(); }
 
 
 int

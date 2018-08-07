@@ -148,6 +148,7 @@ include_directories(
 
 
 set(REQUIRED_LIBS
+	DBoW2
 	${OpenCV_LIBS}
 	${PCL_LIBRARIES}
 	Boost::serialization
@@ -191,7 +192,17 @@ add_executable(map_test
 target_link_libraries(
 	map_test
 	oculus
-	DBoW2
+	${REQUIRED_LIBS}
+	${catkin_LIBRARIES}
+)
+
+add_executable(map_oxford
+	src/bin/map_oxford.cpp
+)
+
+target_link_libraries(
+	map_oxford
+	oculus
 	${REQUIRED_LIBS}
 	${catkin_LIBRARIES}
 )

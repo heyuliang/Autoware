@@ -111,6 +111,8 @@ public:
 
 	int addCameraParameter (const CameraPinholeParams &vscamIntr);
 
+	void setMask(cv::Mat maskSrc);
+
 	const cv::Mat getMask() const
 	{ return mask; }
 
