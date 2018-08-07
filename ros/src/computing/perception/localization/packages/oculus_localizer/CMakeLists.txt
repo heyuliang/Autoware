@@ -168,10 +168,10 @@ add_library(
 		src/Localizer.cpp
 		src/triangulation.cpp
 		src/optimizer.cpp
-		src/OxfordDataset.cpp
-		src/utilities.cpp	
-		src/GenericDataset.cpp
-		src/CustomDataset.cpp
+		src/utilities.cpp
+		src/datasets/OxfordDataset.cpp	
+		src/datasets/GenericDataset.cpp
+		src/datasets/CustomDataset.cpp
 )
 
 ## Declare a C++ library
@@ -185,7 +185,7 @@ add_library(
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(map_test
-	src/map_test.cpp
+	src/bin/map_test.cpp
 )
 
 target_link_libraries(
