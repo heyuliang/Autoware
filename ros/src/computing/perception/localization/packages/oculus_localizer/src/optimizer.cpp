@@ -80,9 +80,9 @@ void bundle_adjustment (VMap *orgMap)
 	optimizer.setAlgorithm(solver);
 
 	// XXX: This routine does not support multiple camera
-	const CameraPinholeParams camPtr = orgMap->getCameraParameter(0);
+	const CameraPinholeParams cp = orgMap->getCameraParameter(0);
 	g2o::CameraParameters *camParams =
-		new g2o::CameraParameters(camPtr.fx, Vector2d(camPtr.cx,camPtr.cy), 0);
+		new g2o::CameraParameters(cp.fx, Vector2d(cp.cx,cp.cy), 0);
 	camParams->setId(0);
 	optimizer.addParameter(camParams);
 
@@ -90,7 +90,7 @@ void bundle_adjustment (VMap *orgMap)
 	map<kfid, g2o::VertexSE3Expmap*> vertexKfMapInv;
 	map<oid, mpid> vertexMpMap;
 	map<mpid, g2o::VertexSBAPointXYZ*> vertexMpMapInv;
-	oid vId = 0;
+	oid vId = 1;
 
 	for (kfid &kId: keyframeList) {
 
@@ -120,11 +120,12 @@ void bundle_adjustment (VMap *orgMap)
 
 			// Edges
 			g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV();
-			edge->setVertex(0, vMp);
-			edge->setVertex(1, vKf);
+			edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(vMp));
+			edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(vKf));
 			edge->setMeasurement(Vector2d(p2K.pt.x, p2K.pt.y));
 			Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(p2K.octave+1));
 			edge->setInformation(uncertainty);
+			edge->setParameterId(0, 0);
 
 			optimizer.addEdge(edge);
 		}
