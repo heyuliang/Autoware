@@ -104,8 +104,6 @@ private:
   std_msgs::String command_mode_topic_;
 
   bool is_state_drive_ = false;
-  // still send is true
-  bool send_emergency_cmd = false;
 };
 
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
@@ -134,7 +132,6 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
 
   twist_gate_msg_.header.seq = 0;
   emergency_stop_msg_.data = false;
-  send_emergency_cmd = false;
 
   remote_cmd_time_ = ros::Time::now();
   watchdog_timer_thread_ = std::thread(&TwistGate::watchdog_timer, this);
@@ -238,14 +235,10 @@ void TwistGate::watchdog_timer()
     {
       // Change Auto Mode
       command_mode_ = CommandMode::AUTO;
-      if (send_emergency_cmd == false)
-      {
-        // Change State to Stop
-        std_msgs::String state_cmd;
-        state_cmd.data = "emergency";
-        state_cmd_pub_.publish(state_cmd);
-        send_emergency_cmd = true;
-      }
+      // Change State to Stop
+      std_msgs::String state_cmd;
+      state_cmd.data = "emergency";
+      state_cmd_pub_.publish(state_cmd);
       // Set Emergency Stop
       emergency_stop_msg_.data = true;
       emergency_stop_pub_.publish(emergency_stop_msg_);
@@ -390,6 +383,8 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
     // Set Parking Gear
     if (input_msg->data.find("WaitOrder") != std::string::npos)
     {
+      emergency_stop_msg_.data = false;
+      twist_gate_msg_.emergency = false;
       twist_gate_msg_.gear = CMD_GEAR_P;
       emergency_stop_msg_.data = false;
       send_emergency_cmd = false;

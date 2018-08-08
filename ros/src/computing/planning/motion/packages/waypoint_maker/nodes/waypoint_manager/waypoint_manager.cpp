@@ -54,6 +54,7 @@ void WaypointManager::replan(autoware_msgs::LaneArray* lane_array)
   {
     if (replanning_mode_)
     {
+      replanner_.changeVelPositive(&el);
       replanner_.replanLaneWaypointVel(&el);
     }
     else
