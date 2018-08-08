@@ -33,7 +33,10 @@ void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status
     for (auto& wp : lane.waypoints)
     {
       wp.wpstate.aid = 0;
-      wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
+      if(wp.wpstate.steering_state != autoware_msgs::WaypointState::STR_BACK)
+      {
+        wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
+      }
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;

@@ -280,6 +280,7 @@ private:
   void updateLeftTurnState(cstring_t& state_name, int status);
   void updateRightTurnState(cstring_t& state_name, int status);
   void updateStraightState(cstring_t& state_name, int status);
+  void updateBackState(cstring_t& state_name, int status);
   void updateStoplineState(cstring_t& state_name, int status);
   void updateGoState(cstring_t& state_name, int status);
   void updateWaitState(cstring_t& state_name, int status);

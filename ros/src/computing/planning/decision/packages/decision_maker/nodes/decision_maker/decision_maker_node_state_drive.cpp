@@ -128,6 +128,9 @@ void DecisionMakerNode::updateLaneAreaState(cstring_t& state_name, int status)
     case autoware_msgs::WaypointState::STR_STRAIGHT:
       tryNextState("on_straight");
       break;
+    case autoware_msgs::WaypointState::STR_BACK:
+      tryNextState("on_back");
+      break;
     default:
       break;
   }
@@ -155,6 +158,11 @@ void DecisionMakerNode::updateStraightState(cstring_t& state_name, int status)
 void DecisionMakerNode::updateRightTurnState(cstring_t& state_name, int status)
 {
   publishLampCmd(E_Lamp::LAMP_RIGHT);
+}
+
+void DecisionMakerNode::updateBackState(cstring_t& state_name, int status)
+{
+  publishLampCmd(E_Lamp::LAMP_CLEAR);
 }
 
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
