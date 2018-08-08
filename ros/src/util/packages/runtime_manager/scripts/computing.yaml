@@ -630,6 +630,12 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
+           decel_curve_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           decel_endpoint_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
            velocity_max :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
@@ -2919,6 +2925,22 @@ params :
       desc      : All waypoints are resampled by this interval [m]
       label     : resample interval [m]
       v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : decel_curve_mode
+      desc      : Enable decel_curve_mode
+      label     : decelerate curve mode
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : decel_endpoint_mode
+      desc      : Enable decel_endpoint_mode
+      label     : decelerate endpoint mode
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='

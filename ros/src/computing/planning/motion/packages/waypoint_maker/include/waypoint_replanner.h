@@ -51,7 +51,7 @@ private:
   double velocity_max_, velocity_min_;
   double accel_limit_, decel_limit_, resample_interval_;
   int velocity_offset_;
-  bool resample_mode_;
+  bool resample_mode_, decel_curve_mode_, decel_endpoint_mode_;
   int end_point_offset_;
   double vel_param_;
   bool constant_vmax_mode_;
