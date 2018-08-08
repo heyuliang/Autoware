@@ -35,7 +35,11 @@ public:
 
 	virtual Eigen::Quaterniond getOrientation() const = 0;
 
-	virtual uint64_t getId() const = 0;
+	/*
+	 * DataItem IDs are numbered from 0, thus they signify
+	 * position in an array
+	 */
+	virtual dataItemId getId() const = 0;
 
 };
 
@@ -53,9 +57,14 @@ public:
 
 	virtual cv::Mat getMask() = 0;
 
-	virtual GenericDataItem& at(const int i) const = 0;
+	virtual GenericDataItem& at(dataItemId i) const = 0;
 
 	void dump(const std::string &filename="");
+
+	virtual std::string getName() const;
+
+protected:
+	static std::string dSetName;
 };
 
 

@@ -67,7 +67,13 @@ KeyFrame::KeyFrame(
 
 	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
 
-	fdetector->detectAndCompute(imgSrc, mask, keypoints, descriptors, false);
+	// Enforce gray image before computing features
+	cv::Mat grayImg;
+	if (imgSrc.channels()==1)
+		grayImg = imgSrc;
+	else
+		cv::cvtColor(imgSrc, grayImg, CV_BGR2GRAY, 1);
+	fdetector->detectAndCompute(grayImg, mask, keypoints, descriptors, false);
 
 	Matrix<double,3,4> camInt = cameraIntr->toMatrix();
 	projMatrix = cameraIntr->toMatrix() * externalParamMatrix4();

@@ -79,7 +79,7 @@ CustomDataset::getCameraParameter()
 
 
 CustomDataItem&
-CustomDataset::at(const int i) const
+CustomDataset::at(dataItemId i) const
 {
 	return const_cast<CustomDataItem&>(records.at(i));
 }

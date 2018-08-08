@@ -13,6 +13,9 @@ using namespace std;
 using namespace Eigen;
 
 
+string GenericDataset::dSetName = "Generic";
+
+
 void
 GenericDataset::dump(const std::string &filename)
 {
@@ -53,3 +56,10 @@ GenericDataset::dump(const std::string &filename)
 
 GenericDataItem::~GenericDataItem()
 {}
+
+
+string
+GenericDataset::getName() const
+{
+	return dSetName;
+}

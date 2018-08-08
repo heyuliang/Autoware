@@ -37,7 +37,7 @@ public:
 	Eigen::Quaterniond getOrientation() const
 	{ return orientation; }
 
-	uint64_t getId() const
+	dataItemId getId() const
 	{ return id; }
 
 protected:
@@ -62,7 +62,7 @@ public:
 	cv::Mat getMask()
 	{ return mask; }
 
-	CustomDataItem& at(const int i) const;
+	CustomDataItem& at(dataItemId i) const;
 
 protected:
 	const std::string rootPath;

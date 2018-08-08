@@ -18,50 +18,12 @@ using namespace std;
 using namespace Eigen;
 
 
-MapBuilder2 *builder;
+MapBuilder2 *builder = NULL;
 Viewer *imgViewer;
 
 const double
 	translationThrs = 1.0,	// meter
 	rotationThrs = 0.04;	// == 2.5 degrees
-
-
-class OxfordDataSubset : public OxfordDataset
-{
-public:
-	OxfordDataSubset(const std::string &dirpath, const std::string &modelDir, double startTimeOffsetSecond=0, double mappingDurationSecond=-1):
-		OxfordDataset(dirpath, modelDir)
-	{
-		double absStartTimeSecond = double(stereoTimestamps[0]/1e6) + startTimeOffsetSecond;
-		if (mappingDurationSecond<0) {
-			double lastTime = double(stereoTimestamps.back()) / 1e6;
-			mappingDurationSecond = lastTime - absStartTimeSecond;
-		}
-
-		auto it = stereoTimestamps.begin();
-		for (; it!=stereoTimestamps.end(); ++it) {
-			double ts = double(*it) / 1e6;
-			if (ts>=absStartTimeSecond) {
-				if (ts > absStartTimeSecond + mappingDurationSecond)
-					break;
-				_timerange.push_back(*it);
-			}
-		}
-	}
-
-	OxfordDataItem &at(const int i) const
-	{
-		timestamp_t ts = _timerange.at(i);
-		return const_cast<OxfordDataItem&>(stereoRecords.at(ts));
-	}
-
-	size_t size() const
-	{ return _timerange.size();	}
-
-protected:
-	vector<timestamp_t> _timerange;
-};
-
 
 
 InputFrame createInputFrame(OxfordDataItem &d)
@@ -73,10 +35,12 @@ InputFrame createInputFrame(OxfordDataItem &d)
 }
 
 
-void buildMap (OxfordDataSubset &dataset)
+void buildMap (OxfordDataset &dataset)
 {
-	builder = new MapBuilder2;
-	builder->addCameraParam(dataset.getCameraParameter());
+	if (builder==NULL) {
+		builder = new MapBuilder2;
+		builder->addCameraParam(dataset.getCameraParameter());
+	}
 
 	imgViewer = new Viewer(dataset);
 	imgViewer->setMap(builder->getMap());
@@ -97,18 +61,36 @@ void buildMap (OxfordDataSubset &dataset)
 	InputFrame frame0 = createInputFrame(d0);
 	InputFrame frame1 = createInputFrame(d1);
 	builder->initialize(frame0, frame1);
+	imgViewer->update(d1.getId(), builder->getCurrentKeyFrameId());
 
-	// Add more frames here
-	InputFrame *anchor = &frame1;
+	OxfordDataItem *anchor = &d1;
 
-	delete builder;
+	for (int i=2; i<dataset.size(); i++) {
+
+		OxfordDataItem &dCurrent = dataset.at(i);
+		double diffTrans, diffRotn;
+		anchor->groundTruth.displacement(dCurrent.groundTruth, diffTrans, diffRotn);
+		if (diffTrans<translationThrs and diffRotn<rotationThrs)
+			continue;
+
+		// XXX: Store Anchor frame in MapBuilder2 itself
+		InputFrame frameCurrent = createInputFrame(dCurrent);
+		builder->track(frameCurrent);
+		anchor = &dCurrent;
+		cerr << anchor->getId() << endl;
+		imgViewer->update(dCurrent.getId(), builder->getCurrentKeyFrameId());
+	}
+
+	builder->build();
 }
 
 
 int main (int argc, char *argv[])
 {
-	OxfordDataSubset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models", 0, 30.0);
-	buildMap (oxf);
+	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
+	OxfordDataset oxfSubset = oxf.timeSubset(0, 30);
+	string stname = oxfSubset.getName();
+	buildMap (oxfSubset);
 //	oxf.dump();
 	return 0;
 }

@@ -24,6 +24,7 @@ using namespace Eigen;
 
 static const set<int> GpsColumns ({0,9,8,4,2,3});
 static const set<int> InsColumns ({0,6,5,4,12,13,14,10,9,11,2,3});
+string OxfordDataset::dSetName = "Oxford";
 
 
 /*
@@ -36,6 +37,13 @@ baseLinkToOffset = TTransform::from_Pos_Quat(
 	TQuaternion (-0.723, 0.007, 0.002, 0.691));
 
 
+OxfordDataset::OxfordDataset(const OxfordDataset &cp):
+	oxfCamera(cp.oxfCamera),
+	oxfPath(cp.oxfPath),
+	distortionLUT_center_x(cp.distortionLUT_center_x),
+	distortionLUT_center_y(cp.distortionLUT_center_y)
+{}
+
 
 OxfordDataset::OxfordDataset(
 
@@ -43,7 +51,7 @@ OxfordDataset::OxfordDataset(
 	const std::string &modelDir,
 	GroundTruthSrc gts) :
 
-	oxPath (dirpath)
+	oxfPath (dirpath)
 {
 	oxfCamera.fx = -1;
 	loadTimestamps();
@@ -66,7 +74,7 @@ OxfordDataset::~OxfordDataset()
 void
 OxfordDataset::loadGps()
 {
-	const string gpsFilePath = oxPath + "/gps/gps.csv";
+	const string gpsFilePath = oxfPath + "/gps/gps.csv";
 	StringTable GPS_s = create_table(gpsFilePath, GpsColumns, true);
 	const size_t ss = GPS_s.size();
 	gpsPoseTable.resize(ss);
@@ -88,7 +96,7 @@ OxfordDataset::loadGps()
 void
 OxfordDataset::loadIns()
 {
-	const string insFilePath = oxPath + "/gps/ins.csv";
+	const string insFilePath = oxfPath + "/gps/ins.csv";
 	StringTable INS_s = create_table(insFilePath, InsColumns, true);
 	const size_t ss = INS_s.size();
 	insPoseTable.resize(ss);
@@ -115,7 +123,7 @@ OxfordDataset::loadIns()
 
 void OxfordDataset::loadTimestamps()
 {
-	const string timestampsPath = oxPath + "/stereo.timestamps";
+	const string timestampsPath = oxfPath + "/stereo.timestamps";
 	StringTable TS = create_table(timestampsPath);
 	const size_t ss = TS.size();
 	stereoTimestamps.resize(ss);
@@ -128,6 +136,7 @@ void OxfordDataset::loadTimestamps()
 
 		OxfordDataItem d(this);
 		d.timestamp = ts;
+		d.iId = i;
 		stereoRecords.insert(make_pair(ts, d));
 	}
 }
@@ -140,11 +149,11 @@ OxfordDataItem::getPath(OxfordDataItem::StereoImageT t) const
 
 	switch (t) {
 	case StereoLeft:
-		return parent->oxPath + "/stereo/left/" + ss + ".png"; break;
+		return parent->oxfPath + "/stereo/left/" + ss + ".png"; break;
 	case StereoCenter:
-		return parent->oxPath + "/stereo/centre/" + ss + ".png"; break;
+		return parent->oxfPath + "/stereo/centre/" + ss + ".png"; break;
 	case StereoRight:
-		return parent->oxPath + "/stereo/right/" + ss + ".png"; break;
+		return parent->oxfPath + "/stereo/right/" + ss + ".png"; break;
 	}
 }
 
@@ -246,11 +255,8 @@ OxfordDataset::createStereoGroundTruths()
 
 
 OxfordDataItem&
-OxfordDataset::at(const int i) const
-{
-	timestamp_t ts = stereoTimestamps.at(i);
-	return const_cast<OxfordDataItem&>(stereoRecords.at(ts));
-}
+OxfordDataset::at(dataItemId i) const
+{ return atTime(stereoTimestamps.at(i)); }
 
 
 void
@@ -308,3 +314,54 @@ OxfordDataset::getMask()
 	throw exception();
 }
 
+
+OxfordDataset
+OxfordDataset::timeSubset (double startTimeOffsetSecond, double durationSecond)
+const
+{
+	OxfordDataset mycopy = *this;
+
+	// Determine start time in second
+	double absStartTimeSecond = double(stereoTimestamps[0]/1e6) + startTimeOffsetSecond;
+	if (durationSecond<0) {
+		double lastTime = double(stereoTimestamps.back()) / 1e6;
+		durationSecond = lastTime - absStartTimeSecond;
+	}
+
+	// Create subset
+	auto it = stereoTimestamps.begin();
+	for (uint32_t sId=0; it!=stereoTimestamps.end(); ++it, sId++) {
+
+		timestamp_t curTimestamp = *it;
+
+		double ts = double(*it) / 1e6;
+		if (ts>=absStartTimeSecond) {
+			if (ts > absStartTimeSecond + durationSecond)
+				break;
+
+			mycopy.stereoTimestamps.push_back(curTimestamp);
+
+			OxfordDataItem d(&mycopy);
+			d.timestamp = curTimestamp;
+			d.groundTruth = this->stereoRecords.at(curTimestamp).groundTruth;
+			d.iId = sId;
+			mycopy.stereoRecords.insert(make_pair(curTimestamp, d));
+		}
+	}
+
+	for (auto &gp: gpsPoseTable) {
+		double gpTs = double(gp.timestamp) / 1e6;
+		if (absStartTimeSecond < gpTs and gpTs<absStartTimeSecond + durationSecond) {
+			mycopy.gpsPoseTable.push_back(gp);
+		}
+	}
+
+	for (auto &ipp: insPoseTable) {
+		double ipTs = double(ipp.timestamp) / 1e6;
+		if (absStartTimeSecond < ipTs and ipTs<absStartTimeSecond + durationSecond) {
+			mycopy.insPoseTable.push_back(ipp);
+		}
+	}
+
+	return mycopy;
+}

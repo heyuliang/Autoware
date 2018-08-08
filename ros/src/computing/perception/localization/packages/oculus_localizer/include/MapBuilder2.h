@@ -57,6 +57,9 @@ public:
 	void addCameraParam (const CameraPinholeParams &c)
 	{ cMap->addCameraParameter(c); }
 
+	inline kfid getCurrentKeyFrameId()
+	{ return currentAnchor; }
+
 
 protected:
 
@@ -70,7 +73,6 @@ protected:
 
 	bool initialized = false;
 
-	Viewer *imageView;
 };
 
 #endif /* MAPBUILDER2_H_ */

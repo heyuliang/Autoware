@@ -66,6 +66,7 @@ class OxfordDataset;
 struct OxfordDataItem : public GenericDataItem
 {
 	friend class OxfordDataset;
+	dataItemId iId;
 	uint64_t timestamp;
 	Pose groundTruth;
 	OxfordDataset *parent;
@@ -93,8 +94,8 @@ struct OxfordDataItem : public GenericDataItem
 	Eigen::Quaterniond getOrientation() const
 	{ return groundTruth.orientation(); }
 
-	uint64_t getId() const
-	{ return timestamp; }
+	dataItemId getId() const
+	{ return iId; }
 
 private:
 	std::string getPath(StereoImageT t=StereoCenter) const;
@@ -104,6 +105,9 @@ private:
 class OxfordDataset: public GenericDataset
 {
 public:
+
+	OxfordDataset (const OxfordDataset &cp);
+
 	OxfordDataset (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
 	virtual ~OxfordDataset();
 
@@ -115,20 +119,28 @@ public:
 
 	void dumpGroundTruth(const std::string &fp=std::string());
 
-	OxfordDataItem &at(const int i) const;
+	OxfordDataItem &at(dataItemId i) const;
+
+	inline OxfordDataItem& atTime (timestamp_t t) const
+	{ return const_cast<OxfordDataItem&>(stereoRecords.at(t)); }
 
 	friend struct OxfordDataItem;
 	cv::Mat undistort (cv::Mat &src);
 
 	cv::Mat getMask();
 
+	OxfordDataset timeSubset (double startTimeOffsetSecond=0, double mappingDurationSecond=-1) const;
+
+	inline std::string getName() const
+	{ return dSetName; }
+
 
 protected:
 	CameraPinholeParams oxfCamera;
 
-	std::string oxPath;
+	std::string oxfPath;
 
-	std::vector<uint64_t> stereoTimestamps;
+	std::vector<timestamp_t> stereoTimestamps;
 
 	std::map<timestamp_t,OxfordDataItem> stereoRecords;
 
@@ -137,6 +149,8 @@ protected:
 	std::vector<InsPose> insPoseTable;
 
 	cv::Mat distortionLUT_center_x, distortionLUT_center_y;
+
+	static std::string dSetName;
 
 private:
 	void loadIns ();
