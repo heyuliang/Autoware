@@ -65,7 +65,7 @@ void LaneSelectNode::initForROS()
   sub1_ = nh_.subscribe("traffic_waypoints_array", 1, &LaneSelectNode::callbackFromLaneArray, this);
   sub2_ = nh_.subscribe("current_pose", 1, &LaneSelectNode::callbackFromPoseStamped, this);
   sub3_ = nh_.subscribe("current_velocity", 1, &LaneSelectNode::callbackFromTwistStamped, this);
-  sub4_ = nh_.subscribe("state", 1, &LaneSelectNode::callbackFromState, this);
+  sub4_ = nh_.subscribe("/decision_maker/state", 1, &LaneSelectNode::callbackFromState, this);
   sub5_ = nh_.subscribe("/config/lane_select", 1, &LaneSelectNode::callbackFromConfig, this);
   sub6_ = nh_.subscribe("/decisionmaker/states", 1, &LaneSelectNode::callbackFromStates, this);
 
