@@ -394,6 +394,11 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
     {
       twist_gate_msg_.gear = CMD_GEAR_R;
     }
+    // Set Back Gear
+    else if (input_msg->data.find("Back") != std::string::npos)
+    {
+      twist_gate_msg_.gear = CMD_GEAR_R;
+    }
     // Set Drive Gear
     else
     {
