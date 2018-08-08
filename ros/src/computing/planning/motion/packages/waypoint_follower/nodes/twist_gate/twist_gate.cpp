@@ -364,6 +364,41 @@ void TwistGate::ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::Co
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
     twist_gate_msg_.ctrl_cmd = input_msg->cmd;
+
+    check_state();
+    vehicle_cmd_pub_.publish(twist_gate_msg_);
+  }
+}
+
+void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
+{
+  if (command_mode_ == CommandMode::AUTO)
+  {
+    // Set Parking Gear
+    if (input_msg->data.find("WaitOrders") != std::string::npos)
+    {
+      twist_gate_msg_.gear = CMD_GEAR_P;
+    }
+    // Set Back Gear
+    else if (input_msg->data.find("Back") != std::string::npos)
+    {
+      twist_gate_msg_.gear = CMD_GEAR_R;
+    }
+    // Set Drive Gear
+    else
+    {
+      twist_gate_msg_.gear = CMD_GEAR_D;
+    }
+
+    // get drive state
+    if (input_msg->data.find("Drive\n") != std::string::npos)
+    {
+      is_state_drive_ = true;
+    }
+    else
+    {
+      is_state_drive_ = false;
+    }
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
