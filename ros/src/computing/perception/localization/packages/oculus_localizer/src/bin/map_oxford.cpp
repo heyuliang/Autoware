@@ -98,6 +98,9 @@ void buildMap (OxfordDataSubset &dataset)
 	InputFrame frame1 = createInputFrame(d1);
 	builder->initialize(frame0, frame1);
 
+	// Add more frames here
+	InputFrame *anchor = &frame1;
+
 	delete builder;
 }
 
