@@ -104,6 +104,7 @@ private:
   std_msgs::String command_mode_topic_;
 
   bool is_state_drive_ = false;
+  bool is_valid_gear_ = false;
 };
 
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
@@ -182,7 +183,11 @@ bool TwistGate::is_using_decisionmaker()
 
 void TwistGate::check_state()
 {
-  if (is_using_decisionmaker() && !is_state_drive_)
+  if (!is_using_decisionmaker())
+  {
+    return;
+  }
+  if (!is_state_drive_ || !is_valid_gear_)
   {
     twist_gate_msg_.twist_cmd.twist = geometry_msgs::Twist();
     twist_gate_msg_.ctrl_cmd = autoware_msgs::ControlCommand();
@@ -386,21 +391,19 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
       emergency_stop_msg_.data = false;
       twist_gate_msg_.emergency = false;
       twist_gate_msg_.gear = CMD_GEAR_P;
+      is_valid_gear_ = false;
     }
     // Set Back Gear
     else if (input_msg->data.find("Back") != std::string::npos)
     {
       twist_gate_msg_.gear = CMD_GEAR_R;
-    }
-    // Set Back Gear
-    else if (input_msg->data.find("Back") != std::string::npos)
-    {
-      twist_gate_msg_.gear = CMD_GEAR_R;
+      is_valid_gear_ = true;
     }
     // Set Drive Gear
-    else
+    else if (input_msg->data.find("Straight") != std::string::npos)
     {
       twist_gate_msg_.gear = CMD_GEAR_D;
+      is_valid_gear_ = true;
     }
 
     // get drive state
