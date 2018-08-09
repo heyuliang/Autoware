@@ -74,7 +74,7 @@ constexpr int LOOP_RATE = 50;  // 50Hz
 
 void CmdCallBack(const autoware_msgs::VehicleCmdConstPtr& msg, double accel_rate)
 {
-  g_gear_coeff = (msg->gear == 1) ? 1 : (msg->gear == 2) ? -1 : 0;
+  g_gear_coeff = (msg->gear < 2) ? 1 : (msg->gear == 2) ? -1 : 0;
   if (_use_ctrl_cmd == true)
   {
     g_linear_acceleration = msg->ctrl_cmd.linear_acceleration;
