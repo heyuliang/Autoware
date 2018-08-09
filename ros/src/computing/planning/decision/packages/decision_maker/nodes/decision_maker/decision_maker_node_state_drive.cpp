@@ -117,6 +117,12 @@ void DecisionMakerNode::updateLaneAreaState(cstring_t& state_name, int status)
     return;
   }
 
+  if(isEventFlagTrue("received_back_state_waypoint"))
+  {
+    tryNextState("on_back");
+    return;
+  }
+
   switch (getSteeringStateFromWaypoint())
   {
     case autoware_msgs::WaypointState::STR_LEFT:
@@ -127,9 +133,6 @@ void DecisionMakerNode::updateLaneAreaState(cstring_t& state_name, int status)
       break;
     case autoware_msgs::WaypointState::STR_STRAIGHT:
       tryNextState("on_straight");
-      break;
-    case autoware_msgs::WaypointState::STR_BACK:
-      tryNextState("on_back");
       break;
     default:
       break;

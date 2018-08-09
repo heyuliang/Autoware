@@ -242,7 +242,7 @@ void TwistGate::watchdog_timer()
       {
         // Change State to Stop
         std_msgs::String state_cmd;
-        state_cmd.data = "emmergency";
+        state_cmd.data = "emergency";
         state_cmd_pub_.publish(state_cmd);
         send_emergency_cmd = true;
       }
@@ -388,9 +388,11 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
   if (command_mode_ == CommandMode::AUTO)
   {
     // Set Parking Gear
-    if (input_msg->data.find("WaitOrders") != std::string::npos)
+    if (input_msg->data.find("WaitOrder") != std::string::npos)
     {
       twist_gate_msg_.gear = CMD_GEAR_P;
+      emergency_stop_msg_.data = false;
+      send_emergency_cmd = false;
     }
     // Set Drive Gear
     else

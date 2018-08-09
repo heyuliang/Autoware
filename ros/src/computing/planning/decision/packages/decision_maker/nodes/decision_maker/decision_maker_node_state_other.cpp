@@ -27,20 +27,26 @@ void DecisionMakerNode::exitWaitMissionOrderState(cstring_t& state_name, int sta
 void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status)
 {
   publishOperatorHelpMessage("Received mission, checking now...");
+  setEventFlag("received_back_state_waypoint", false);
 
+  int gid = 0;
   for (auto& lane : current_status_.based_lane_array.lanes)
   {
+    int lid = 0;
     for (auto& wp : lane.waypoints)
     {
       wp.wpstate.aid = 0;
-      if(wp.wpstate.steering_state != autoware_msgs::WaypointState::STR_BACK)
-      {
-        wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
-      }
+      wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
+      wp.gid = gid++;
+      wp.lid = lid++;
+      if(!isEventFlagTrue("received_back_state_waypoint") && wp.twist.twist.linear.x < 0.0){
+        setEventFlag("received_back_state_waypoint", true);
+        publishOperatorHelpMessage("Received back waypoint.");
+      }
     }
   }
 
@@ -48,7 +54,7 @@ void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status
   setWaypointState(current_status_.based_lane_array);
 
   // indexing
-  int gid = 0;
+  gid = 0;
   for (auto& lane : current_status_.based_lane_array.lanes)
   {
     int lid = 0;
