@@ -121,7 +121,8 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
       const double& vmax = vmax_list[el.first].second;
       const double& radius = el.second.second;
       vel_param_ = calcVelParam(vmax);
-      const double vmin = vmax - vel_param_ * (r_th_ - radius);
+      double vmin = vmax - vel_param_ * (r_th_ - radius);
+      vmin = (vmin < velocity_min_) ? velocity_min_ : vmin;
       limitVelocityByRange(el.first, el.second.first, velocity_offset_, vmin, lane);
     }
   }
@@ -375,7 +376,14 @@ void WaypointReplanner::createVmaxList(const autoware_msgs::lane& lane, const st
   if (start_idx != 0 && start_idx < last_idx)
   {
     double vmax = searchVmaxByRange(start_idx, last_idx, offset, lane);
-    vmax = (constant_vmax_mode_ || vmax > velocity_max_) ? velocity_max_ : vmax;
+    if (constant_vmax_mode_ || vmax > velocity_max_)
+    {
+      vmax = velocity_max_;
+    }
+    if (vmax < velocity_min_)
+    {
+      vmax = velocity_min_;
+    }
     (*vmax_list)[last_idx] = std::make_pair(start_idx, vmax);
   }
 }
