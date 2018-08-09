@@ -680,6 +680,15 @@ subs :
            multi_lane_csv :
              prop  : 1
            dialog : MyDialogWaypointLoader
+       - name : waypoint_writer
+         desc : waypoint_writer desc sample
+         cmd  : roslaunch waypoint_maker waypoint_writer.launch
+         param: waypoint_writer
+         gui  :
+           lane_csv :
+             prop  : 1
+           topic_name :
+             flags : [ nl ]
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -2848,6 +2857,18 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
+  - name  : waypoint_writer
+    vars  :
+    - name      : lane_csv
+      desc      : save_filename desc sample
+      label     : lane_csv
+      kind      : path
+      v         : '/tmp/drive_waypoints.csv'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
