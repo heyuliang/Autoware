@@ -679,7 +679,6 @@ subs :
          gui  :
            multi_lane_csv :
              prop  : 1
-           dialog : MyDialogWaypointLoader
        - name : waypoint_writer
          desc : waypoint_writer desc sample
          cmd  : roslaunch waypoint_maker waypoint_writer.launch
