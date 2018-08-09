@@ -169,8 +169,9 @@ double PurePursuitNode::computeLookaheadDistance() const
 
 double PurePursuitNode::computeCommandVelocity() const
 {
+  const int sgn = (command_linear_velocity_ < 0) ? -1 : 1;
   if (param_flag_ == enumToInteger(Mode::dialog))
-    return kmph2mps(const_velocity_);
+    return sgn * kmph2mps(const_velocity_);
 
   return command_linear_velocity_;
 }

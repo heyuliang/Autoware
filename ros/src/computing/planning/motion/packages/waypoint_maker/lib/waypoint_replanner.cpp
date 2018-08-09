@@ -68,30 +68,39 @@ void WaypointReplanner::initParameter(const autoware_msgs::ConfigWaypointReplann
   r_inf_ = 10 * r_th_;
 }
 
-void WaypointReplanner::changeVelPositive(autoware_msgs::lane* lane)
+void WaypointReplanner::changeVelSign(autoware_msgs::lane* lane, bool positive) const
 {
+  const int sgn = positive ? 1 : -1;
   for (auto& el : lane->waypoints)
   {
-    el.twist.twist.linear.x = fabs(el.twist.twist.linear.x);
+    el.twist.twist.linear.x = sgn * fabs(el.twist.twist.linear.x);
   }
+}
+
+int WaypointReplanner::getDirection(const autoware_msgs::lane& lane) const
+{
+  return lane.waypoints[0].twist.twist.linear.x < 0 ? -1 : 1;
 }
 
 void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
 {
-
+  if (lane->waypoints.empty())
+  {
+    return;
+  }
+  const int dir = getDirection(*lane);
+  changeVelSign(lane, true);
   if (resample_mode_)
   {
-    resampleLaneWaypoint(resample_interval_, lane);
+    resampleLaneWaypoint(resample_interval_, lane, dir);
   }
   if (decel_curve_mode_)
   {
     std::vector<double> curve_radius;
     std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
     std::unordered_map<unsigned long, std::pair<unsigned long, double> > vmax_list;
-
     createRadiusList(*lane, &curve_radius);
     createCurveList(curve_radius, &curve_list);
-
     createVmaxList(*lane, curve_list, velocity_offset_, &vmax_list);
     // set velocity_max for all_point
     for (auto& el : lane->waypoints)
@@ -122,37 +131,13 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
     limitVelocityByRange(0, 0, 0, velocity_min_, lane);
     limitVelocityByRange(lane->waypoints.size() - 1 - end_point_offset_, lane->waypoints.size() - 1, 0, 0.0, lane);
   }
+  if (dir < 0)
+  {
+    changeVelSign(lane, false);
+  }
 }
 
-geometry_msgs::Point WaypointReplanner::calcRelativePoint(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
-{
-  tf::Transform inverse;
-  tf::poseMsgToTF(pose, inverse);
-  tf::Transform transform = inverse.inverse();
-
-  tf::Point p;
-  pointMsgToTF(input_point, p);
-  tf::Point tf_p = transform * p;
-  geometry_msgs::Point tf_point_msg;
-  pointTFToMsg(tf_p, tf_point_msg);
-  return tf_point_msg;
-}
-
-geometry_msgs::Point WaypointReplanner::calcRelativePoint(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
-{
-  tf::Transform inverse;
-  tf::poseMsgToTF(pose, inverse);
-  tf::Transform transform = inverse.inverse();
-
-  tf::Point p;
-  pointMsgToTF(input_point, p);
-  tf::Point tf_p = transform * p;
-  geometry_msgs::Point tf_point_msg;
-  pointTFToMsg(tf_p, tf_point_msg);
-  return tf_point_msg;
-}
-
-void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane)
+void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane, int dir)
 {
   if (lane->waypoints.size() < 2)
   {
@@ -162,10 +147,6 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
   lane->waypoints.clear();
   lane->waypoints.push_back(original_lane.waypoints[0]);
   lane->waypoints.reserve(ceil(1.5 * calcPathLength(original_lane) / resample_interval_));
-  const geometry_msgs::Pose& pose0 = original_lane.waypoints[0].pose.pose;
-  const geometry_msgs::Point& point1 = original_lane.waypoints[1].pose.pose.position;
-  const geometry_msgs::Point rlt_point = calcRelativePoint(point1, pose0);
-  const int dir = rlt_point.x < 0 ? -1 : 1;
 
   for (unsigned long i = 1; i < original_lane.waypoints.size(); i++)
   {

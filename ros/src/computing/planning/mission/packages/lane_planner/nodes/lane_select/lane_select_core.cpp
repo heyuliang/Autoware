@@ -248,8 +248,8 @@ void LaneSelectNode::createLaneForChange()
 
   double dt = getTwoDimensionalDistance(cur_lane.waypoints.at(num_lane_change).pose.pose.position,
                                         cur_lane.waypoints.at(clst_wp).pose.pose.position);
-  double dt_by_vel = current_velocity_.twist.linear.x * lane_change_target_ratio_ > lane_change_target_minimum_ ?
-                         current_velocity_.twist.linear.x * lane_change_target_ratio_ :
+  double dt_by_vel = fabs(current_velocity_.twist.linear.x) * lane_change_target_ratio_ > lane_change_target_minimum_ ?
+                         fabs(current_velocity_.twist.linear.x) * lane_change_target_ratio_ :
                          lane_change_target_minimum_;
   ROS_INFO("dt : %lf, dt_by_vel : %lf", dt, dt_by_vel);
   autoware_msgs::lane &nghbr_lane =

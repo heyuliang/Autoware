@@ -52,22 +52,17 @@ void WaypointManager::replan(autoware_msgs::LaneArray* lane_array)
   }
   for (auto &el : lane_array->lanes)
   {
-    if (replanning_mode_)
-    {
-      replanner_.changeVelPositive(&el);
-      replanner_.replanLaneWaypointVel(&el);
-    }
-    else
-    {
-      replanner_.changeVelPositive(&el);
-    }
+    replanner_.replanLaneWaypointVel(&el);
   }
 }
 
 void WaypointManager::publishLaneArray()
 {
   autoware_msgs::LaneArray array(lane_array_);
-  replan(&array);
+  if (replanning_mode_)
+  {
+    replan(&array);
+  }
   lane_pub_.publish(array);
 }
 
