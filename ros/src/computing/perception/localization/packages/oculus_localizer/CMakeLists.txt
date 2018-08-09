@@ -205,8 +205,9 @@ target_link_libraries(
 )
 
 add_executable(dataset_browser
-	src/bin/dataset_browser.cpp
-	src/bin/dataset_browser.ui
+	src/bin/dataset_browser/main.cpp
+	src/bin/dataset_browser/DatasetBrowser.cpp	
+	src/bin/dataset_browser/dataset_browser.ui
 )
 
 target_link_libraries(
