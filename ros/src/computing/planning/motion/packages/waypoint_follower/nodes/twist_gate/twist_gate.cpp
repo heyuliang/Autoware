@@ -69,6 +69,7 @@ private:
   void lamp_cmd_callback(const autoware_msgs::LampCmd::ConstPtr& input_msg);
   void ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg);
 
+  void changeTwistToPositive(geometry_msgs::Twist* twist);
   void reset_vehicle_cmd_msg();
 
   ros::NodeHandle nh_;
@@ -256,6 +257,7 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
     twist_gate_msg_.header.stamp = input_msg->vehicle_cmd.header.stamp;
     twist_gate_msg_.header.seq++;
     twist_gate_msg_.twist_cmd.twist = input_msg->vehicle_cmd.twist_cmd.twist;
+    changeTwistToPositive(&twist_gate_msg_.twist_cmd.twist);
     twist_gate_msg_.ctrl_cmd = input_msg->vehicle_cmd.ctrl_cmd;
     twist_gate_msg_.accel_cmd = input_msg->vehicle_cmd.accel_cmd;
     twist_gate_msg_.brake_cmd = input_msg->vehicle_cmd.brake_cmd;
@@ -276,6 +278,9 @@ void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::C
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
     twist_gate_msg_.twist_cmd.twist = input_msg->twist;
+    changeTwistToPositive(&twist_gate_msg_.twist_cmd.twist);
+
+    check_state();
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
@@ -404,6 +409,15 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
       is_state_drive_ = false;
     }
     vehicle_cmd_pub_.publish(twist_gate_msg_);
+  }
+}
+
+void TwistGate::changeTwistToPositive(geometry_msgs::Twist* twist)
+{
+  if (twist_gate_msg_.gear == CMD_GEAR_R)
+  {
+    twist_gate_msg_.twist_cmd.twist.linear.x *= -1;
+    twist_gate_msg_.twist_cmd.twist.angular.z *= -1;
   }
 }
 
