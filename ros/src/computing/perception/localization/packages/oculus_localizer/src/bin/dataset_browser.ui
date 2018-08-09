@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>DatasetBrowser_frm</class>
+ <widget class="QWidget" name="DatasetBrowser_frm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -26,7 +26,7 @@
       <widget class="QGraphicsView" name="graphicsView"/>
      </item>
      <item>
-      <widget class="QSlider" name="horizontalSlider">
+      <widget class="QSlider" name="timelineSlider">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
