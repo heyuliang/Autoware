@@ -97,6 +97,14 @@ add_executable(pose_visualizer nodes/tf_mapping/pose_visualizer.cpp)
 target_link_libraries(pose_visualizer ${catkin_LIBRARIES})
 add_dependencies(pose_visualizer ${catkin_EXPORTED_TARGETS})
 
+add_executable(pospac_visualizer nodes/tf_mapping/pospac_visualizer.cpp)
+target_link_libraries(pospac_visualizer ${catkin_LIBRARIES})
+add_dependencies(pospac_visualizer ${catkin_EXPORTED_TARGETS})
+
+add_executable(pospac_tf_publisher nodes/tf_mapping/pospac_tf_publisher.cpp)
+target_link_libraries(pospac_tf_publisher ${catkin_LIBRARIES})
+add_dependencies(pospac_tf_publisher ${catkin_EXPORTED_TARGETS})
+
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 add_dependencies(lazy_ndt_mapping ${catkin_EXPORTED_TARGETS})
