@@ -396,17 +396,12 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
       twist_gate_msg_.gear = CMD_GEAR_P;
       is_valid_gear_ = false;
     }
-    // Set Back Gear
-    else if (input_msg->data.find("Back") != std::string::npos)
+    else if (input_msg->data.find("Go") != std::string::npos)
     {
-      twist_gate_msg_.gear = CMD_GEAR_R;
       is_valid_gear_ = true;
-    }
-    // Set Drive Gear
-    else if (input_msg->data.find("Straight") != std::string::npos)
-    {
-      twist_gate_msg_.gear = CMD_GEAR_D;
-      is_valid_gear_ = true;
+      // Set Back or Drive Gear
+      const bool is_back = (input_msg->data.find("Back") != std::string::npos);
+      twist_gate_msg_.gear = is_back ? CMD_GEAR_R : CMD_GEAR_D;
     }
 
     // get drive state
