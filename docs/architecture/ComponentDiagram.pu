@@ -1,6 +1,6 @@
 @startuml
 
-title Autoware Component Dependencies (Now)
+title Autoware Component Dependencies (v2.0)
 
 () "sensor_msgs::Image\n/image_raw" as image_raw
 () "sensor_msgs::PointCloud2\n/points_raw" as points_raw
@@ -30,6 +30,61 @@ folder sensing {
     [gnss]
     'outputs
     gnss --> nmea_sentence
+}
+
+() "autoware_detection_msgs::ObjectArray\n/detection/tracked_objects" as tracked_objects
+() "autoware_detection_msgs::TrafficLight\n/detection/traffic_light_color" as traffic_light_color
+
+folder detection {
+    () "autoware_detection_msgs::ObjectArray\n/detection/vision_objects" as detected_objects_vision
+    () "autoware_detection_msgs::ObjectArray\n/detection/lidar_objects" as detected_objects_lidar
+    () "autoware_detection_msgs::ObjectArray\n/detection/combined_objects" as detected_objects_combined
+    () "autoware_detection_msgs::ObjectArray\n/detection/fused_objects" as detected_objects_fused
+    () "autoware_detection_msgs::ObjectArray\n/detection/detected_objects" as detected_objects
+
+    [vision_detector]
+    'inputs
+    image_raw --> vision_detector
+    'outputs
+    vision_detector --> detected_objects_vision
+
+    [lidar_detector]
+    'inputs
+    points_raw --> lidar_detector
+    'outputs
+    lidar_detector --> detected_objects_lidar
+
+    [fusion_detector]
+    'inputs
+    image_raw --> fusion_detector
+    points_raw --> fusion_detector
+    'outputs
+    fusion_detector --> detected_objects_fused
+
+    [fusion_tools]
+    'inputs
+    detected_objects_vision --> fusion_tools
+    detected_objects_lidar --> fusion_tools
+    'outputs
+    fusion_tools --> detected_objects_combined
+
+    'connection
+    detected_objects_vision --> detected_objects
+    detected_objects_lidar --> detected_objects
+    detected_objects_combined --> detected_objects
+    detected_objects_fused --> detected_objects
+
+    [object_tracker]
+    'inputs
+    detected_objects --> object_tracker
+    'outputs
+    object_tracker --> tracked_objects
+
+    [trafficlight_recognizer]
+    'inputs
+    image_raw --> trafficlight_recognizer
+    'outputs
+    trafficlight_recognizer --> traffic_light_color
 }
 
 'gnss_localizer
@@ -74,86 +129,6 @@ folder localization {
 
     '[dead_reckoner] @ Autoware v2.0
 }
-
-'vision_detector
-() "autoware_msgs::DetectedObjectArray\n/detected_objects_vision" as detected_objects_vision
-
-'vision_tracker
-() "autoware_msgs::image_obj_tracked\n/image_obj_tracked" as image_obj_tracked
-
-'lidar_detector
-() "autoware_msgs::DetectedObjectArray\n/detected_objects_range" as detected_objects_range
-() "autoware_msgs::CloudClusterArray\n/cloud_clusters_class" as cloud_clusters_class
-
-'lidar_tracker
-() "autoware_msgs::DetectedObjectArray\n/detected_objects" as detected_objects
-() "jsk_recognition_msgs::BoundingBoxArray\n/cloud_cluster_tracked_bounding_box" as cloud_cluster_tracked_bounding_box
-
-'fusion_tools
-() "autoware_msgs::DetectedObjectArray\n/detected_objects_fused" as detected_objects_fused
-() "jsk_recognition_msgs::BoundingBoxArray\n/bounding_boxes_fused" as bounding_boxes_fused
-
-folder detection {
-    [vision_detector]
-    'inputs
-    image_raw --> vision_detector
-    'outputs
-    vision_detector --> detected_objects_vision
-
-    [vision_tracker]
-    'inputs
-    detected_objects_vision --> vision_tracker
-    'outputs
-    vision_tracker --> image_obj_tracked
-
-    [lidar_detector]
-    'inputs
-    points_raw --> lidar_detector
-    'outputs
-    lidar_detector --> detected_objects_range
-    lidar_detector --> cloud_clusters_class
-
-    [lidar_tracker]
-    'inputs
-    cloud_clusters_class --> lidar_tracker
-    'outputs
-    lidar_tracker --> detected_objects
-    lidar_tracker --> cloud_cluster_tracked_bounding_box
-
-    [fusion_tools]
-    'inputs
-    detected_objects_vision --> fusion_tools
-    detected_objects_range --> fusion_tools
-    'outputs
-    fusion_tools --> detected_objects_fused
-    fusion_tools --> bounding_boxes_fused
-
-    '[fusion_detector] @ Autoware v2.0
-
-    '[fusion_tracker] @ Autoware v2.0
-}
-
-/' @ Autoware v2.0
-folder prediction {
-    [moving_predictor]
-
-    [collision_predictor]
-
-    [cutin_predictor]
-}
-'/
-
-/' @ Autoware v2.0
-folder intelligence {
-    [decision_maker]
-}
-'/
-
-/' @ Autoware v2.0
-folder state {
-    [state_machine]
-}
-'/
 
 () "autoware_msgs::lane\n/final_waypoints" as final_waypoints
 () "geometry_msgs::TwistStamped\n/twist_cmd" as twist_cmd
