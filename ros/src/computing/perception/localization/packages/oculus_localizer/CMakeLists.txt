@@ -14,6 +14,7 @@ set (CMAKE_AUTOUIC					ON)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
 find_package(catkin REQUIRED COMPONENTS
 #	autoware_build_flags
 	roscpp
@@ -142,6 +143,9 @@ include_directories(
 	include
 	${CMAKE_CURRENT_SOURCE_DIR}
 	DBoW2
+	
+	# XXX: move this directory to target dataset_browser
+	src/bin/dataset_browser
 
 	${EIGEN3_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
@@ -204,10 +208,18 @@ target_link_libraries(
 	${catkin_LIBRARIES}
 )
 
+
+# Dataset Browser
+#qt5_wrap_cpp(moc_OUTS
+#	include/ratio_layouted_frame
+#)
+
 add_executable(dataset_browser
 	src/bin/dataset_browser/main.cpp
 	src/bin/dataset_browser/DatasetBrowser.cpp	
+	src/bin/dataset_browser/ratio_layouted_frame.cpp
 	src/bin/dataset_browser/dataset_browser.ui
+	src/bin/dataset_browser/ratio_layouted_frame.h
 )
 
 target_link_libraries(
