@@ -625,15 +625,16 @@ subs :
     - name : waypoint_maker
       desc : waypoint_maker desc sample
       subs :
-       - name : waypoint_loader
-         desc : waypoint_loader desc sample
-         cmd  : roslaunch waypoint_maker waypoint_loader.launch
-         param: waypoint_loader
+       - name : waypoint_manager
+         desc : waypoint_manager desc sample
+         cmd  : roslaunch waypoint_maker waypoint_manager.launch
+         param: waypoint_manager
          gui  :
-           multi_lane_csv :
-             prop  : 1
            replanning_mode :
              flags : [ nl ]
+           constant_vmax_mode:
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
            resample_mode :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
@@ -641,6 +642,12 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
+           decel_curve_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           decel_endpoint_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
            velocity_max :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
@@ -673,7 +680,26 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
-           dialog : MyDialogWaypointLoader
+       - name : waypoint_relay
+         desc : waypoint_relay desc sample
+         cmd  : roslaunch waypoint_maker waypoint_relay.launch
+         param: waypoint_relay
+       - name : waypoint_loader
+         desc : waypoint_loader desc sample
+         cmd  : roslaunch waypoint_maker waypoint_loader.launch
+         param: waypoint_loader
+         gui  :
+           multi_lane_csv :
+             prop  : 1
+       - name : waypoint_writer
+         desc : waypoint_writer desc sample
+         cmd  : roslaunch waypoint_maker waypoint_writer.launch
+         param: waypoint_writer
+         gui  :
+           lane_csv :
+             prop  : 1
+           topic_name :
+             flags : [ nl ]
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -1092,7 +1118,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -1931,88 +1957,17 @@ params :
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
-    - name : enable_force_state_change
-      desc : enable force state change flag
-      label: enable_force_state_change
-      kind : checkbox
-      v    : False
     - name : enable_display_marker
       desc : enable display marker flag
       label: enable_display_marker
       kind : checkbox
       v    : False
-    - name : convergence_threshold
-      desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
-      label: convergence_threshold
-      min  : 0.0
-      max  : 10.0
-      v    : 0.01
-    - name : convergence_count
-      desc : Number of values used for convergence determination
-      label: convergence_count
-      min  : 1
-      max  : 30
-      v    : 5
-    - name : target_waypoint
-      desc : decision maker load wp_state except stopline by target_waypoint
-      label: target_waypoint
+    - name : num_of_steer_behind
+      desc : e
+      label: num_of_steer_behind
       min  : 0
       max  : 50
-      v    : 14
-    - name : stopline_target_waypoint
-      desc : stopline
-      label: stopline_target_waypoint
-      min  : 0
-      max  : 50
-      v    : 10
-    - name : stopline_target_ratio
-      desc : stopline
-      label: stopline_target_ratio
-      min  : 0.0
-      max  : 0.99
-      v    : 0.0
-    - name : shift_width
-      desc : lane shift width
-      label: shift_width
-      min  : -5.0
-      max  : 5.0
-      v    : 1.0
-    - name : detection_area_rate
-      desc : detection_area_rate
-      label: detection_area_rate
-      min  : 0.0
-      max  : 3.0
-      v    : 1.0
-    - name : crawl_velocity
-      desc : crawl_velocity
-      label: crawl_velocity
-      min  : 0.0
-      max  : 10.0
-      v    : 4.0
-    - name : detection_area_x1
-      desc : detection_area_x1
-      label: detection_area_x1
-      min  : -200.0
-      max  : 200.0
-      v    : 80.0
-    - name : detection_area_x2
-      desc : detection_area_x2
-      label: detection_area_x2
-      min  : -200.0
-      max  : 200.0
-      v    : 0.0
-    - name : detection_area_y1
-      desc : detection_area_y1
-      label: detection_area_y1
-      min  : -200.0
-      max  : 200.0
-      v    : 50.0
-    - name : detection_area_y2
-      desc : detection_area_y2
-      label: detection_area_y2
-      min  : -200.0
-      max  : 200.0
-      v    : -50.0
+      v    : 20
 
     - name : points_topic
       desc : points_topic
@@ -2913,6 +2868,18 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
+  - name  : waypoint_writer
+    vars  :
+    - name      : lane_csv
+      desc      : save_filename desc sample
+      label     : lane_csv
+      kind      : path
+      v         : '/tmp/drive_waypoints.csv'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
@@ -2958,24 +2925,23 @@ params :
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
 
-  - name  : waypoint_loader
-    topic : /config/waypoint_loader
-    msg   : ConfigWaypointLoader
+  - name  : waypoint_manager
+    topic : /config/waypoint_manager
+    msg   : ConfigWaypointReplanner
     vars  :
-    - name      : multi_lane_csv
-      desc      : driving_lane_csv desc sample
-      label     : 'multi_lane'
-      kind      : path
-      path_type : multi
-      v         : /tmp/driving_lane.csv
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name      : replanning_mode
       desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
       kind      : checkbox
       v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : constant_vmax_mode
+      desc      : Enable constant velocity max mode
+      label     : constant velocity max mode
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -2991,6 +2957,22 @@ params :
       desc      : All waypoints are resampled by this interval [m]
       label     : resample interval [m]
       v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : decel_curve_mode
+      desc      : Enable decel_curve_mode
+      label     : decelerate curve mode
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : decel_endpoint_mode
+      desc      : Enable decel_endpoint_mode
+      label     : decelerate endpoint mode
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -3066,15 +3048,37 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disable_decision_maker
-      desc      : if you not check this, you have to run a decisionmaker node.
-      label     : 'disable_decision_maker'
-      kind      : checkbox
-      v         : true
+
+  - name  : waypoint_relay
+    vars  :
+    - name      : input_topic
+      desc      : input lane_array topic
+      label     : input topic
+      kind      : str
+      v         : /based/lane_waypoints_array
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : output_topic
+      desc      : output lane_array topic
+      label     : output topic
+      kind      : str
+      v         : /lane_waypoints_array
       cmd_param :
         dash        : ''
         delim       : ':='
 
+  - name  : waypoint_loader
+    vars  :
+    - name      : multi_lane_csv
+      desc      : driving_lane_csv desc sample
+      label     : 'multi_lane'
+      kind      : path
+      path_type : multi
+      v         : /tmp/driving_lane.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : waypoint_velocity_visualizer
     vars  :

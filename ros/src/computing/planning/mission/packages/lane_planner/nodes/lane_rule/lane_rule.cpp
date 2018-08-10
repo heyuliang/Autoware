@@ -107,9 +107,10 @@ autoware_msgs::lane apply_acceleration(const autoware_msgs::lane& lane, double a
 		geometry_msgs::Point b = l.waypoints[i].pose.pose.position;
 		distance += hypot(b.x - a.x, b.y - a.y);
 
+		int sgn = (l.waypoints[i].twist.twist.linear.x < 0) ? -1 : 1;
 		double v = sqrt(square_vel + 2 * acceleration * distance);
-		if (v < l.waypoints[i].twist.twist.linear.x)
-			l.waypoints[i].twist.twist.linear.x = v;
+		if (v < fabs(l.waypoints[i].twist.twist.linear.x))
+			l.waypoints[i].twist.twist.linear.x = sgn * v;
 		else
 			break;
 	}
@@ -428,9 +429,9 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 				for (size_t j = 1; j < lane.waypoints.size()-1; ++j) {
 					if(lane.waypoints.at(j).twist.twist.linear.x != 0)
 					{
-						lane.waypoints[j].twist.twist.linear.x = 
-							(temp_lane.waypoints.at(j-1).twist.twist.linear.x + 
-							 temp_lane.waypoints.at(j).twist.twist.linear.x + 
+						lane.waypoints[j].twist.twist.linear.x =
+							(temp_lane.waypoints.at(j-1).twist.twist.linear.x +
+							 temp_lane.waypoints.at(j).twist.twist.linear.x +
 							 temp_lane.waypoints.at(j+1).twist.twist.linear.x) / 3 ;
 					}
 				}

@@ -269,7 +269,7 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
   if (!interpolation)
   {
     ROS_INFO_STREAM("lost target! ");
-    return false;
+    return true;
   }
 
   // ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
