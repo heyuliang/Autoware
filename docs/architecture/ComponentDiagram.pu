@@ -61,7 +61,7 @@ folder detection {
     'outputs
     fusion_detector --> detected_objects_fused
 
-    [fusion_tools]
+    [fusion_tools\n(range_vision_fusion)] as fusion_tools
     'inputs
     detected_objects_vision --> fusion_tools
     detected_objects_lidar --> fusion_tools
@@ -91,7 +91,6 @@ folder detection {
 
 'lidar_localizer
 () "sensor_msgs::PointCloud2\n/points_map" as points_map
-() "sensor_msgs::PointCloud2\n/ndt_map" as ndt_map
 
 'vel_pose_connect
 () "geometry_msgs::PoseStamped\n/current_pose" as current_pose
@@ -117,9 +116,8 @@ folder localization {
     'outputs
     lidar_localizer --> estimate_twist
     lidar_localizer --> ndt_pose
-    lidar_localizer --> ndt_map
 
-    [vel_pose_connect]
+    [autoware_connector\n(vel_pose_connect)] as vel_pose_connect
     'inputs
     estimate_twist --> vel_pose_connect
     ndt_pose --> vel_pose_connect
