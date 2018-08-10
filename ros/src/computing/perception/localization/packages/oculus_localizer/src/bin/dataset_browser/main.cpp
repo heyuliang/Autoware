@@ -10,13 +10,17 @@
 
 #include <QApplication>
 #include "DatasetBrowser.h"
+#include "OxfordDataset.h"
 
 
 int main (int argc, char *argv[])
 {
 	QApplication mainApp(argc, argv);
 
+	OxfordDataset oxf("/home/sujiwo/Data/Oxford/2014-12-02-15-30-08", "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
+
 	DatasetBrowser dbs;
+	dbs.changeDataset(&oxf);
 	dbs.show();
 
 	return mainApp.exec();

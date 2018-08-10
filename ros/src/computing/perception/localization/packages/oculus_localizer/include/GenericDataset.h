@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <string>
+#include <exception>
 #include <Eigen/Eigen>
 #include <opencv2/core.hpp>
 #include "VMap.h"
@@ -41,6 +42,8 @@ public:
 	 */
 	virtual dataItemId getId() const = 0;
 
+	inline virtual timestamp_t getTimestamp()
+	{ throw std::runtime_error("Not implemented"); }
 };
 
 

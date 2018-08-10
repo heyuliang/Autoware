@@ -165,7 +165,7 @@ OxfordDataItem::getImage(StereoImageT t)
 	cv::Mat img = cv::imread(path, cv::IMREAD_GRAYSCALE);
 
 	// XXX: need better demosaicing algorithms
-	cv::cvtColor(img, img, CV_BayerGB2RGB);
+	cv::cvtColor(img, img, CV_BayerGB2BGR);
 	img = parent->undistort(img);
 
 	return img;

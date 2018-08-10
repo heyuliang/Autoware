@@ -144,9 +144,6 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	DBoW2
 	
-	# XXX: move this directory to target dataset_browser
-	src/bin/dataset_browser
-
 	${EIGEN3_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
@@ -210,24 +207,25 @@ target_link_libraries(
 
 
 # Dataset Browser
-#qt5_wrap_cpp(moc_OUTS
-#	include/ratio_layouted_frame
-#)
-
 add_executable(dataset_browser
 	src/bin/dataset_browser/main.cpp
 	src/bin/dataset_browser/DatasetBrowser.cpp	
 	src/bin/dataset_browser/ratio_layouted_frame.cpp
 	src/bin/dataset_browser/dataset_browser.ui
+# this header must be included to be processed by MOC & UIC
 	src/bin/dataset_browser/ratio_layouted_frame.h
+)
+
+target_include_directories(dataset_browser
+	PUBLIC src/bin/dataset_browser 
 )
 
 target_link_libraries(
 	dataset_browser
 		Qt5::Widgets
-#		oculus
+		oculus
 		${REQUIRED_LIBS}
-#		${catkin_LIBRARIES}
+		${catkin_LIBRARIES}
 )
 
 

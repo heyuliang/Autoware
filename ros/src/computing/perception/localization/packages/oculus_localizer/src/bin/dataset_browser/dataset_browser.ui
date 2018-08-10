@@ -33,11 +33,25 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="timelineSlider">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <property name="spacing">
+        <number>7</number>
        </property>
-      </widget>
+       <item>
+        <widget class="QLabel" name="timeOffsetLabel">
+         <property name="text">
+          <string>0.0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="timelineSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

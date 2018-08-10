@@ -67,7 +67,7 @@ struct OxfordDataItem : public GenericDataItem
 {
 	friend class OxfordDataset;
 	dataItemId iId;
-	uint64_t timestamp;
+	timestamp_t timestamp;
 	Pose groundTruth;
 	OxfordDataset *parent;
 
@@ -96,6 +96,9 @@ struct OxfordDataItem : public GenericDataItem
 
 	dataItemId getId() const
 	{ return iId; }
+
+	inline virtual timestamp_t getTimestamp()
+	{ return timestamp; }
 
 private:
 	std::string getPath(StereoImageT t=StereoCenter) const;
