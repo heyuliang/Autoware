@@ -10,7 +10,7 @@
 
 #include <QApplication>
 #include "DatasetBrowser.h"
-#include "OxfordDataset.h"
+#include "datasets/OxfordDataset.h"
 
 
 int main (int argc, char *argv[])

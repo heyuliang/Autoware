@@ -10,7 +10,7 @@
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 
-#include "OxfordDataset.h"
+#include "datasets/OxfordDataset.h"
 #include "Viewer.h"
 #include "MapBuilder2.h"
 
@@ -48,14 +48,13 @@ void buildMap (OxfordDataset &dataset)
 	// Find two initializer frames
 	OxfordDataItem d0 = dataset.at(0);
 	OxfordDataItem d1;
-	int i=1;
-	while (true) {
+	for (int i=1; i<dataset.size(); i++) {
 		d1 = dataset.at(i);
 		double runTrans, runRot;
 		d1.groundTruth.displacement(d0.groundTruth, runTrans, runRot);
-		if (runTrans>=translationThrs or runRot>=rotationThrs)
+		if (runTrans>=translationThrs or runRot>=rotationThrs or i>=dataset.size()) {
 			break;
-		i++;
+		}
 	}
 
 	InputFrame frame0 = createInputFrame(d0);
@@ -88,9 +87,13 @@ void buildMap (OxfordDataset &dataset)
 int main (int argc, char *argv[])
 {
 	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
-	OxfordDataset oxfSubset = oxf.timeSubset(0, 30);
+	double
+		start=stod(argv[2]),
+		howlong=stod(argv[3]);
+	OxfordDataset oxfSubset = oxf.timeSubset(start, howlong);
 	string stname = oxfSubset.getName();
 	buildMap (oxfSubset);
+	builder->getMap()->save("/tmp/oxford1.map");
 //	oxf.dump();
 	return 0;
 }

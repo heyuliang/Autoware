@@ -5,9 +5,8 @@
  *      Author: sujiwo
  */
 
-#include "GenericDataset.h"
 #include <fstream>
-
+#include "datasets/GenericDataset.h"
 
 using namespace std;
 using namespace Eigen;

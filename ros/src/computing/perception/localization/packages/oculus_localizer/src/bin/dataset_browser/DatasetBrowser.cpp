@@ -10,6 +10,7 @@
 #include <string>
 #include <opencv2/core.hpp>
 #include <QImage>
+#include <QFileDialog>
 
 #include "DatasetBrowser.h"
 
@@ -32,6 +33,7 @@ DatasetBrowser::DatasetBrowser(QWidget *parent):
 	timelineSlider = ui.timelineSlider;
 	frame = ui.frame;
 	timeOffsetLabel = ui.timeOffsetLabel;
+	saveImageButton = ui.saveImageButton;
 }
 
 DatasetBrowser::~DatasetBrowser()
@@ -46,12 +48,20 @@ DatasetBrowser::on_timelineSlider_sliderMoved(int v)
 
 
 void
+DatasetBrowser::on_saveImageButton_clicked(bool checked)
+{
+	QString fname = QFileDialog::getSaveFileName(this, tr("Save Image"));
+	cv::Mat image = openDs->at(timelineSlider->value()).getImage();
+	cv::imwrite(fname.toStdString(), image);
+}
+
+
+void
 DatasetBrowser::changeDataset(GenericDataset *ds)
 {
 	openDs = ds;
 	timelineSlider->setRange(0, ds->size()-1);
 	setImageOnPosition(0);
-
 }
 
 

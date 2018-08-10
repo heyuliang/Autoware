@@ -11,11 +11,12 @@
 #include <QWidget>
 #include <QSlider>
 #include <QLabel>
+#include <QPushButton>
 
 #include "ui_dataset_browser.h"
 #include "ratio_layouted_frame.h"
 
-#include "GenericDataset.h"
+#include "datasets/GenericDataset.h"
 
 
 class DatasetBrowser: public QWidget
@@ -31,6 +32,7 @@ public:
 
 public slots:
 	void on_timelineSlider_sliderMoved(int value);
+	void on_saveImageButton_clicked(bool checked);
 
 private:
 	Ui::DatasetBrowser_frm ui;
@@ -40,6 +42,7 @@ private:
 	QSlider *timelineSlider;
 	RatioLayoutedFrame *frame;
 	QLabel *timeOffsetLabel;
+	QPushButton *saveImageButton;
 
 private:
 	void setImageOnPosition (int v);

@@ -13,7 +13,7 @@
 #include <vector>
 #include <thread>
 #include "VMap.h"
-#include "GenericDataset.h"
+#include "datasets/GenericDataset.h"
 
 
 

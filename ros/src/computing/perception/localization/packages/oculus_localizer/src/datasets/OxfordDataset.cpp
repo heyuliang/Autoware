@@ -14,7 +14,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "csv.h"
-#include "OxfordDataset.h"
+#include "datasets/OxfordDataset.h"
 #include "utilities.h"
 
 
@@ -329,9 +329,8 @@ const
 	}
 
 	// Create subset
-	auto it = stereoTimestamps.begin();
-	for (uint32_t sId=0; it!=stereoTimestamps.end(); ++it, sId++) {
-
+	uint32_t sId = 0;
+	for (auto it = stereoTimestamps.begin(); it!=stereoTimestamps.end(); ++it) {
 		timestamp_t curTimestamp = *it;
 
 		double ts = double(*it) / 1e6;
@@ -346,6 +345,7 @@ const
 			d.groundTruth = this->stereoRecords.at(curTimestamp).groundTruth;
 			d.iId = sId;
 			mycopy.stereoRecords.insert(make_pair(curTimestamp, d));
+			sId++;
 		}
 	}
 
