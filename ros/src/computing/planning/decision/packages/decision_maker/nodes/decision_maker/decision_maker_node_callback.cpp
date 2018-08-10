@@ -185,10 +185,13 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
+  bool existInsideLanes = false;
+
   for (auto& area : intersects)
   {
     for (auto& laneinArea : area.insideLanes)
     {
+      existInsideLanes = true;
       // To straight/left/right recognition by using angle
       // between first-waypoint and end-waypoint in intersection area.
       int angle_deg = ((int)std::floor(calcIntersectWayAngle(laneinArea)));  // normalized
@@ -214,6 +217,10 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
             }
     }
   }
+  if(!existInsideLanes)
+    for (auto& lane : lane_array.lanes)
+      for (auto& wp : lane.waypoints)
+          wp.wpstate.steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
