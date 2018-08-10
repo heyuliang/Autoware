@@ -40,6 +40,7 @@ namespace {
 //Publisher
 ros::Publisher g_twist_pub;
 double g_lateral_accel_limit = 5.0;
+double g_omega_limit = 0.1;
 double g_lowpass_gain_linear_x = 0.0;
 double g_lowpass_gain_angular_z = 0.0;
 constexpr double RADIUS_MAX = 9e10;
@@ -47,6 +48,7 @@ constexpr double ERROR = 1e-8;
 
 void configCallback(const autoware_msgs::ConfigTwistFilterConstPtr &config)
 {
+  g_omega_limit = config->omega_limit;
   g_lateral_accel_limit = config->lateral_accel_limit;
   ROS_INFO("g_lateral_accel_limit = %lf",g_lateral_accel_limit);
   g_lowpass_gain_linear_x = config->lowpass_gain_linear_x;
@@ -57,38 +59,39 @@ void configCallback(const autoware_msgs::ConfigTwistFilterConstPtr &config)
 
 void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+  geometry_msgs::TwistStamped tp(*msg);
 
-  double v = msg->twist.linear.x;
-  double omega = msg->twist.angular.z;
-
-  if(fabs(omega) < ERROR){
-    g_twist_pub.publish(*msg);
-    return;
+  double vel = tp.twist.linear.x;
+  const int omega_sgn = (tp.twist.angular.z < 0) ? -1 : 1;
+  double omega = tp.twist.angular.z;
+  omega = (fabs(omega) < g_omega_limit) ? omega : omega_sgn * g_omega_limit;
+  if (fabs(vel) >= ERROR)
+  {
+    const double kappa = tp.twist.angular.z / vel;
+    vel = (fabs(kappa) >= ERROR) ? omega / kappa : vel;
   }
+  if (fabs(omega) >= ERROR)
+  {
 
-  int sgn = (v < 0) ? -1 : 1;
-  double max_v = sgn * fabs(g_lateral_accel_limit / omega);
-
-  geometry_msgs::TwistStamped tp;
-  tp.header = msg->header;
-
-  double a = v * omega;
-  ROS_INFO("lateral accel = %lf", a);
-
-
-  tp.twist.linear.x = fabs(a) > g_lateral_accel_limit ? max_v
-                    : v;
-  tp.twist.angular.z = omega;
+    const int sgn = (vel < 0) ? -1 : 1;
+    const double max_v = sgn * fabs(g_lateral_accel_limit / omega);
+    const double acc = vel * omega;
+    ROS_INFO("lateral accel = %lf", acc);
+    if (fabs(acc) > g_lateral_accel_limit)
+    {
+      vel =  max_v;
+    }
+  }
 
   static double lowpass_linear_x = 0;
   static double lowpass_angular_z = 0;
-  lowpass_linear_x = g_lowpass_gain_linear_x * lowpass_linear_x + (1 - g_lowpass_gain_linear_x) * tp.twist.linear.x;
-  lowpass_angular_z = g_lowpass_gain_angular_z * lowpass_angular_z + (1 - g_lowpass_gain_angular_z) * tp.twist.angular.z;
+  lowpass_linear_x = g_lowpass_gain_linear_x * lowpass_linear_x + (1 - g_lowpass_gain_linear_x) * vel;
+  lowpass_angular_z = g_lowpass_gain_angular_z * lowpass_angular_z + (1 - g_lowpass_gain_angular_z) * omega;
 
   tp.twist.linear.x = lowpass_linear_x;
   tp.twist.angular.z = lowpass_angular_z;
 
-  ROS_INFO("v: %f -> %f",v,tp.twist.linear.x);
+  ROS_INFO("v: %f -> %f", vel, tp.twist.linear.x);
   g_twist_pub.publish(tp);
 
 }
