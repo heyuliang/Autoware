@@ -87,19 +87,17 @@ folder detection {
     trafficlight_recognizer --> traffic_light_color
 }
 
-'gnss_localizer
-
 'lidar_localizer
 () "sensor_msgs::PointCloud2\n/points_map" as points_map
 
 'vel_pose_connect
-() "geometry_msgs::PoseStamped\n/current_pose" as current_pose
-() "geometry_msgs::TwistStamped\n/current_velocity" as current_velocity
+() "geometry_msgs::PoseStamped\n/localization/current_pose" as current_pose
+() "geometry_msgs::TwistStamped\n/localization/current_velocity" as current_velocity
 
 folder localization {
-    () "geometry_msgs::PoseStamped\n/gnss_pose" as gnss_pose
-    () "geometry_msgs::TwistStamped\n/estimate_twist" as estimate_twist
-    () "geometry_msgs::PoseStamped\n/ndt_pose" as ndt_pose
+    () "geometry_msgs::PoseStamped\n/localization/gnss_pose" as gnss_pose
+    () "geometry_msgs::TwistStamped\n/localization/estimate_twist" as estimate_twist
+    () "geometry_msgs::PoseStamped\n/localization/ndt_pose" as ndt_pose
 
     [gnss_localizer]
     'inputs
