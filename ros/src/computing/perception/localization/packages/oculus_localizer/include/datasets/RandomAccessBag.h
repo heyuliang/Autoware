@@ -49,7 +49,7 @@ public:
 		return instantiate<T>(msgPtr.at(p));
 	}
 
-	virtual ~RandomAccessBag();
+	~RandomAccessBag();
 
 	template<typename T>
 	bool

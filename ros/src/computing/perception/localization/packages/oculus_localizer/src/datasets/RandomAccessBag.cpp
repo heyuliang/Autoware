@@ -11,7 +11,9 @@
 
 
 
-
+/*
+ * Only allows one single topic
+ */
 RandomAccessBag::RandomAccessBag
 (rosbag::Bag const &bag, const std::string &topic):
 	rosbag::View::View(bag, rosbag::TopicQuery(topic)),

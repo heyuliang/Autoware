@@ -14,6 +14,9 @@
 #include <rosbag/structures.h>
 
 #include <sensor_msgs/Image.h>
+#include <cv_bridge/cv_bridge.h>
+
+#include <opencv2/highgui.hpp>
 
 #include "datasets/RandomAccessBag.h"
 
@@ -30,7 +33,9 @@ int main (int argc, char *argv[])
 
 	RandomAccessBag ramBag (bagstore, "/camera1/image_raw");
 	auto img0 = ramBag.at<sensor_msgs::Image>(0);
-	auto img10 = ramBag.at<sensor_msgs::Image>(10);
+
+	cv_bridge::CvImageConstPtr cvPtr = cv_bridge::toCvShare(img0, sensor_msgs::image_encodings::RGB8);
+	cv::imwrite("/tmp/t0.png", cvPtr->image);
 
 	return 0;
 }
