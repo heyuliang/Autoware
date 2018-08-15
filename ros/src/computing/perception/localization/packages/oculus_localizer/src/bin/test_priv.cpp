@@ -7,32 +7,35 @@
 
 
 #include <iostream>
+#include <string>
+#include <utility>
+#include "access_private.hpp"
 
 
-template<typename Tag, typename Tag::type M>
-struct Rob {
-  friend typename Tag::type get(Tag) {
-    return M;
-  }
-};
-
-struct A {
-  A(int a):a(a) { }
-private:
-  int a;
-};
-
-struct A_f {
-  typedef int A::*type;
-  friend type get(A_f);
-};
-
-template struct Rob<A_f, &A::a>;
+using namespace std;
 
 
-int main(int argc, char *argv[])
+class Widget
 {
-	A a(42);
-	int mx = a.*get(A_f());
-	std::cout << "proof: " << mx << std::endl;
+public:
+	Widget(int a_, int b_):
+		a(a_), b(b_)
+	{}
+
+private:
+	int a, b;
+
+	int maximum()
+	{ return max(a,b); }
+};
+
+
+ACCESS_PRIVATE_FUN (Widget, int(), maximum);
+
+
+int main()
+{
+	Widget W(100, 200);
+	Widget &X = W;
+	cout << call_private::maximum(X) << endl;
 }

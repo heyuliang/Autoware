@@ -143,6 +143,7 @@ target_link_libraries(
 
 add_executable(test_bag
 	src/bin/test_bag.cpp
+	src/datasets/RandomAccessBag.cpp
 )
 
 target_link_libraries(
