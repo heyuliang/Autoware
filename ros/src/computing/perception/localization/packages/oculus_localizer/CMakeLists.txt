@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	std_msgs
 	tf
-	rosbag
+	rosbag_storage
 )
 
 find_package (Boost REQUIRED COMPONENTS serialization python graph)
@@ -140,6 +140,15 @@ target_link_libraries(
 		${catkin_LIBRARIES}
 )
 
+
+add_executable(test_bag
+	src/bin/test_bag.cpp
+)
+
+target_link_libraries(
+	test_bag
+		${catkin_LIBRARIES}
+)
 
 
 #############
