@@ -7,8 +7,10 @@
 
 
 #include <string>
+#include <memory>
 #include <rosbag/bag.h>
 #include "datasets/GenericDataset.h"
+#include "datasets/RandomAccessBag.h"
 
 
 #ifndef _MEIDAIBAG_H_
@@ -37,6 +39,8 @@ public:
 
 protected:
 	static std::string dSetName;
+	rosbag::Bag *bagfd;
+	RandomAccessBag *cameraRawBag;
 };
 
 #endif /* _MEIDAIBAG_H_ */

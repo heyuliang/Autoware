@@ -22,6 +22,9 @@ find_package(catkin REQUIRED COMPONENTS
 	tf
 	cv_bridge
 	rosbag_storage
+	
+	nmea_msgs
+	gnss
 )
 
 find_package (Boost REQUIRED COMPONENTS serialization python graph)

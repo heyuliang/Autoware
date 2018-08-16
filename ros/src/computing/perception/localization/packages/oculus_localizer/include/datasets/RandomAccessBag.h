@@ -51,6 +51,9 @@ public:
 
 	~RandomAccessBag();
 
+	std::string getTopic ()
+	{ return conn->topic; }
+
 	template<typename T>
 	bool
 	readField(ros::M_string const& fields, std::string const& field_name, bool required, T* data) const
@@ -93,7 +96,6 @@ public:
         ros::serialization::deserialize(s, *p);
 
         return p;
-
 	}
 
 protected:

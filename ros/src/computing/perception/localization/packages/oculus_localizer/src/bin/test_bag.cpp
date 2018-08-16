@@ -16,14 +16,28 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 
+#include <nmea_msgs/Sentence.h>
+#include <gnss/geo_pos_conv.hpp>
+
 #include <opencv2/highgui.hpp>
 
 #include "datasets/RandomAccessBag.h"
+#include "utilities.h"
 
 using namespace std;
 
 
+void createTrackFromGnssBag (RandomAccessBag &bagsrc, vector<Pose> &track)
+{
+	if (bagsrc.getTopic() != "/nmea_sentence")
+		throw runtime_error("Not GNSS bag");
 
+	geo_pos_conv geoconv;
+
+	for (uint32_t ix=0; ix<bagsrc.size(); ix++) {
+
+	}
+}
 
 
 int main (int argc, char *argv[])
