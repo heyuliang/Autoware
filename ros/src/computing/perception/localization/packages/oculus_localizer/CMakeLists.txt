@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 	cv_bridge
 	rosbag_storage
 	
+	# Test offline GNSS localization
 	nmea_msgs
 	gnss
 )
@@ -152,6 +153,7 @@ add_executable(test_bag
 
 target_link_libraries(
 	test_bag
+		oculus
 		${catkin_LIBRARIES}
 )
 
