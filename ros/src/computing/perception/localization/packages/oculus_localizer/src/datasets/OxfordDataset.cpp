@@ -195,11 +195,12 @@ Pose interpolateFromINS (
 		px2 = fromINS(ps2);
 
 	double ratio = double(timestamp - ps1.timestamp) / double(ps2.timestamp - ps1.timestamp);
-	Vector3d px_pos = px1.position() + ratio * (px2.position() - px1.position());
-	Quaterniond px_or = px1.orientation().slerp(ratio, px2.orientation());
-	px_or.normalize();
-
-	return Pose::from_Pos_Quat(px_pos, px_or);
+//	Vector3d px_pos = px1.position() + ratio * (px2.position() - px1.position());
+//	Quaterniond px_or = px1.orientation().slerp(ratio, px2.orientation());
+//	px_or.normalize();
+//
+//	return Pose::from_Pos_Quat(px_pos, px_or);
+	return TTransform::interpolate(px1, px2, ratio);
 }
 
 

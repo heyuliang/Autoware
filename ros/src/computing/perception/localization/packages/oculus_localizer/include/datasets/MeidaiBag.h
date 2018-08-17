@@ -20,12 +20,19 @@
 #define _MEIDAIBAG_H_
 
 
-class PoseTimestamp : public Pose
+struct PoseTimestamp : public Pose
 {
-	ros::Time getStamp() const
-	{ return timestamp; }
+	PoseTimestamp(const Pose &p)
+	{
+		m_matrix = p.matrix();
+		timestamp = ros::Time(0);
+	}
 
-protected:
+	static PoseTimestamp interpolate(
+		const PoseTimestamp &p1,
+		const PoseTimestamp &p2,
+		const ros::Time &t);
+
 	ros::Time timestamp;
 };
 
@@ -38,11 +45,17 @@ public:
 
 	// Return nearest element of provided time
 	PoseTimestamp at(const ros::Time&) const;
-	PoseTimestamp at(const double) const;
+//	PoseTimestamp at(const double) const;
 
 	// Interpolate value
-	PoseTimestamp interpolate (const double) const;
+//	PoseTimestamp interpolate (const double) const;
 	PoseTimestamp interpolate (const ros::Time&) const;
+
+private:
+	uint32_t
+	find_lower_bound(const ros::Time&) const;
+
+	typedef vector<PoseTimestamp> Parent;
 };
 
 
@@ -71,5 +84,8 @@ protected:
 	rosbag::Bag *bagfd;
 	RandomAccessBag *cameraRawBag;
 };
+
+
+void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajectory, int plane_number=7);
 
 #endif /* _MEIDAIBAG_H_ */

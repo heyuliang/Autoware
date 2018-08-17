@@ -116,4 +116,21 @@ TTransform::displacement (
 }
 
 
+TTransform
+TTransform::interpolate(const TTransform &T1, const TTransform &T2, const double ratio)
+{
+	assert (0<=ratio and ratio<=1);
 
+	Vector3d
+		p1 = T1.position(),
+		p2 = T2.position(),
+		p3;
+	Quaterniond
+		q1 = T1.orientation(),
+		q2 = T2.orientation(),
+		q3;
+
+	p3 = p1 + ratio * (p2 - p1);
+	q3 = q1.slerp(ratio, q2);
+	return TTransform::from_Pos_Quat(p3, q3);
+}

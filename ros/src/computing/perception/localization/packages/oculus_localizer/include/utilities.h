@@ -207,6 +207,8 @@ struct TTransform : public Eigen::Affine3d
 	void
 	displacement (const TTransform &other, double &linear, double &angular) const;
 
+	static TTransform interpolate(const TTransform &T1, const TTransform &T2, const double ratio);
+
 //	inline void setPosition(const double &x=0, const double &y=0, const double &z=0)
 //	{
 //		translation() = Eigen::Translation3d(x, y, z);
