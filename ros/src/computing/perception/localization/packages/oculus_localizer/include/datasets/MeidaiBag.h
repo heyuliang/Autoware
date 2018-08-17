@@ -20,24 +20,29 @@
 #define _MEIDAIBAG_H_
 
 
-class PoseStamped : public Pose
+class PoseTimestamp : public Pose
 {
+	ros::Time getStamp() const
+	{ return timestamp; }
+
 protected:
 	ros::Time timestamp;
 };
 
 
-class Trajectory : public vector<PoseStamped>
+class Trajectory : public vector<PoseTimestamp>
 {
 public:
 
-	void push_back(const PoseStamped &);
+	void push_back(const PoseTimestamp &);
 
-	PoseStamped at(const ros::Time&) const;
-	PoseStamped at(const double) const;
+	// Return nearest element of provided time
+	PoseTimestamp at(const ros::Time&) const;
+	PoseTimestamp at(const double) const;
 
-	PoseStamped interpolate (const double) const;
-	PoseStamped interpolate (const ros::Time&) const;
+	// Interpolate value
+	PoseTimestamp interpolate (const double) const;
+	PoseTimestamp interpolate (const ros::Time&) const;
 };
 
 

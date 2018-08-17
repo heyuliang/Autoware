@@ -41,3 +41,25 @@ MeidaiBag::getCameraParameter()
 {
 	throw exception("Not implemented");
 }
+
+
+void
+Trajectory::push_back(const PoseTimestamp &pt)
+{
+	assert(pt.getStamp() > back().getStamp());
+	return std::vector<PoseTimestamp>::push_back(pt);
+}
+
+
+PoseTimestamp
+Trajectory::at(const ros::Time& t) const
+{
+
+}
+
+
+PoseTimestamp
+Trajectory::interpolate (const ros::Time& t) const
+{
+
+}

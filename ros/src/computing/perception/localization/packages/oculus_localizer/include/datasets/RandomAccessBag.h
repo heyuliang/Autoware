@@ -67,7 +67,6 @@ public:
 
 	template<class T>
 	boost::shared_ptr<T>
-//	void
 	instantiate (const rosbag::IndexEntry &index_entry) const
 	{
 		call_private::decompressChunk(bagstore, index_entry.chunk_pos);
@@ -82,20 +81,18 @@ public:
 		uint32_t connection_id;
 		readField(*header.getValues(), rosbag::CONNECTION_FIELD_NAME, true, &connection_id);
 
-		// XXX: can we use stored ConnectionInfo ?
-
 		boost::shared_ptr<T> p = boost::make_shared<T>();
 
-        ros::serialization::PreDeserializeParams<T> predes_params;
-        predes_params.message = p;
-        predes_params.connection_header = conn->header;
-        ros::serialization::PreDeserialize<T>::notify(predes_params);
+		ros::serialization::PreDeserializeParams<T> predes_params;
+		predes_params.message = p;
+		predes_params.connection_header = conn->header;
+		ros::serialization::PreDeserialize<T>::notify(predes_params);
 
-        // Deserialize the message
-        ros::serialization::IStream s(access_private::current_buffer_(bagstore)->getData() + index_entry.offset + bytes_read, data_size);
-        ros::serialization::deserialize(s, *p);
+		// Deserialize the message
+		ros::serialization::IStream s(access_private::current_buffer_(bagstore)->getData() + index_entry.offset + bytes_read, data_size);
+		ros::serialization::deserialize(s, *p);
 
-        return p;
+		return p;
 	}
 
 protected:
