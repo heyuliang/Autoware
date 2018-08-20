@@ -1,23 +1,25 @@
 /*
- * MeidaiBag.cpp
+ * MeidaiLocalizerGNSS.cpp
  *
- *  Created on: Aug 10, 2018
+ *  Created on: Aug 17, 2018
  *      Author: sujiwo
  */
 
-#include <exception>
-#include <algorithm>
+#include <datasets/MeidaiBagDataset.h>
+#include <iostream>
 #include <string>
+#include <vector>
 
 #include <nmea_msgs/Sentence.h>
 #include <gnss/geo_pos_conv.hpp>
-#include "datasets/MeidaiBag.h"
 
 
 using namespace std;
-using namespace Eigen;
 
-string MeidaiBag::dSetName = "Nagoya University";
+
+const Vector3d
+	GNSS_Translation_Offset (18138, 93634, -39);
+
 
 struct GnssLocalizerState
 {
@@ -27,87 +29,6 @@ struct GnssLocalizerState
 	ros::Time current_time_=ros::Time(0), orientation_stamp_=ros::Time(0);
 	geo_pos_conv geo, last_geo;
 };
-
-
-MeidaiBag::MeidaiBag(const string &path)
-{
-	bagfd = new rosbag::Bag(path);
-	cameraRawBag = new RandomAccessBag(*bagfd, "/camera1/image_raw");
-}
-
-
-MeidaiBag::~MeidaiBag()
-{
-	delete(cameraRawBag);
-	delete(bagfd);
-}
-
-
-size_t
-MeidaiBag::size() const
-{
-	return cameraRawBag->size();
-}
-
-
-CameraPinholeParams
-MeidaiBag::getCameraParameter()
-{
-	throw runtime_error("Not implemented");
-}
-
-
-cv::Mat
-MeidaiBag::getMask()
-{
-	return cv::Mat();
-}
-
-
-MeidaiDataItem&
-MeidaiBag::at(dataItemId i) const
-{
-	// XXX: Stub
-	throw runtime_error("Not implemented");
-}
-
-
-void
-Trajectory::push_back(const PoseTimestamp &pt)
-{
-	if (size()>0)
-		assert(pt.timestamp > back().timestamp);
-	return Parent::push_back(pt);
-}
-
-
-uint32_t
-Trajectory::find_lower_bound(const ros::Time &t) const
-{
-	auto it = std::lower_bound(begin(), end(), t,
-		[](const PoseTimestamp &el, const ros::Time& tv)
-			-> bool {return el.timestamp < tv;}
-	);
-	return it-begin();
-}
-
-
-PoseTimestamp
-Trajectory::at(const ros::Time& t) const
-{
-	return Parent::at(find_lower_bound(t));
-}
-
-
-PoseTimestamp
-Trajectory::interpolate (const ros::Time& t) const
-{
-	assert (t < (*end()).timestamp);
-
-	uint32_t i0 = find_lower_bound(t),
-		i1 = i0+1;
-	return PoseTimestamp::interpolate(Parent::at(i0), Parent::at(i1), t);
-}
 
 
 std::vector<std::string> splitSentence(const std::string &string)
@@ -171,6 +92,7 @@ PoseTimestamp createFromState(const GnssLocalizerState &state)
 {
 	TQuaternion q(state.roll_, state.pitch_, state.yaw_);
 	Vector3d p(state.geo.x(), state.geo.y(), state.geo.z());
+	p = p + GNSS_Translation_Offset;
 	Pose pt = Pose::from_Pos_Quat(p, q);
 	return pt;
 }

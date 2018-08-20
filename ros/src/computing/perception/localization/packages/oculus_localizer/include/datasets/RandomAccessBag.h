@@ -39,7 +39,9 @@ ACCESS_PRIVATE_FUN(rosbag::Bag,
 class RandomAccessBag: public rosbag::View {
 public:
 
-	RandomAccessBag(rosbag::Bag const &bag, const std::string &topic);
+	RandomAccessBag(
+		rosbag::Bag const &bag, const std::string &topic,
+		double startTimeOffsetSecond=0, double mappingDurationSecond=-1);
 
 	template<typename T>
 	boost::shared_ptr<T>
@@ -95,12 +97,21 @@ public:
 		return p;
 	}
 
+
 protected:
 	void createCache();
 
 	rosbag::Bag &bagstore;
 	const rosbag::ConnectionInfo* conn;
 	std::vector<rosbag::IndexEntry> msgPtr;
+
+	template<class T>
+	boost::shared_ptr<T>
+	instantiate2 (const rosbag::IndexEntry &index_entry) const
+	{
+//		rosbag::MessageInstance *m = newMessageInstance(conn, index_entry, bagstore);
+//		return m->instantiate<T>();
+	}
 
 };
 

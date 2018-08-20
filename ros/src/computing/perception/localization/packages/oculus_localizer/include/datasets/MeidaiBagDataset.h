@@ -10,6 +10,11 @@
 #include <memory>
 #include <vector>
 #include <rosbag/bag.h>
+#include <boost/filesystem.hpp>
+
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include "utilities.h"
 #include "datasets/GenericDataset.h"
@@ -37,25 +42,30 @@ struct PoseTimestamp : public Pose
 };
 
 
-class Trajectory : public vector<PoseTimestamp>
+class Trajectory : public std::vector<PoseTimestamp>
 {
 public:
+
+	friend class boost::serialization::access;
 
 	void push_back(const PoseTimestamp &);
 
 	// Return nearest element of provided time
 	PoseTimestamp at(const ros::Time&) const;
-//	PoseTimestamp at(const double) const;
 
 	// Interpolate value
-//	PoseTimestamp interpolate (const double) const;
 	PoseTimestamp interpolate (const ros::Time&) const;
 
 private:
 	uint32_t
 	find_lower_bound(const ros::Time&) const;
 
-	typedef vector<PoseTimestamp> Parent;
+	typedef std::vector<PoseTimestamp> Parent;
+
+	template<class Archive>
+	inline void serialize(Archive &ar, const unsigned int version)
+	{ ar & boost::serialization::base_object<Parent>(*this);}
+
 };
 
 
@@ -64,12 +74,12 @@ class MeidaiDataItem : public GenericDataItem
 };
 
 
-class MeidaiBag : public GenericDataset
+class MeidaiBagDataset : public GenericDataset
 {
 public:
 
-	MeidaiBag(const std::string &filePath);
-	virtual ~MeidaiBag();
+	MeidaiBagDataset(const std::string &filePath, double startTimeOffsetSecond=0, double mappingDurationSecond=-1);
+	virtual ~MeidaiBagDataset();
 
 	size_t size() const;
 
@@ -79,13 +89,28 @@ public:
 
 	MeidaiDataItem& at(dataItemId i) const;
 
+	const Trajectory& getGnssTrajectory() const
+	{ return gnssTrack; }
+
 protected:
 	static std::string dSetName;
 	rosbag::Bag *bagfd;
 	RandomAccessBag *cameraRawBag;
+
+	const boost::filesystem::path bagPath;
+
+private:
+	void loadCache ();
+	void doLoadCache (const std::string &);
+	void createCache ();
+	void writeCache ();
+
+	Trajectory gnssTrack;
+	Trajectory ndtTrack;
 };
 
 
 void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajectory, int plane_number=7);
+void createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const Trajectory &gnssTrack);
 
 #endif /* _MEIDAIBAG_H_ */

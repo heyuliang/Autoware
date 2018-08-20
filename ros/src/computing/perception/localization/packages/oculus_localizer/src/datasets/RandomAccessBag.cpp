@@ -15,10 +15,15 @@
  * Only allows one single topic
  */
 RandomAccessBag::RandomAccessBag
-(rosbag::Bag const &bag, const std::string &topic):
-	rosbag::View::View(bag, rosbag::TopicQuery(topic)),
+	(rosbag::Bag const &bag, const std::string &topic,
+	double startTimeOffsetSecond, double mappingDurationSecond):
+
+	rosbag::View::View(bag),
 	bagstore(const_cast<rosbag::Bag&>(bag))
+
 {
+	addQuery(bag, rosbag::TopicQuery(topic));
+
 	conn = getConnections()[0];
 	createCache();
 }

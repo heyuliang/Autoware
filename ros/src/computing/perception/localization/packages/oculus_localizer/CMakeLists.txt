@@ -28,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 	gnss
 )
 
-find_package (Boost REQUIRED COMPONENTS serialization python graph)
+find_package (Boost REQUIRED COMPONENTS serialization python graph filesystem)
 find_package (OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
 find_package (PCL REQUIRED)
@@ -98,6 +98,9 @@ add_library(
 		src/datasets/OxfordDataset.cpp	
 		src/datasets/GenericDataset.cpp
 		src/datasets/CustomDataset.cpp
+		src/datasets/RandomAccessBag.cpp
+		src/datasets/MeidaiBagDataset.cpp
+		src/datasets/MeidaiLocalizerGNSS.cpp
 )
 
 add_executable(map_test
@@ -148,8 +151,6 @@ target_link_libraries(
 
 add_executable(test_bag
 	src/bin/test_bag.cpp
-	src/datasets/RandomAccessBag.cpp
-	src/datasets/MeidaiBag.cpp
 )
 
 target_link_libraries(
