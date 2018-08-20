@@ -82,20 +82,21 @@ MeidaiBagDataset::loadCache()
 	bool isCacheValid = false;
 
 	// Check if cache is valid
-	if (bfs::exists(bagCachePath) and bfs::is_regular_file(bagCachePath))
-		isCacheValid = true;
-
-	auto lastWriteTime = bfs::last_write_time(bagCachePath),
-		lastBagModifyTime = bfs::last_write_time(bagPath);
-	if (lastWriteTime <= lastBagModifyTime)
-		isCacheValid = false;
+	if (bfs::exists(bagCachePath) and bfs::is_regular_file(bagCachePath)) {
+		auto lastWriteTime = bfs::last_write_time(bagCachePath),
+			lastBagModifyTime = bfs::last_write_time(bagPath);
+		if (lastWriteTime >= lastBagModifyTime)
+			isCacheValid = true;
+	}
 
 	if (isCacheValid) {
 		doLoadCache(bagCachePath.string());
 	}
 
-	else
+	else {
 		createCache();
+		writeCache(bagCachePath.string());
+	}
 }
 
 
@@ -110,6 +111,7 @@ MeidaiBagDataset::doLoadCache(const string &path)
 	boost::archive::binary_iarchive cacheIArc (cacheFd);
 
 	cacheIArc >> gnssTrack;
+	cacheIArc >> ndtTrack;
 
 	cacheFd.close();
 }
@@ -123,11 +125,27 @@ MeidaiBagDataset::createCache()
 }
 
 
+void MeidaiBagDataset::writeCache(const string &path)
+{
+	fstream cacheFd;
+	cacheFd.open(path.c_str(), fstream::out);
+	if (!cacheFd.is_open())
+		throw runtime_error(string("Unable to open cache file: ") + path);
+
+	boost::archive::binary_oarchive cacheOArc (cacheFd);
+
+	cacheOArc << gnssTrack;
+	cacheOArc << ndtTrack;
+
+	cacheFd.close();
+}
+
+
 void
 Trajectory::push_back(const PoseTimestamp &pt)
 {
 	if (size()>0)
-		assert(pt.timestamp > back().timestamp);
+		assert(pt.timestamp >= back().timestamp);
 	return Parent::push_back(pt);
 }
 

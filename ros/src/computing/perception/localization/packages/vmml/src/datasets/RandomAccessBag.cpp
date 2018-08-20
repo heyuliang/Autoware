@@ -18,7 +18,7 @@ RandomAccessBag::RandomAccessBag
 	(rosbag::Bag const &bag, const std::string &topic,
 	double startTimeOffsetSecond, double mappingDurationSecond):
 
-	rosbag::View::View(bag),
+	rosbag::View::View(),
 	bagstore(const_cast<rosbag::Bag&>(bag))
 
 {

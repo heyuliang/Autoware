@@ -156,6 +156,7 @@ add_executable(test_bag
 target_link_libraries(
 	test_bag
 		vmml
+		${REQUIRED_LIBS}
 		${catkin_LIBRARIES}
 )
 

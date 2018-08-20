@@ -137,6 +137,9 @@ public:
 	inline std::string getName() const
 	{ return dSetName; }
 
+	// Bug: Do Not set ratio more than once
+	void setZoomRatio (float r);
+
 
 protected:
 	CameraPinholeParams oxfCamera;
@@ -152,6 +155,8 @@ protected:
 	std::vector<InsPose> insPoseTable;
 
 	cv::Mat distortionLUT_center_x, distortionLUT_center_y;
+
+	float zoomRatio=1.0;
 
 	static std::string dSetName;
 

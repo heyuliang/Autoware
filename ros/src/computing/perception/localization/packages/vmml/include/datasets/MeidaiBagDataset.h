@@ -15,6 +15,7 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/split_member.hpp>
 
 #include "utilities.h"
 #include "datasets/GenericDataset.h"
@@ -27,6 +28,10 @@
 
 struct PoseTimestamp : public Pose
 {
+	PoseTimestamp():
+		Pose()
+	{ timestamp = ros::Time(0); }
+
 	PoseTimestamp(const Pose &p)
 	{
 		m_matrix = p.matrix();
@@ -39,6 +44,32 @@ struct PoseTimestamp : public Pose
 		const ros::Time &t);
 
 	ros::Time timestamp;
+
+	template<class Archive>
+	inline void save(Archive &ar, const unsigned int v) const
+	{
+		// Eigen matrix
+		ar << boost::serialization::base_object<Pose>(*this);
+
+		// Ros timestamp
+		const decltype(timestamp.sec) tbuf[2] =
+			{ timestamp.sec, timestamp.nsec };
+		ar << tbuf;
+	}
+
+	template<class Archive>
+	inline void load(Archive &ar, const unsigned int v)
+	{
+		// Eigen matrix
+		ar >> boost::serialization::base_object<Pose>(*this);
+
+		// Ros timestamp
+		decltype(timestamp.sec) tbuf[2];
+		ar >> tbuf;
+		timestamp.sec = tbuf[0], timestamp.nsec = tbuf[1];
+	}
+
+	BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 
@@ -103,7 +134,7 @@ private:
 	void loadCache ();
 	void doLoadCache (const std::string &);
 	void createCache ();
-	void writeCache ();
+	void writeCache (const std::string&);
 
 	Trajectory gnssTrack;
 	Trajectory ndtTrack;

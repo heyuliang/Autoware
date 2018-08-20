@@ -18,6 +18,9 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/vector.hpp>
 
 using std::pair;
 using std::set;
@@ -25,22 +28,6 @@ using std::map;
 using std::vector;
 using Eigen::Quaterniond;
 using Eigen::Vector3d;
-
-
-//struct DataItem {
-//	std::string imagePath;
-//	Eigen::Vector3d position;
-//	Eigen::Quaterniond orientation;
-//};
-//
-//
-//class DataItemx
-//{
-//public:
-//	std::string getImagePath() const;
-//	Eigen::Vector3d getPosition() const;
-//	Eigen::Quaterniond getOrientation() const;
-//};
 
 
 typedef Eigen::Affine3d Transform3d;
@@ -213,6 +200,27 @@ struct TTransform : public Eigen::Affine3d
 //	{
 //		translation() = Eigen::Translation3d(x, y, z);
 //	}
+
+
+	template<class Archive>
+	inline void save(Archive &ar, const unsigned int v) const
+	{
+		const int sz = rows() * cols();
+		std::vector<TTransform::Scalar> mptr(data(), data()+sz);
+		ar << mptr;
+	}
+
+
+	template<class Archive>
+	inline void load(Archive &ar, const unsigned int v)
+	{
+		const int sz = rows() * cols();
+		std::vector<TTransform::Scalar> mptr(data(), data()+sz);
+		ar >> mptr;
+	}
+
+
+	BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 

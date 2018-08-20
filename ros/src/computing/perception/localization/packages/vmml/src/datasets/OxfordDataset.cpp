@@ -41,7 +41,8 @@ OxfordDataset::OxfordDataset(const OxfordDataset &cp):
 	oxfCamera(cp.oxfCamera),
 	oxfPath(cp.oxfPath),
 	distortionLUT_center_x(cp.distortionLUT_center_x),
-	distortionLUT_center_y(cp.distortionLUT_center_y)
+	distortionLUT_center_y(cp.distortionLUT_center_y),
+	zoomRatio(cp.zoomRatio)
 {}
 
 
@@ -168,7 +169,13 @@ OxfordDataItem::getImage(StereoImageT t)
 	cv::cvtColor(img, img, CV_BayerGB2BGR);
 	img = parent->undistort(img);
 
-	return img;
+	if (parent->zoomRatio==1.0)
+		return img;
+
+	else {
+		cv::resize(img, img, cv::Size(), parent->zoomRatio, parent->zoomRatio, cv::INTER_CUBIC);
+		return img;
+	}
 }
 
 
@@ -365,4 +372,12 @@ const
 	}
 
 	return mycopy;
+}
+
+
+void
+OxfordDataset::setZoomRatio(float r)
+{
+	zoomRatio = r;
+	oxfCamera = oxfCamera * r;
 }

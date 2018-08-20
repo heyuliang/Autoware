@@ -87,6 +87,7 @@ void buildMap (OxfordDataset &dataset)
 int main (int argc, char *argv[])
 {
 	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
+	oxf.setZoomRatio(0.5);
 	double
 		start=stod(argv[2]),
 		howlong=stod(argv[3]);

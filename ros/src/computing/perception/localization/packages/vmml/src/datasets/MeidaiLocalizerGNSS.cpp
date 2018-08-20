@@ -21,6 +21,10 @@ const Vector3d
 	GNSS_Translation_Offset (18138, 93634, -39);
 
 
+class wrong_nmea_sentence : public exception
+{};
+
+
 struct GnssLocalizerState
 {
 	double roll_=0, pitch_=0, yaw_=0;
@@ -47,44 +51,43 @@ std::vector<std::string> splitSentence(const std::string &string)
 void convertNMEASentenceToState (nmea_msgs::SentencePtr &msg, GnssLocalizerState &state)
 {
 	vector<string> nmea = splitSentence(msg->sentence);
-	try {
+	if (nmea.at(0).compare(0, 2, "QQ") == 0)
+	{
+		state.orientation_time_ = stod(nmea.at(3));
+		state.roll_ = stod(nmea.at(4)) * M_PI / 180.;
+		state.pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
+		state.yaw_ = -1 * stod(nmea.at(6)) * M_PI / 180. + M_PI / 2;
+		state.orientation_stamp_ = msg->header.stamp;
+	}
 
-		if (nmea.at(0).compare(0, 2, "QQ") == 0)
-	    {
-			state.orientation_time_ = stod(nmea.at(3));
-			state.roll_ = stod(nmea.at(4)) * M_PI / 180.;
-			state.pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
-			state.yaw_ = -1 * stod(nmea.at(6)) * M_PI / 180. + M_PI / 2;
-			state.orientation_stamp_ = msg->header.stamp;
-	    }
+	else if (nmea.at(0) == "$PASHR")
+	{
+		state.orientation_time_ = stod(nmea.at(1));
+		state.roll_ = stod(nmea.at(4)) * M_PI / 180.;
+		state.pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
+		state.yaw_ = -1 * stod(nmea.at(2)) * M_PI / 180. + M_PI / 2;
+	}
 
-	    else if (nmea.at(0) == "$PASHR")
-	    {
-			state.orientation_time_ = stod(nmea.at(1));
-			state.roll_ = stod(nmea.at(4)) * M_PI / 180.;
-			state.pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
-			state.yaw_ = -1 * stod(nmea.at(2)) * M_PI / 180. + M_PI / 2;
-	    }
+	else if(nmea.at(0).compare(3, 3, "GGA") == 0)
+	{
+		state.position_time_ = stod(nmea.at(1));
+		state.latitude = stod(nmea.at(2));
+		state.longitude = stod(nmea.at(4));
+		state.height = stod(nmea.at(9));
+		state.geo.set_llh_nmea_degrees(state.latitude, state.longitude, state.height);
+	}
 
-	    else if(nmea.at(0).compare(3, 3, "GGA") == 0)
-	    {
-			state.position_time_ = stod(nmea.at(1));
-			state.latitude = stod(nmea.at(2));
-			state.longitude = stod(nmea.at(4));
-			state.height = stod(nmea.at(9));
-			state.geo.set_llh_nmea_degrees(state.latitude, state.longitude, state.height);
-	    }
+	else if(nmea.at(0) == "$GPRMC")
+	{
+		state.position_time_ = stoi(nmea.at(1));
+		state.latitude = stod(nmea.at(3));
+		state.longitude = stod(nmea.at(5));
+		state.height = 0.0;
+		state.geo.set_llh_nmea_degrees(state.latitude, state.longitude, state.height);
+	}
 
-	    else if(nmea.at(0) == "$GPRMC")
-	    {
-			state.position_time_ = stoi(nmea.at(1));
-			state.latitude = stod(nmea.at(3));
-			state.longitude = stod(nmea.at(5));
-			state.height = 0.0;
-			state.geo.set_llh_nmea_degrees(state.latitude, state.longitude, state.height);
-	    }
-
-	} catch(const exception &e) {}
+	else
+		throw wrong_nmea_sentence();
 }
 
 
@@ -115,7 +118,14 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 
 		auto currentMessage = bagsrc.at<nmea_msgs::Sentence>(ix);
 		ros::Time current_time = currentMessage->header.stamp;
-		convertNMEASentenceToState(currentMessage, state);
+
+//		cout << currentMessage->sentence << endl;
+//		continue;
+
+		try {
+			convertNMEASentenceToState(currentMessage, state);
+		} catch (const wrong_nmea_sentence &e)
+		{ continue; }
 
 		if (fabs(state.orientation_stamp_.toSec() - currentMessage->header.stamp.toSec()) > orientationTimeout) {
 			double dt = sqrt(pow(state.geo.x() - state.last_geo.x(), 2) + pow(state.geo.y() - state.last_geo.y(), 2));
