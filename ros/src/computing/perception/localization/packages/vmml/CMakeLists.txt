@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
-project(oculus_localizer)
+project(vmml)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -43,9 +43,9 @@ add_subdirectory (DBoW2)
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES oculus_localizer
+#  LIBRARIES vmml
 #  CATKIN_DEPENDS other_catkin_pkg
-	LIBRARIES oculus
+	LIBRARIES vmml
 	CATKIN_DEPENDS libg2o
 #  DEPENDS system_lib
 )
@@ -82,7 +82,7 @@ set(REQUIRED_LIBS
 
 
 add_library(
-	oculus STATIC
+	vmml STATIC
 		src/VMap.cpp
 		src/MapBuilder.cpp
 		src/MapBuilder2.cpp
@@ -109,7 +109,7 @@ add_executable(map_test
 
 target_link_libraries(
 	map_test
-	oculus
+	vmml
 	${REQUIRED_LIBS}
 	${catkin_LIBRARIES}
 )
@@ -120,7 +120,7 @@ add_executable(map_oxford
 
 target_link_libraries(
 	map_oxford
-	oculus
+	vmml
 	${REQUIRED_LIBS}
 	${catkin_LIBRARIES}
 )
@@ -143,7 +143,7 @@ target_include_directories(dataset_browser
 target_link_libraries(
 	dataset_browser
 		Qt5::Widgets
-		oculus
+		vmml
 		${REQUIRED_LIBS}
 		${catkin_LIBRARIES}
 )
@@ -155,7 +155,7 @@ add_executable(test_bag
 
 target_link_libraries(
 	test_bag
-		oculus
+		vmml
 		${catkin_LIBRARIES}
 )
 
@@ -200,7 +200,7 @@ target_link_libraries(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_oculus_localizer.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_vmml.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
