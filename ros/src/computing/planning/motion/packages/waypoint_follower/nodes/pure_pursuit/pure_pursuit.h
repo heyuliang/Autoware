@@ -119,9 +119,9 @@ private:
   std::vector<autoware_msgs::waypoint> current_waypoints_;
 
   // functions
+  void getNextWaypoint();
   double calcCurvature(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;
-  void getNextWaypoint();
 };
 }  // waypoint_follower
 

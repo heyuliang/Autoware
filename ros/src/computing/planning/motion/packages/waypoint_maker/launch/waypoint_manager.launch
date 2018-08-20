@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+	<!-- rosrun waypoint_maker waypoint_loader _multi_lane_csv:="path file" -->
+	<node pkg="waypoint_maker" type="waypoint_manager" name="waypoint_manager" output="screen"/>
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
+
+</launch>
