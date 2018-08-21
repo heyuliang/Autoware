@@ -4303,6 +4303,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : is_jskbb
+      desc    : is_jskbb desc sample
+      label   : 'is_jskbb'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
 
 

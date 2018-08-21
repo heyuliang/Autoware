@@ -14,6 +14,7 @@ class ObjectVisualizer
 private:
   bool   vis_tracked_objects_;
   bool   vis_velocity_;
+  bool   is_jskbb_;
   double vis_id_height_;
   double vis_arrow_height_;
   std::string input_topic_;
@@ -23,8 +24,10 @@ private:
 
   ros::Publisher pub_arrow_;
   ros::Publisher pub_id_;
+  ros::Publisher pub_jskbb_;
 
   void pubRosMarkers(const autoware_msgs::DetectedObjectArray& input);
+  void pubJskBB(const autoware_msgs::DetectedObjectArray& input);
   void callback(const autoware_msgs::DetectedObjectArray& input);
 
 public:

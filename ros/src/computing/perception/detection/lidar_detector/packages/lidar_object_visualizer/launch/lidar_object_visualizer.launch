@@ -5,12 +5,14 @@
   <arg name="vis_arrow_height" default="0.5" />
   <arg name="vis_velocity" default="true" />
   <arg name="vis_tracked_objects" default="false" />
+  <arg name="is_jskbb" default="false" />
 
   <node pkg="lidar_object_visualizer" type="lidar_object_visualizer" name="lidar_object_visualizer" output="screen">
     <param name="vis_id_height" value="$(arg vis_id_height)" />
     <param name="vis_arrow_height" value="$(arg vis_arrow_height)" />
     <param name="vis_velocity" value="$(arg vis_velocity)" />
     <param name="vis_tracked_objects" value="$(arg vis_tracked_objects)" />
+    <param name="is_jskbb" value="$(arg is_jskbb)" />
     <remap from="/detection/tracked_objects" to="$(arg input_object_topic)" />
   </node>
 </launch>

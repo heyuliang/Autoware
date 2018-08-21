@@ -11,15 +11,21 @@ ObjectVisualizer::ObjectVisualizer()
   private_nh_.param<double>("vis_arrow_height", vis_arrow_height_, 0.5);
   private_nh_.param<bool>("vis_tracked_objects", vis_tracked_objects_, false);
   private_nh_.param<bool>("vis_velocity", vis_velocity_, true);
+  private_nh_.param<bool>("is_jskbb", is_jskbb_, false);
 
   sub_object_array_ = node_handle_.subscribe("/detection/tracked_objects", 1, &ObjectVisualizer::callback, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/velocity_arrow", 10);
-  pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/target_id", 10);
+  pub_id_    = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/target_id", 10);
+  pub_jskbb_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/visualize/jskbb", 10);
 }
 
 void ObjectVisualizer::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   pubRosMarkers(input);
+  if(is_jskbb_)
+  {
+    pubJskBB(input);
+  }
 }
 
 void ObjectVisualizer::pubRosMarkers(const autoware_msgs::DetectedObjectArray& input)
@@ -157,4 +163,20 @@ void ObjectVisualizer::pubRosMarkers(const autoware_msgs::DetectedObjectArray& i
   }  // end input.objects loop
   pub_id_.publish(marker_ids);
   pub_arrow_.publish(marker_arows);
+}
+
+void ObjectVisualizer::pubJskBB(const autoware_msgs::DetectedObjectArray& input)
+{
+  jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
+  jskbboxes_output.header = input.header;
+  for (size_t i = 0; i < input.objects.size(); i++)
+  {
+    jsk_recognition_msgs::BoundingBox bb;
+    bb.header     = input.header;
+    bb.pose       = input.objects[i].pose;
+    bb.dimensions = input.objects[i].dimensions;
+    jskbboxes_output.boxes.push_back(bb);
+  }
+  pub_jskbb_.publish(jskbboxes_output);
+
 }
