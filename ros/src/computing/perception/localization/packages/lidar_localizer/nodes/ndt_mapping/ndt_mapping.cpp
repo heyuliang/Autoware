@@ -897,22 +897,30 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     added_pose.pitch = current_pose.pitch;
     added_pose.yaw = current_pose.yaw;
 
-    if (_method_type == MethodType::PCL_GENERIC)
+    if (_method_type == MethodType::PCL_GENERIC){
       ndt.setInputTarget(map_ptr);
+      second_layer_ndt.setInputTarget(map_ptr);
+    }
     else if (_method_type == MethodType::PCL_ANH)
     {
       if (_incremental_voxel_update == true)
         anh_ndt.updateVoxelGrid(transformed_scan_ptr);
-      else
+      else{
         anh_ndt.setInputTarget(map_ptr);
+        second_layer_anh_ndt.setInputTarget(map_ptr);
+      }
     }
 #ifdef CUDA_FOUND
-    else if (_method_type == MethodType::PCL_ANH_GPU)
+    else if (_method_type == MethodType::PCL_ANH_GPU){
       anh_gpu_ndt.setInputTarget(map_ptr);
+      second_layer_anh_gpu_ndt.setInputTarget(map_ptr);
+    }
 #endif
 #ifdef USE_PCL_OPENMP
-    else if (_method_type == MethodType::PCL_OPENMP)
+    else if (_method_type == MethodType::PCL_OPENMP){
       omp_ndt.setInputTarget(map_ptr);
+      second_layer_omp_ndt.setInputTarget(map_ptr);
+    }
 #endif
   }
 
