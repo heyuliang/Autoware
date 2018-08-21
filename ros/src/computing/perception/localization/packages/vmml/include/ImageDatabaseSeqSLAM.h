@@ -13,7 +13,12 @@
 
 #include <vector>
 #include <opencv2/opencv.hpp>
+#include <Eigen/Core>
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
+
+#include "cvobj_serialization.h"
 #include "datasets/GenericDataset.h"
 
 
@@ -24,9 +29,19 @@ public:
 	virtual ~ImageDatabaseSeqSLAM();
 
 	void learn (const cv::Mat &imgsrc);
-	void learn (const std::vector<cv::Mat> &);
+//	void learn (const std::vector<cv::Mat> &);
+
+	void build ();
 
 	void find (const cv::Mat &f);
+
+	static cv::Mat normalizePatch (const cv::Mat &src, int patch_size);
+
+	template<class Archive>
+	inline void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & learntNormalizedImages;
+	}
 
 protected:
     int patchSize = 8;
@@ -37,7 +52,11 @@ protected:
     float maxVelocity = 1.2;
 
 private:
-    static cv::Mat normalizePatch (const cv::Mat &src, int patch_size);
+    std::vector<cv::Mat> learntNormalizedImages;
+
+private:
+    Eigen::VectorXd calculateDifferenceEnhancedVector (const cv::Mat &f) const;
+
 };
 
 #endif /* _IMAGEDATABASESEQSLAM_H_ */

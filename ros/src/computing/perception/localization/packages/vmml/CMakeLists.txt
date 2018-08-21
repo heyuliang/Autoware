@@ -95,6 +95,7 @@ add_library(
 		src/triangulation.cpp
 		src/optimizer.cpp
 		src/utilities.cpp
+		src/ImageDatabaseSeqSLAM.cpp
 		src/datasets/OxfordDataset.cpp	
 		src/datasets/GenericDataset.cpp
 		src/datasets/CustomDataset.cpp

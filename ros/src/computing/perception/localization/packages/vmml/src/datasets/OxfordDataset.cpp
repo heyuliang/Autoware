@@ -23,6 +23,21 @@ using namespace Eigen;
 
 
 static const set<int> GpsColumns ({0,9,8,4,2,3});
+/*
+ * These are the columns of INS pose table that are currently used:
+ * - timestamp
+ * - easting
+ * - northing
+ * - altitude
+ * - roll
+ * - pitch
+ * - yaw
+ * - velocity_east
+ * - velocity_north
+ * - velocity_down
+ * - latitude
+ * - longitude
+ */
 static const set<int> InsColumns ({0,6,5,4,12,13,14,10,9,11,2,3});
 string OxfordDataset::dSetName = "Oxford";
 
@@ -112,10 +127,16 @@ OxfordDataset::loadIns()
 			is.latitude = stod(INS_s.get(i, "latitude"));
 			is.longitude = stod(INS_s.get(i, "longitude"));
 			is.roll = stod(INS_s.get(i, "roll"));
+
 			// Correct pitch & yaw rotations to more sensible ROS convention;
 			// otherwise you will have problems later
 			is.pitch = -stod(INS_s.get(i, "pitch"));
 			is.yaw = -stod(INS_s.get(i, "yaw"));
+
+			// Velocity
+			is.velocity_north = stod(INS_s.get(i, "velocity_north"));
+			is.velocity_east = stod(INS_s.get(i, "velocity_east"));
+			is.velocity_up = -stod(INS_s.get(i, "velocity_down"));
 
 		insPoseTable[i] = is;
 	}
@@ -191,10 +212,12 @@ Pose fromINS(const InsPose &ps)
 }
 
 
-Pose interpolateFromINS (
+void interpolateFromINS (
 	uint64_t timestamp,
 	const InsPose &ps1,
-	const InsPose &ps2)
+	const InsPose &ps2,
+	Pose &poseResult,
+	Vector3d &velocityResult)
 {
 	assert(timestamp >= ps1.timestamp and timestamp<=ps2.timestamp);
 
@@ -202,12 +225,9 @@ Pose interpolateFromINS (
 		px2 = fromINS(ps2);
 
 	double ratio = double(timestamp - ps1.timestamp) / double(ps2.timestamp - ps1.timestamp);
-//	Vector3d px_pos = px1.position() + ratio * (px2.position() - px1.position());
-//	Quaterniond px_or = px1.orientation().slerp(ratio, px2.orientation());
-//	px_or.normalize();
-//
-//	return Pose::from_Pos_Quat(px_pos, px_or);
-	return TTransform::interpolate(px1, px2, ratio);
+
+	poseResult = TTransform::interpolate(px1, px2, ratio);
+	velocityResult = ps1.velocity() + (ps2.velocity()-ps1.velocity())*ratio;
 }
 
 
@@ -230,13 +250,16 @@ OxfordDataset::createStereoGroundTruths()
 
 		uint64_t ts = stereoTimestamps[i];
 		Pose px;
+		Vector3d velocity = Vector3d::Zero();
 
 		if (ts < insPoseTable[0].timestamp) {
 			px = fromINS(insPoseTable[0]);
+			velocity = insPoseTable[0].velocity();
 		}
 
 		else if (ts > insPoseTable[insPoseTable.size()-1].timestamp) {
 			px = fromINS(insPoseTable[insPoseTable.size()-1]);
+			velocity = insPoseTable[insPoseTable.size()-1].velocity();
 		}
 
 		else {
@@ -251,13 +274,14 @@ OxfordDataset::createStereoGroundTruths()
 			const InsPose& ps1 = *tsFinder[ts1],
 				&ps2 = *tsFinder[ts2];
 
-			px = interpolateFromINS(ts, ps1, ps2);
+			interpolateFromINS(ts, ps1, ps2, px, velocity);
 		}
 
 		// Transform INS/baselink position to camera
 		px = px * baseLinkToOffset;
 
 		stereoRecords.at(ts).groundTruth = px;
+		stereoRecords.at(ts).velocity = velocity;
 	}
 }
 

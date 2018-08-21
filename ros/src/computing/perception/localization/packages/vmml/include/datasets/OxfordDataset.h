@@ -50,6 +50,14 @@ struct GpsPose
 		altitude,
 		latitude,
 		longitude;
+
+	double
+		velocity_east=0,	// X
+		velocity_north=0,	// Y
+		velocity_up=0;		// Z
+
+	inline Eigen::Vector3d velocity() const
+	{ return Eigen::Vector3d(velocity_east, velocity_north, velocity_up); }
 };
 
 
@@ -70,6 +78,7 @@ struct OxfordDataItem : public GenericDataItem
 	timestamp_t timestamp;
 	Pose groundTruth;
 	OxfordDataset *parent;
+	Eigen::Vector3d velocity;
 
 	OxfordDataItem():
 		parent(NULL)

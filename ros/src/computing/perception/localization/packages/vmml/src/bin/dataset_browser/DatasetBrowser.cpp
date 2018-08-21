@@ -13,6 +13,7 @@
 #include <QFileDialog>
 
 #include "DatasetBrowser.h"
+#include "ImageDatabaseSeqSLAM.h"
 
 
 using namespace std;
@@ -72,6 +73,9 @@ DatasetBrowser::setImageOnPosition (int v)
 		throw runtime_error("Invalid time position");
 
 	cv::Mat image = openDs->at(v).getImage();
+//	cv::cvtColor(image, image, CV_RGB2GRAY);
+//	image = ImageDatabaseSeqSLAM::normalizePatch(image, 4);
+
 	QImage curImage = fromCvMat(image);
 	frame->setImage(curImage);
 
