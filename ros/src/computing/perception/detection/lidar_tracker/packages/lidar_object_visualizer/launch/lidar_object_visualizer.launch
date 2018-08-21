@@ -1,0 +1,12 @@
+<!-- -->
+<launch>
+  <arg name="input_object_topic" default="/velodyne" />
+  <arg name="vis_id_height" default="1.5" />
+  <arg name="vis_arrow_height" default="0.5" />
+
+  <node pkg="lidar_imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
+    <param name="vis_id_height" value="$(arg vis_id_height)" />
+    <param name="vis_arrow_height" value="$(arg vis_arrow_height)" />
+    <remap from="/detection/tracked_objects" to="$(arg input_object_topic)" />
+  </node>
+</launch>
