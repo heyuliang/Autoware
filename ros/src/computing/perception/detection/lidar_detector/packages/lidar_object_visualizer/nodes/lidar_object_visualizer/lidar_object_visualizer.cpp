@@ -15,14 +15,14 @@ ObjectVisualizer::ObjectVisualizer()
 
   sub_object_array_ = node_handle_.subscribe("/detection/tracked_objects", 1, &ObjectVisualizer::callback, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/velocity_arrow", 10);
-  pub_id_    = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/target_id", 10);
+  pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/target_id", 10);
   pub_jskbb_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/visualize/jskbb", 10);
 }
 
 void ObjectVisualizer::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   pubRosMarkers(input);
-  if(is_jskbb_)
+  if (is_jskbb_)
   {
     pubJskBB(input);
   }
@@ -36,7 +36,7 @@ void ObjectVisualizer::pubRosMarkers(const autoware_msgs::DetectedObjectArray& i
   {
     // pose_reliable == true if tracking state is stable
     // skip vizualizing if tracking state is unstable
-    if(vis_tracked_objects_)
+    if (vis_tracked_objects_)
     {
       if (!input.objects[i].pose_reliable)
       {
@@ -98,17 +98,17 @@ void ObjectVisualizer::pubRosMarkers(const autoware_msgs::DetectedObjectArray& i
     {
       velocity = 0.0;
     }
-    //converting m/s to km/h
+    // converting m/s to km/h
     std::string s_velocity = std::to_string(velocity * 3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
     std::string text;
-    if(vis_velocity_)
+    if (vis_velocity_)
     {
       text = "<" + std::to_string(input.objects[i].id) + "> " + modified_sv + " km/h";
     }
     else
     {
-      text = "<" + std::to_string(input.objects[i].id) + "> " ;
+      text = "<" + std::to_string(input.objects[i].id) + "> ";
     }
 
     // std::string text = "<" + std::to_string(input.objects[i].id) + ">" + " "
@@ -118,8 +118,7 @@ void ObjectVisualizer::pubRosMarkers(const autoware_msgs::DetectedObjectArray& i
 
     marker_ids.markers.push_back(id);
 
-
-    if(!vis_velocity_)
+    if (!vis_velocity_)
     {
       continue;
     }
@@ -172,11 +171,10 @@ void ObjectVisualizer::pubJskBB(const autoware_msgs::DetectedObjectArray& input)
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     jsk_recognition_msgs::BoundingBox bb;
-    bb.header     = input.header;
-    bb.pose       = input.objects[i].pose;
+    bb.header = input.header;
+    bb.pose = input.objects[i].pose;
     bb.dimensions = input.objects[i].dimensions;
     jskbboxes_output.boxes.push_back(bb);
   }
   pub_jskbb_.publish(jskbboxes_output);
-
 }

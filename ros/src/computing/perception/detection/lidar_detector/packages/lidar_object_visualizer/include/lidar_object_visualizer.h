@@ -12,9 +12,9 @@
 class ObjectVisualizer
 {
 private:
-  bool   vis_tracked_objects_;
-  bool   vis_velocity_;
-  bool   is_jskbb_;
+  bool vis_tracked_objects_;
+  bool vis_velocity_;
+  bool is_jskbb_;
   double vis_id_height_;
   double vis_arrow_height_;
   std::string input_topic_;
