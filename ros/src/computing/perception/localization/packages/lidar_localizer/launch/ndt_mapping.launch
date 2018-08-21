@@ -7,6 +7,7 @@
   <arg name="imu_upside_down" default="false" />
   <arg name="imu_topic" default="/imu_raw" />
   <arg name="incremental_voxel_update" default="false" />
+  <arg name="use_multi_layer_ndt" default="true" />
 
   <!-- rosrun lidar_localizer ndt_mapping  -->
   <node pkg="lidar_localizer" type="queue_counter" name="queue_counter" output="screen"/>
@@ -17,6 +18,7 @@
     <param name="imu_upside_down" value="$(arg imu_upside_down)" />
     <param name="imu_topic" value="$(arg imu_topic)" />
     <param name="incremental_voxel_update" value="$(arg incremental_voxel_update)" />
+    <param name="use_multi_layer_ndt" value="$(arg use_multi_layer_ndt)" />
   </node>
 
 </launch>

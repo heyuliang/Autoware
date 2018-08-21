@@ -94,6 +94,7 @@ static MethodType _method_type = MethodType::PCL_GENERIC;
 // global variables
 static pose previous_pose, guess_pose, guess_pose_imu, guess_pose_odom, guess_pose_imu_odom, current_pose,
     current_pose_imu, current_pose_odom, current_pose_imu_odom, ndt_pose, added_pose, localizer_pose;
+static pose first_layer_ndt_pose;
 
 static ros::Time current_scan_time;
 static ros::Time previous_scan_time;
@@ -116,13 +117,13 @@ static double current_velocity_imu_z = 0.0;
 
 static pcl::PointCloud<pcl::PointXYZI> map;
 
-static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
-static cpu::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> anh_ndt;
+static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt, second_layer_ndt;
+static cpu::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> anh_ndt, second_layer_anh_ndt;
 #ifdef CUDA_FOUND
-static gpu::GNormalDistributionsTransform anh_gpu_ndt;
+static gpu::GNormalDistributionsTransform anh_gpu_ndt, second_layer_anh_gpu_ndt;
 #endif
 #ifdef USE_PCL_OPENMP
-static pcl_omp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> omp_ndt;
+static pcl_omp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> omp_ndt, second_layer_omp_ndt;
 #endif
 
 // Default values
@@ -163,12 +164,14 @@ static bool _imu_upside_down = false;
 
 static bool _incremental_voxel_update = false;
 
+static bool _use_multi_layer_ndt = false;
+
 static std::string _imu_topic = "/imu_raw";
 
-static double fitness_score;
-static bool has_converged;
-static int final_num_iteration;
-static double transformation_probability;
+static double fitness_score, fitness_score_first_layer;
+static bool has_converged, has_converged_first_layer;
+static int final_num_iteration, final_num_iteration_first_layer;
+static double transformation_probability, transformation_probability_first_layer;
 
 static sensor_msgs::Imu imu;
 static nav_msgs::Odometry odom;
@@ -474,7 +477,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   tf::Quaternion q;
 
   Eigen::Matrix4f t_localizer(Eigen::Matrix4f::Identity());
+  Eigen::Matrix4f t_localizer_first_layer(Eigen::Matrix4f::Identity());
   Eigen::Matrix4f t_base_link(Eigen::Matrix4f::Identity());
+  Eigen::Matrix4f t_base_link_first_layer(Eigen::Matrix4f::Identity());
+
   static tf::TransformBroadcaster br;
   tf::Transform transform;
 
@@ -521,6 +527,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setResolution(ndt_res);
     ndt.setMaximumIterations(max_iter);
     ndt.setInputSource(filtered_scan_ptr);
+
+    if(_use_multi_layer_ndt == true){
+      second_layer_ndt.setTransformationEpsilon(trans_eps);
+      second_layer_ndt.setStepSize(step_size);
+      second_layer_ndt.setResolution(ndt_res/2.0);
+      second_layer_ndt.setMaximumIterations(max_iter);
+      second_layer_ndt.setInputSource(filtered_scan_ptr);
+    }
   }
   else if (_method_type == MethodType::PCL_ANH)
   {
@@ -529,6 +543,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     anh_ndt.setResolution(ndt_res);
     anh_ndt.setMaximumIterations(max_iter);
     anh_ndt.setInputSource(filtered_scan_ptr);
+
+    if(_use_multi_layer_ndt == true){
+      second_layer_anh_ndt.setTransformationEpsilon(trans_eps);
+      second_layer_anh_ndt.setStepSize(step_size);
+      second_layer_anh_ndt.setResolution(ndt_res/2.0);
+      second_layer_anh_ndt.setMaximumIterations(max_iter);
+      second_layer_anh_ndt.setInputSource(filtered_scan_ptr);
+    }
   }
 #ifdef CUDA_FOUND
   else if (_method_type == MethodType::PCL_ANH_GPU)
@@ -538,6 +560,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     anh_gpu_ndt.setResolution(ndt_res);
     anh_gpu_ndt.setMaximumIterations(max_iter);
     anh_gpu_ndt.setInputSource(filtered_scan_ptr);
+
+    if(_use_multi_layer_ndt == true){
+      second_layer_anh_gpu_ndt.setTransformationEpsilon(trans_eps);
+      second_layer_anh_gpu_ndt.setStepSize(step_size);
+      second_layer_anh_gpu_ndt.setResolution(ndt_res/2.0);
+      second_layer_anh_gpu_ndt.setMaximumIterations(max_iter);
+      second_layer_anh_gpu_ndt.setInputSource(filtered_scan_ptr);
+    }
   }
 #endif
 #ifdef USE_PCL_OPENMP
@@ -548,23 +578,47 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     omp_ndt.setResolution(ndt_res);
     omp_ndt.setMaximumIterations(max_iter);
     omp_ndt.setInputSource(filtered_scan_ptr);
+
+    if(_use_multi_layer_ndt == true){
+      second_layer_omp_ndt.setTransformationEpsilon(trans_eps);
+      second_layer_omp_ndt.setStepSize(step_size);
+      second_layer_omp_ndt.setResolution(ndt_res/2.0);
+      second_layer_omp_ndt.setMaximumIterations(max_iter);
+      second_layer_omp_ndt.setInputSource(filtered_scan_ptr);
+    }
   }
 #endif
 
   static bool is_first_map = true;
   if (is_first_map == true)
   {
-    if (_method_type == MethodType::PCL_GENERIC)
+    if (_method_type == MethodType::PCL_GENERIC){
       ndt.setInputTarget(map_ptr);
-    else if (_method_type == MethodType::PCL_ANH)
+      if(_use_multi_layer_ndt == true){
+        second_layer_ndt.setInputTarget(map_ptr);
+      }
+    }
+    else if (_method_type == MethodType::PCL_ANH){
       anh_ndt.setInputTarget(map_ptr);
+      if(_use_multi_layer_ndt == true){
+        second_layer_anh_ndt.setInputTarget(map_ptr);
+      }
+    }
 #ifdef CUDA_FOUND
-    else if (_method_type == MethodType::PCL_ANH_GPU)
+    else if (_method_type == MethodType::PCL_ANH_GPU){
       anh_gpu_ndt.setInputTarget(map_ptr);
+      if(_use_multi_layer_ndt == true){
+        second_layer_anh_gpu_ndt.setInputTarget(map_ptr);
+      }
+    }
 #endif
 #ifdef USE_PCL_OPENMP
-    else if (_method_type == MethodType::PCL_OPENMP)
+    else if (_method_type == MethodType::PCL_OPENMP){
       omp_ndt.setInputTarget(map_ptr);
+      if(_use_multi_layer_ndt == true){
+        second_layer_omp_ndt.setInputTarget(map_ptr);
+      }
+    }
 #endif
     is_first_map = false;
   }
@@ -648,6 +702,76 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #endif
 
   t_base_link = t_localizer * tf_ltob;
+
+
+
+
+// perform ndt of the second layer
+  if(_use_multi_layer_ndt == true){
+
+    fitness_score_first_layer = fitness_score;
+    t_localizer_first_layer = t_localizer;
+    t_base_link_first_layer = t_base_link;
+    has_converged_first_layer = has_converged;
+    final_num_iteration_first_layer = final_num_iteration;
+
+    tf::Matrix3x3 mat;
+    mat.setValue(static_cast<double>(t_base_link(0, 0)), static_cast<double>(t_base_link(0, 1)),
+                 static_cast<double>(t_base_link(0, 2)), static_cast<double>(t_base_link(1, 0)),
+                 static_cast<double>(t_base_link(1, 1)), static_cast<double>(t_base_link(1, 2)),
+                 static_cast<double>(t_base_link(2, 0)), static_cast<double>(t_base_link(2, 1)),
+                 static_cast<double>(t_base_link(2, 2)));
+
+    // Update localizer_pose.
+    first_layer_ndt_pose.x = t_base_link(0, 3);
+    first_layer_ndt_pose.y = t_base_link(1, 3);
+    first_layer_ndt_pose.z = t_base_link(2, 3);
+    mat.getRPY(first_layer_ndt_pose.roll, first_layer_ndt_pose.pitch, first_layer_ndt_pose.yaw, 1);
+
+    if (_method_type == MethodType::PCL_GENERIC)
+    {
+      second_layer_ndt.align(*output_cloud, t_localizer);
+      fitness_score = second_layer_ndt.getFitnessScore();
+      t_localizer = second_layer_ndt.getFinalTransformation();
+      has_converged = second_layer_ndt.hasConverged();
+      final_num_iteration = second_layer_ndt.getFinalNumIteration();
+      transformation_probability = second_layer_ndt.getTransformationProbability();
+    }
+    else if (_method_type == MethodType::PCL_ANH)
+    {
+      second_layer_anh_ndt.align(t_localizer);
+      fitness_score = second_layer_anh_ndt.getFitnessScore();
+      t_localizer = second_layer_anh_ndt.getFinalTransformation();
+      has_converged = second_layer_anh_ndt.hasConverged();
+      final_num_iteration = second_layer_anh_ndt.getFinalNumIteration();
+      transformation_probability = second_layer_anh_ndt.getTransformationProbability();
+    }
+  #ifdef CUDA_FOUND
+    else if (_method_type == MethodType::PCL_ANH_GPU)
+    {
+      second_layer_anh_gpu_ndt.align(t_localizer);
+      fitness_score = second_layer_anh_gpu_ndt.getFitnessScore();
+      t_localizer = second_layer_anh_gpu_ndt.getFinalTransformation();
+      has_converged = second_layer_anh_gpu_ndt.hasConverged();
+      final_num_iteration = second_layer_anh_gpu_ndt.getFinalNumIteration();
+      transformation_probability = second_layer_anh_gpu_ndt.getTransformationProbability();
+    }
+  #endif
+  #ifdef USE_PCL_OPENMP
+    else if (_method_type == MethodType::PCL_OPENMP)
+    {
+      second_layer_omp_ndt.align(*output_cloud, t_localizer);
+      fitness_score = second_layer_omp_ndt.getFitnessScore();
+      t_localizer = second_layer_omp_ndt.getFinalTransformation();
+      has_converged = second_layer_omp_ndt.hasConverged();
+      final_num_iteration = second_layer_omp_ndt.getFinalNumIteration();
+      transformation_probability = second_layer_omp_ndt.getTransformationProbability();
+    }
+  #endif
+
+    t_base_link = t_localizer * tf_ltob;
+  }
+
 
   pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t_localizer);
 
@@ -854,6 +978,26 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   std::cout << t_localizer << std::endl;
   std::cout << "shift: " << shift << std::endl;
   std::cout << "-----------------------------------------------------------------" << std::endl;
+
+  if(_use_multi_layer_ndt == true){
+    double diff_x = current_pose.x - first_layer_ndt_pose.x;
+    double diff_y = current_pose.y - first_layer_ndt_pose.y;
+    double diff_z = current_pose.z - first_layer_ndt_pose.z;
+    double diff_roll = current_pose.roll - first_layer_ndt_pose.roll;
+    double diff_pitch = current_pose.pitch - first_layer_ndt_pose.pitch;
+    double diff_yaw = current_pose.yaw - first_layer_ndt_pose.yaw;
+    std::cout << "Difference of first layer NDT and second layer NDT" << std::endl;
+    std::cout << "First Layer: " << std::endl;
+    std::cout << "(" << first_layer_ndt_pose.x << ", " << first_layer_ndt_pose.y << ", " << first_layer_ndt_pose.z << ", " << first_layer_ndt_pose.roll
+              << ", " << first_layer_ndt_pose.pitch << ", " << first_layer_ndt_pose.yaw << ")" << std::endl;
+    std::cout << "Second Layer: " << std::endl;
+    std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll
+              << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
+    std::cout << "Diff: " << std::endl;
+    std::cout << "(" << diff_x << ", " << diff_y << ", " << diff_z << ", " << diff_roll
+              << ", " << diff_pitch << ", " << diff_yaw << ")" << std::endl;
+  }
+
 }
 
 int main(int argc, char** argv)
@@ -975,6 +1119,7 @@ int main(int argc, char** argv)
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
   private_nh.getParam("incremental_voxel_update", _incremental_voxel_update);
+  private_nh.getParam("use_multi_layer_ndt", _use_multi_layer_ndt);
 
   std::cout << "method_type: " << static_cast<int>(_method_type) << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
@@ -982,6 +1127,7 @@ int main(int argc, char** argv)
   std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "imu_topic: " << _imu_topic << std::endl;
   std::cout << "incremental_voxel_update: " << _incremental_voxel_update << std::endl;
+  std::cout << "use_multi_layer_ndt: " << _use_multi_layer_ndt << std::endl;
 
   if (nh.getParam("tf_x", _tf_x) == false)
   {
