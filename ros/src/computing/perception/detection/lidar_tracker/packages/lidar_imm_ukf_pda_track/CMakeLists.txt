@@ -44,28 +44,8 @@ add_dependencies(imm_ukf_pda
   ${catkin_EXPORTED_TARGETS}
   )
 
-#visualize_detected_objects
-add_executable(visualize_detected_objects
-  nodes/visualize_detected_objects/visualize_detected_objects_main.cpp
-  nodes/visualize_detected_objects/visualize_detected_objects.cpp
-  )
-target_link_libraries(visualize_detected_objects
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  )
-add_dependencies(visualize_detected_objects
-  ${catkin_EXPORTED_TARGETS}
-  )
-
 install(TARGETS
         imm_ukf_pda
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
-
-install(TARGETS
-        visualize_detected_objects
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
