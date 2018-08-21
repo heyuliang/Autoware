@@ -714,6 +714,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     t_base_link_first_layer = t_base_link;
     has_converged_first_layer = has_converged;
     final_num_iteration_first_layer = final_num_iteration;
+    transformation_probability_first_layer = transformation_probability;
 
     tf::Matrix3x3 mat;
     mat.setValue(static_cast<double>(t_base_link(0, 0)), static_cast<double>(t_base_link(0, 1)),
@@ -1004,6 +1005,15 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Diff: " << std::endl;
     std::cout << "(" << diff_x << ", " << diff_y << ", " << diff_z << ", " << diff_roll
               << ", " << diff_pitch << ", " << diff_yaw << ")" << std::endl;
+    std::cout << "Fitness score:" << std::endl;
+    std::cout << "     First Layer: " << fitness_score_first_layer << std::endl;
+    std::cout << "     Second Layer: " << fitness_score << std::endl;
+    std::cout << "Number of iteration:" << std::endl;
+    std::cout << "     First Layer: " << final_num_iteration_first_layer << std::endl;
+    std::cout << "     Second Layer: " << final_num_iteration << std::endl;
+    std::cout << "Transformation probability:" << std::endl;
+    std::cout << "     First Layer: " << transformation_probability_first_layer << std::endl;
+    std::cout << "     Second Layer: " << transformation_probability << std::endl;
   }
 
 }
