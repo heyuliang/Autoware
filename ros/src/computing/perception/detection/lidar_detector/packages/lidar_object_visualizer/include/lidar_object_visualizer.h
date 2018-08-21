@@ -2,22 +2,18 @@
 #define OBJECT_TRACKING_VisualizeDetecedObjects_H
 
 #include <ros/ros.h>
-#include <std_msgs/Header.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 
-// #include <pcl/io/io.h>
-
-#include <vector>
-#include <string>
-
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-class VisualizeDetectedObjects
+class ObjectVisualizer
 {
 private:
+  bool   vis_tracked_objects_;
+  bool   vis_velocity_;
   double vis_id_height_;
   double vis_arrow_height_;
   std::string input_topic_;
@@ -32,7 +28,7 @@ private:
   void callback(const autoware_msgs::DetectedObjectArray& input);
 
 public:
-  VisualizeDetectedObjects();
+  ObjectVisualizer();
 };
 
 #endif  // OBJECT_TRACKING_VisualizeCloudCluster_H

@@ -228,6 +228,13 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : lidar_object_visualizer
+        desc : lidar_object_visualizert desc sample
+        cmd  : roslaunch lidar_object_visualizer lidar_object_visualizer.launch
+        param: lidar_object_visualizer_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
     - name : fusion_tools
       desc : fusion_tools
@@ -4251,6 +4258,52 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : lidar_object_visualizer_param
+    vars  :
+    - name  : input_object_topic
+      desc  : object array input topic
+      label : input_object_topic
+      kind  : str
+      v     : /detection/tracked_objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name    : vis_velocity
+      desc    : vis_velocity desc sample
+      label   : 'vis_velocity'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vis_tracked_objects
+      desc    : vis_tracked_objects desc sample
+      label   : 'vis_tracked_objects'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vis_id_height
+      desc    : vis_id_height
+      label   : 'vis_id_height'
+      min       : 0
+      max       : 10
+      v       : 1.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vis_arrow_height
+      desc    : vis_arrow_height
+      label   : 'vis_arrow_height'
+      min       : 0
+      max       : 10
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
 
 
   - name  : pixel_cloud_fusion_params

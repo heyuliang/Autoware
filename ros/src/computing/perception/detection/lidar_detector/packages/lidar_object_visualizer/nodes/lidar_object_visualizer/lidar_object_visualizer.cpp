@@ -4,23 +4,25 @@
 #include <tf/transform_datatypes.h>
 #include <cmath>
 
-VisualizeDetectedObjects::VisualizeDetectedObjects()
+ObjectVisualizer::ObjectVisualizer()
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<double>("vis_id_height", vis_id_height_, 1.5);
   private_nh_.param<double>("vis_arrow_height", vis_arrow_height_, 0.5);
+  private_nh_.param<bool>("vis_tracked_objects", vis_tracked_objects_, false);
+  private_nh_.param<bool>("vis_velocity", vis_velocity_, true);
 
-  sub_object_array_ = node_handle_.subscribe("/detection/tracked_objects", 1, &VisualizeDetectedObjects::callback, this);
+  sub_object_array_ = node_handle_.subscribe("/detection/tracked_objects", 1, &ObjectVisualizer::callback, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/velocity_arrow", 10);
   pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/visualize/target_id", 10);
 }
 
-void VisualizeDetectedObjects::callback(const autoware_msgs::DetectedObjectArray& input)
+void ObjectVisualizer::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   pubRosMarkers(input);
 }
 
-void VisualizeDetectedObjects::pubRosMarkers(const autoware_msgs::DetectedObjectArray& input)
+void ObjectVisualizer::pubRosMarkers(const autoware_msgs::DetectedObjectArray& input)
 {
   visualization_msgs::MarkerArray marker_ids, marker_arows;
 
@@ -28,9 +30,12 @@ void VisualizeDetectedObjects::pubRosMarkers(const autoware_msgs::DetectedObject
   {
     // pose_reliable == true if tracking state is stable
     // skip vizualizing if tracking state is unstable
-    if (!input.objects[i].pose_reliable)
+    if(vis_tracked_objects_)
     {
-      continue;
+      if (!input.objects[i].pose_reliable)
+      {
+        continue;
+      }
     }
 
     double velocity = input.objects[i].velocity.linear.x;
@@ -90,7 +95,15 @@ void VisualizeDetectedObjects::pubRosMarkers(const autoware_msgs::DetectedObject
     //converting m/s to km/h
     std::string s_velocity = std::to_string(velocity * 3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
-    std::string text = "<" + std::to_string(input.objects[i].id) + "> " + modified_sv + " km/h";
+    std::string text;
+    if(vis_velocity_)
+    {
+      text = "<" + std::to_string(input.objects[i].id) + "> " + modified_sv + " km/h";
+    }
+    else
+    {
+      text = "<" + std::to_string(input.objects[i].id) + "> " ;
+    }
 
     // std::string text = "<" + std::to_string(input.objects[i].id) + ">" + " "
     //              + std::to_string(velocity) + " m/s";
@@ -99,6 +112,11 @@ void VisualizeDetectedObjects::pubRosMarkers(const autoware_msgs::DetectedObject
 
     marker_ids.markers.push_back(id);
 
+
+    if(!vis_velocity_)
+    {
+      continue;
+    }
     visualization_msgs::Marker arrow;
     arrow.lifetime = ros::Duration(0.2);
 
