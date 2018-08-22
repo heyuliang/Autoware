@@ -68,7 +68,32 @@ ImageDatabaseSeqSLAM::normalizePatch (const cv::Mat &src, int patch_size)
 void
 ImageDatabaseSeqSLAM::find(const cv::Mat &frame)
 {
-	Eigen::VectorXd difvec = calculateDifferenceEnhancedVector(frame);
+	Eigen::VectorXd diffVec = calculateDifferenceEnhancedVector(frame);
+
+	// findMatches
+
+	Eigen::VectorXd matches =
+		Eigen::VectorXd::Constant(matchingDistance/2,
+			std::numeric_limits<Eigen::VectorXd::Scalar>::max());
+
+	// XXX: Unfinished
+}
+
+
+template<typename Scalar, int numRows>
+void meanStdDev (const Eigen::Matrix<Scalar,numRows,1> &V, Scalar &mean, Scalar &stddev, bool sampleStdDev=false)
+{
+	mean = V.mean();
+
+	Eigen::Matrix<Scalar,numRows,1> C;
+	for (int i=0; i<numRows; i++) {
+		Scalar s = V(i,0) - mean;
+		C(i,0) = s*s;
+	}
+	if (sampleStdDev==true)
+		stddev = sqrt(C.sum() / (numRows-1));
+	else
+		stddev = sqrt(C.sum() / numRows);
 }
 
 
@@ -86,7 +111,23 @@ ImageDatabaseSeqSLAM::calculateDifferenceEnhancedVector (const cv::Mat &frame) c
 	diffVec[N] = std::numeric_limits<double>::max();
 
 	// Enhance local contrast
+	Eigen::VectorXd diffEnhanced (diffVec.size());
+	for (int i=0; i<diffVec.size(); i++) {
+		int lowerBound = std::max(0, i-localRadius/2);
+		int upperBound = std::min((int)diffVec.size(), i+1+localRadius/2);
 
+		double mean, stddev;
+		Eigen::VectorXd patch = diffVec.block(lowerBound, 0, upperBound-lowerBound, 1);
+		meanStdDev(patch, mean, stddev, true);
 
-	return diffVec;
+		/* Enhance contrast by (local_patch - patch_mean) / patch_stddev */
+		diffEnhanced[i] = (diffVec[i] - mean) * (1/stddev);
+	}
+
+	/* Shift so that the minimum value in the vector is 0 */
+	double minval = diffEnhanced.minCoeff();
+	for (int i=0; i<diffEnhanced.size(); i++)
+		diffEnhanced[i] -= minval;
+
+	return diffEnhanced;
 }
