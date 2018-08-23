@@ -17,7 +17,7 @@ int main (int argc, char *argv[])
 {
 	QApplication mainApp(argc, argv);
 
-	OxfordDataset oxf("/home/sujiwo/Data/Oxford/2014-12-02-15-30-08", "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
+	OxfordDataset oxf(argv[1], "/home/sujiwo/Sources/robotcar-dataset-sdk/models");
 	oxf.setZoomRatio(0.5);
 
 	DatasetBrowser dbs;

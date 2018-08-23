@@ -147,9 +147,9 @@ void OxfordDataset::loadTimestamps()
 {
 	const string timestampsPath = oxfPath + "/stereo.timestamps";
 	StringTable TS = create_table(timestampsPath);
-	const size_t ss = TS.size();
+	// It is likely that the last timestamp does not have related image files
+	const size_t ss = TS.size()-1;
 	stereoTimestamps.resize(ss);
-//	stereoImagePaths.resize(ss);
 
 	for (uint32_t i=0; i<ss; i++) {
 		const string &tsstr = TS.get(i,0);

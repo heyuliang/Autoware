@@ -19,6 +19,7 @@
 #include "DBoW2/TemplatedVocabulary.h"
 #include "VMap.h"
 #include "cvobj_serialization.h"
+#include "SequenceSLAM.h"
 
 
 // ===============
@@ -116,6 +117,8 @@ public:
 	const ORBVocabulary &vocabulary() const
 	{ return myVoc; }
 
+	void newKeyFrameCallback (const kfid &k);
+
 protected:
 	friend class boost::serialization::access;
 	template<class Archive>
@@ -125,6 +128,9 @@ protected:
 		ar & invertedKeywordDb;
 		ar & BoWList;
 		ar & FeatVecList;
+
+		// XXX: Resulting string may get too big
+		ar & seqSlamProvider;
 	}
 
 private:
@@ -135,6 +141,8 @@ private:
 
 	std::map<kfid, DBoW2::BowVector> BoWList;
 	std::map<kfid, DBoW2::FeatureVector> FeatVecList;
+
+	SequenceSLAM seqSlamProvider;
 };
 
 

@@ -40,9 +40,11 @@ typedef decltype(cv::DMatch::trainIdx) kpid;
 
 struct CameraPinholeParams {
 	double
-		fx, fy,
-		cx, cy;
+		fx=0, fy=0,
+		cx=0, cy=0;
 	int width, height;
+	// XXX: Distortion parameters
+
 	Eigen::Matrix<double,3,4> toMatrix() const;
 
 	CameraPinholeParams():

@@ -130,6 +130,8 @@ public:
 
 //	Transform3d toEigen()
 //	{ return Transform3d::fromPositionOrientationScale(Eigen::Translation3d(position), orientation, Eigen::Scaling(1.0)); }
+	cv::Mat getImage() const
+	{ return image; }
 
 
 protected:

@@ -101,6 +101,14 @@ ImageDatabase::rebuildAll()
 }
 
 
+// this function should be called when a new keyframe is appended to the map
+void
+ImageDatabase::newKeyFrameCallback (const kfid &k)
+{
+	seqSlamProvider.learn(cMap->keyframe(k)->getImage());
+}
+
+
 kfid
 ImageDatabase::find (const KeyFrame *kf) const
 {
@@ -116,6 +124,7 @@ ImageDatabase::find (Frame &f, bool simple) const
 	map<kfid, uint> kfCandidates;
 	kfCandidates.clear();
 
+	int maxCommonWords = 0;
 	for (auto &bWrdPtr : f.getWords()) {
 		auto wid = bWrdPtr.first;
 		const set<kfid> &relatedKf = invertedKeywordDb.at(wid);
@@ -129,6 +138,9 @@ ImageDatabase::find (Frame &f, bool simple) const
 			} catch (out_of_range&) {
 				kfCandidates[k] = 1;
 			}
+
+			if (maxCommonWords < kfCandidates.at(k))
+				maxCommonWords = kfCandidates.at(k);
 		}
 	}
 
@@ -137,10 +149,14 @@ ImageDatabase::find (Frame &f, bool simple) const
 		return ptr.first;
 	}
 
+	int minCommonWords = maxCommonWords * 0.8f;
+
 	// Convert to scoring
 	map<kfid,double> kfCandidateScores(kfCandidates.begin(), kfCandidates.end());
 	for (auto &ptr: kfCandidates) {
 		const kfid &k = ptr.first;
+		if (ptr.second < minCommonWords)
+			continue;
 		kfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
 	}
 

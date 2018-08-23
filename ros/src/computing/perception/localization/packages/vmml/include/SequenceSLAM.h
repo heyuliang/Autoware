@@ -8,8 +8,8 @@
  *  Credit To: Saburo Okita
  */
 
-#ifndef _IMAGEDATABASESEQSLAM_H_
-#define _IMAGEDATABASESEQSLAM_H_
+#ifndef _SEQSLAM_H_
+#define _SEQSLAM_H_
 
 #include <vector>
 #include <opencv2/opencv.hpp>
@@ -19,14 +19,13 @@
 #include <boost/serialization/vector.hpp>
 
 #include "cvobj_serialization.h"
-#include "datasets/GenericDataset.h"
 
 
-class ImageDatabaseSeqSLAM
+class SequenceSLAM
 {
 public:
-	ImageDatabaseSeqSLAM();
-	virtual ~ImageDatabaseSeqSLAM();
+	SequenceSLAM();
+	virtual ~SequenceSLAM();
 
 	void learn (const cv::Mat &imgsrc);
 //	void learn (const std::vector<cv::Mat> &);
@@ -59,4 +58,4 @@ private:
 
 };
 
-#endif /* _IMAGEDATABASESEQSLAM_H_ */
+#endif /* _SEQSLAM_H_ */

@@ -5,23 +5,23 @@
  *      Author: sujiwo
  */
 
-#include <ImageDatabaseSeqSLAM.h>
+#include <SequenceSLAM.h>
 
 
-ImageDatabaseSeqSLAM::ImageDatabaseSeqSLAM()
+SequenceSLAM::SequenceSLAM()
 {
 	// TODO Auto-generated constructor stub
 }
 
 
-ImageDatabaseSeqSLAM::~ImageDatabaseSeqSLAM()
+SequenceSLAM::~SequenceSLAM()
 {
 	// TODO Auto-generated destructor stub
 }
 
 
 void
-ImageDatabaseSeqSLAM::learn (const cv::Mat &imgsrc)
+SequenceSLAM::learn (const cv::Mat &imgsrc)
 {
 	cv::Mat preprocessedImg = normalizePatch(imgsrc, patchSize);
 	learntNormalizedImages.push_back(preprocessedImg);
@@ -29,7 +29,7 @@ ImageDatabaseSeqSLAM::learn (const cv::Mat &imgsrc)
 
 
 cv::Mat
-ImageDatabaseSeqSLAM::normalizePatch (const cv::Mat &src, int patch_size)
+SequenceSLAM::normalizePatch (const cv::Mat &src, int patch_size)
 {
 	assert((src.cols%patch_size==0) and (src.rows%patch_size==0));
 	assert(src.channels()==1);
@@ -66,7 +66,7 @@ ImageDatabaseSeqSLAM::normalizePatch (const cv::Mat &src, int patch_size)
 
 
 void
-ImageDatabaseSeqSLAM::find(const cv::Mat &frame)
+SequenceSLAM::find(const cv::Mat &frame)
 {
 	Eigen::VectorXd diffVec = calculateDifferenceEnhancedVector(frame);
 
@@ -98,7 +98,7 @@ void meanStdDev (const Eigen::Matrix<Scalar,numRows,1> &V, Scalar &mean, Scalar 
 
 
 Eigen::VectorXd
-ImageDatabaseSeqSLAM::calculateDifferenceEnhancedVector (const cv::Mat &frame) const
+SequenceSLAM::calculateDifferenceEnhancedVector (const cv::Mat &frame) const
 {
 	const uint32_t N = learntNormalizedImages.size();
 	Eigen::VectorXd diffVec (N+1);

@@ -109,7 +109,7 @@ class MeidaiBagDataset : public GenericDataset
 {
 public:
 
-	MeidaiBagDataset(const std::string &filePath, double startTimeOffsetSecond=0, double mappingDurationSecond=-1);
+	MeidaiBagDataset(const std::string &filePath, double startTimeOffsetSecond=0, double mappingDurationSecond=-1, const std::string &calibrationPath=std::string());
 	virtual ~MeidaiBagDataset();
 
 	size_t size() const;

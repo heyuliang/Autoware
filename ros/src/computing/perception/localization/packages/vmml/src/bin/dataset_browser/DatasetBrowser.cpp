@@ -9,11 +9,11 @@
 #include <sstream>
 #include <string>
 #include <opencv2/core.hpp>
+#include <SequenceSLAM.h>
 #include <QImage>
 #include <QFileDialog>
 
 #include "DatasetBrowser.h"
-#include "ImageDatabaseSeqSLAM.h"
 
 
 using namespace std;

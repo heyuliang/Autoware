@@ -28,7 +28,8 @@ MeidaiBagDataset::MeidaiBagDataset(
 
 	const string &path,
 	double startTimeOffsetSecond,
-	double mappingDurationSecond) :
+	double mappingDurationSecond,
+	const std::string &calibrationPath) :
 
 		bagPath(path)
 {

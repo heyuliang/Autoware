@@ -74,6 +74,7 @@ KeyFrame::KeyFrame(
 	else
 		cv::cvtColor(imgSrc, grayImg, CV_BGR2GRAY, 1);
 	fdetector->detectAndCompute(grayImg, mask, keypoints, descriptors, false);
+	image = grayImg;
 
 	Matrix<double,3,4> camInt = cameraIntr->toMatrix();
 	projMatrix = cameraIntr->toMatrix() * externalParamMatrix4();
