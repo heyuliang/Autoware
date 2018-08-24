@@ -34,6 +34,8 @@ public:
 
 	void find (const cv::Mat &f);
 
+	void find (const std::vector<cv::Mat> &imgLst, const int matchingDistance) const;
+
 	static cv::Mat normalizePatch (const cv::Mat &src, int patch_size);
 
 	template<class Archive>
@@ -56,6 +58,9 @@ private:
 private:
     Eigen::VectorXd calculateDifferenceEnhancedVector (const cv::Mat &f) const;
 
+    Eigen::MatrixXd calculateDifferenceEnhancedVector (const std::vector<cv::Mat> &preprocSrc) const;
+
+    static std::pair<int,double> findMatch(const Eigen::MatrixXd &diffMat, const int N, const int m_dist);
 };
 
 #endif /* _SEQSLAM_H_ */

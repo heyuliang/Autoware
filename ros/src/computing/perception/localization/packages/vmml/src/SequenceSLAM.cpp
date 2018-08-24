@@ -8,6 +8,10 @@
 #include <SequenceSLAM.h>
 
 
+using namespace std;
+using namespace Eigen;
+
+
 SequenceSLAM::SequenceSLAM()
 {
 	// TODO Auto-generated constructor stub
@@ -80,20 +84,77 @@ SequenceSLAM::find(const cv::Mat &frame)
 }
 
 
-template<typename Scalar, int numRows>
-void meanStdDev (const Eigen::Matrix<Scalar,numRows,1> &V, Scalar &mean, Scalar &stddev, bool sampleStdDev=false)
+void
+SequenceSLAM::find (const vector<cv::Mat> &imgLst, const int matching_distance)
+const
 {
-	mean = V.mean();
-
-	Eigen::Matrix<Scalar,numRows,1> C;
-	for (int i=0; i<numRows; i++) {
-		Scalar s = V(i,0) - mean;
-		C(i,0) = s*s;
+	// Preprocess input images
+	vector<cv::Mat> preprocessSrc(imgLst.size());
+	for (int i=0; i<imgLst.size(); i++) {
+		preprocessSrc.at(i) = normalizePatch(imgLst[i], patchSize);
 	}
+
+	MatrixXd diffEnhancedMat = calculateDifferenceEnhancedVector(preprocessSrc);
+
+	int mDist = matching_distance + (matching_distance % 2);
+	int half_mDist = mDist / 2;
+
+	MatrixXf matches =
+		MatrixXf::Constant(2, diffEnhancedMat.cols(),
+			std::numeric_limits<MatrixXf::Scalar>::max());
+
+	for (int N=half_mDist+1; N<(diffEnhancedMat.cols() - half_mDist); N++) {
+		pair<int,double> match = findMatch(diffEnhancedMat, N, mDist);
+		matches(0, N) = match.first;
+		matches(1, N) = match.second;
+	}
+}
+
+
+std::pair<int,double>
+SequenceSLAM::findMatch
+(const Eigen::MatrixXd &diffMat, const int N, const int m_dist)
+{
+	// XXX: Unfinished
+}
+
+//template<typename Scalar, const int numRows>
+//void meanStdDev (const Eigen::Matrix<Scalar,numRows,1> &V, Scalar &mean, Scalar &stddev, bool sampleStdDev=false)
+//{
+//	mean = V.mean();
+//
+//	Scalar accum = 0;
+//	for (int i=0; i<numRows; i++) {
+//		Scalar s = V[i] - mean;
+//		accum += s*s;
+//	}
+//	if (sampleStdDev==true)
+//		stddev = sqrt(accum / (numRows-1));
+//	else
+//		stddev = sqrt(accum / numRows);
+//}
+
+
+template<typename Derived, typename Scalar>
+void meanStdDev (
+	const Eigen::MatrixBase<Derived> &V,
+	Scalar &mean, Scalar &stddev,
+	bool sampleStdDev=false)
+{
+	const int N = V.rows() * V.cols();
+//	mean = V.cwiseAbs().sum() / N;
+	mean = V.sum() / N;
+
+	Scalar accum = 0;
+	for (int i=0; i<N; i++) {
+		Scalar s = V[i] - mean;
+		accum += s*s;
+	}
+
 	if (sampleStdDev==true)
-		stddev = sqrt(C.sum() / (numRows-1));
+		stddev = sqrt(accum / (N-1));
 	else
-		stddev = sqrt(C.sum() / numRows);
+		stddev = sqrt(accum / N);
 }
 
 
@@ -130,4 +191,44 @@ SequenceSLAM::calculateDifferenceEnhancedVector (const cv::Mat &frame) const
 		diffEnhanced[i] -= minval;
 
 	return diffEnhanced;
+}
+
+
+MatrixXd
+SequenceSLAM::calculateDifferenceEnhancedVector (const std::vector<cv::Mat> &preprocSrc)
+const
+{
+	const uint32_t N = learntNormalizedImages.size(),
+		cols = preprocSrc.size();
+
+	MatrixXd diffMat = MatrixXd::Zero(N+1, preprocSrc.size());
+
+	for (int i=0; i<N; i++) {
+		for (int j=0; j<preprocSrc.size(); j++) {
+			double S = cv::sum(cv::abs(preprocSrc[j]-learntNormalizedImages[i]))[0] / N;
+		}
+	}
+	diffMat.row(N) = VectorXd::Constant(cols, std::numeric_limits<double>::max());
+
+	VectorXd patch_mean = VectorXd::Zero(cols),
+		patch_stddev = VectorXd::Zero(cols);
+
+	// Enhance local contrast
+	MatrixXd diffEnhanced = MatrixXd::Zero(diffMat.rows(), diffMat.cols());
+	for (int i=0; i<diffEnhanced.rows(); i++) {
+		int lowerBound = std::max(0, i-localRadius/2);
+		int size = std::min(i+localRadius/2, (int)diffEnhanced.size()-i);
+		auto localPatch = diffMat.block(lowerBound,0,size,cols);
+
+		for (int j=0; j<cols; j++) {
+			meanStdDev(localPatch.col(j), patch_mean[j], patch_stddev[j], true);
+		}
+		diffEnhanced.row(i) = (diffMat.row(i) - patch_mean).cwiseProduct(patch_stddev.cwiseInverse());
+	}
+
+	double minVal = diffEnhanced.minCoeff();
+	diffEnhanced = diffEnhanced - MatrixXd::Constant(diffEnhanced.rows(), diffEnhanced.cols(), minVal);
+
+	return diffEnhanced;
+
 }
