@@ -281,6 +281,74 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
   }
 }
 
+bool DecisionMakerNode::drivingMissionCheck()
+{
+  std::string current_state = ctx->getStateText();
+
+  publishOperatorHelpMessage("Received new mission, checking now...");
+  setEventFlag("received_back_state_waypoint", false);
+
+  int gid = 0;
+  for (auto& lane : current_status_.based_lane_array.lanes)
+  {
+    int lid = 0;
+    for (auto& wp : lane.waypoints)
+    {
+      wp.wpstate.aid = 0;
+      wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.event_state = 0;
+      wp.gid = gid++;
+      wp.lid = lid++;
+      if(!isEventFlagTrue("received_back_state_waypoint") && wp.twist.twist.linear.x < 0.0){
+        setEventFlag("received_back_state_waypoint", true);
+        publishOperatorHelpMessage("Received back waypoint.");
+      }
+    }
+  }
+
+  // waypoint-state set and insert interpolation waypoint for stopline
+  setWaypointState(current_status_.based_lane_array);
+
+  // reindexing and calculate new closest_waypoint distance
+  gid = 0;
+  double min_dist = 100;
+  for (auto& lane : current_status_.based_lane_array.lanes)
+  {
+    int lid = 0;
+    std::vector<double> dist_vec;
+    dist_vec.reserve(lane.waypoints.size());
+    for (auto& wp : lane.waypoints)
+    {
+      wp.gid = gid++;
+      wp.lid = lid++;
+      double dst = amathutils::find_distance(current_status_.pose.position, wp.pose.pose.position);
+      min_dist = min_dist > dst ? dst : min_dist;
+    }
+  }
+
+  const double dist_threshold = 1.0;// [m]
+  if(min_dist > dist_threshold )
+  {
+    return false;
+  }
+  else
+  {
+    current_status_.using_lane_array = current_status_.based_lane_array;
+    Pubs["lane_waypoints_array"].publish(current_status_.using_lane_array);
+    if (!isSubscriberRegistered("final_waypoints"))
+    {
+      Subs["final_waypoints"] =
+          nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
+    }
+
+    return true;
+  }
+
+}
+
 // for based waypoint
 void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray& msg)
 {
