@@ -141,7 +141,7 @@ void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, doub
   }
   const double& closest_wp_vel = new_waypoints_.waypoints[closest_waypoint].twist.twist.linear.x;
   // not avoid braking
-  if (fabs(current_vel_ - closest_wp_vel) < velocity_change_limit)
+  if (fabs(current_vel_ - closest_wp_vel) < velocity_change_limit || fabs(current_vel_) < fabs(closest_wp_vel))
   {
     return;
   }
