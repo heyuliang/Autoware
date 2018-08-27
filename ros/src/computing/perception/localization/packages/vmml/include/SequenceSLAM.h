@@ -60,7 +60,7 @@ private:
 
     Eigen::MatrixXd calculateDifferenceEnhancedVector (const std::vector<cv::Mat> &preprocSrc) const;
 
-    static std::pair<int,double> findMatch(const Eigen::MatrixXd &diffMat, const int N, const int m_dist);
+    std::pair<int,double> findMatch(const Eigen::MatrixXd &diffMat, const int N, const int m_dist) const;
 };
 
 #endif /* _SEQSLAM_H_ */

@@ -149,6 +149,8 @@ public:
 	// Bug: Do Not set ratio more than once
 	void setZoomRatio (float r);
 
+	std::string getPath() const
+	{ return oxfPath; }
 
 protected:
 	CameraPinholeParams oxfCamera;

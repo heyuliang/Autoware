@@ -69,19 +69,18 @@ SequenceSLAM::normalizePatch (const cv::Mat &src, int patch_size)
 }
 
 
-void
-SequenceSLAM::find(const cv::Mat &frame)
-{
-	Eigen::VectorXd diffVec = calculateDifferenceEnhancedVector(frame);
-
-	// findMatches
-
-	Eigen::VectorXd matches =
-		Eigen::VectorXd::Constant(matchingDistance/2,
-			std::numeric_limits<Eigen::VectorXd::Scalar>::max());
-
-	// XXX: Unfinished
-}
+//void
+//SequenceSLAM::find(const cv::Mat &frame)
+//{
+//	Eigen::VectorXd diffVec = calculateDifferenceEnhancedVector(frame);
+//
+//	// findMatches
+//
+//	Eigen::VectorXd matches =
+//		Eigen::VectorXd::Constant(matchingDistance/2,
+//			std::numeric_limits<Eigen::VectorXd::Scalar>::max());
+//
+//}
 
 
 void
@@ -108,31 +107,84 @@ const
 		matches(0, N) = match.first;
 		matches(1, N) = match.second;
 	}
+
+
+	// XXX: What are the returns ?
+	return;
 }
 
 
 std::pair<int,double>
 SequenceSLAM::findMatch
 (const Eigen::MatrixXd &diffMat, const int N, const int m_dist)
+const
 {
-	// XXX: Unfinished
-}
+	const int
+		move_min = static_cast<int>(minVelocity * m_dist),
+		move_max = static_cast<int>(maxVelocity * m_dist);
 
-//template<typename Scalar, const int numRows>
-//void meanStdDev (const Eigen::Matrix<Scalar,numRows,1> &V, Scalar &mean, Scalar &stddev, bool sampleStdDev=false)
-//{
-//	mean = V.mean();
-//
-//	Scalar accum = 0;
-//	for (int i=0; i<numRows; i++) {
-//		Scalar s = V[i] - mean;
-//		accum += s*s;
-//	}
-//	if (sampleStdDev==true)
-//		stddev = sqrt(accum / (numRows-1));
-//	else
-//		stddev = sqrt(accum / numRows);
-//}
+	/* Matching is based on max and min velocity */
+	VectorXd velocity(move_max-move_min+1);
+	for (int i=0; i<velocity.size(); i++)
+		velocity[i] = double(move_min + i) / matchingDistance;
+
+    /* Create incremental indices based on the previously calculated velocity */
+	ArrayXXi increment_indices(move_max-move_min+1, matchingDistance+1);
+	for (int y=0; y<increment_indices.rows(); y++) {
+		double v_val = velocity(y, 0);
+		for (int x=0; x<increment_indices.cols(); x++) {
+			increment_indices(y, x) = static_cast<int>(floor(x*v_val));
+		}
+	}
+
+	int y_max = diffMat.rows();
+
+    /* Start trajectory */
+	int n_start = N - (matchingDistance / 2);
+	ArrayXXi X (velocity.rows(), matchingDistance+1);
+	for (int i=0; i<X.cols(); i++)
+		X.col(i) = ArrayXi::Constant(X.rows(), (n_start+i-1) * y_max);
+
+	VectorXf score(diffMat.rows());
+
+	for (int s=0; s<diffMat.rows(); s++) {
+
+		ArrayXXi Y = increment_indices + s;
+		Y = (Y>y_max).select(Y, ArrayXXi::Constant(Y.rows(), Y.cols(), y_max));
+		ArrayXXi idx_mat = X + Y;
+
+		float min_sum = std::numeric_limits<float>::max();
+		for (int r=0; r<idx_mat.rows(); r++) {
+			float sum = 0;
+
+			for (int c=0; c<idx_mat.cols(); c++) {
+				int idx = idx_mat(r, c);
+				sum += diffMat(idx%y_max, idx%y_max);
+			}
+			min_sum = std::min(min_sum, sum);
+		}
+
+		score[s] = min_sum;
+	}
+
+    /* Find the lowest score */
+	VectorXf::Index min_index_t;
+	float min_score = score.minCoeff(&min_index_t);
+	int min_index = static_cast<int>(min_index_t);
+
+    /* ... now discard the RWindow region from where we found the lowest score ... */
+	for (int i=max(0, min_index-RWindow/2);
+		i<min(int(score.size()), min_index+RWindow/2);
+		i++)
+		score[i] = std::numeric_limits<float>::max();
+
+    /* ... in order to find the second lowest score */
+	decltype(score)::Index min_index_t2;
+	float min_score_2 = score.minCoeff(&min_index_t2);
+	int min_index_2 = static_cast<int>(min_index_t2);
+
+	return make_pair(min_index_t+matchingDistance/2, min_score/min_score_2);
+}
 
 
 template<typename Derived, typename Scalar>
