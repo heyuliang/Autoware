@@ -35,8 +35,8 @@ MapBuilder2::~MapBuilder2()
 void
 MapBuilder2::initialize (const InputFrame &f1, const InputFrame &f2)
 {
-	kfid k1 = cMap->createKeyFrame(f1.image, f1.position, f1.orientation, f1.cameraId);
-	kfid k2 = cMap->createKeyFrame(f2.image, f2.position, f2.orientation, f2.cameraId);
+	kfid k1 = cMap->createKeyFrame(f1.image, f1.position, f1.orientation, f1.cameraId, NULL, f1.setKfId);
+	kfid k2 = cMap->createKeyFrame(f2.image, f2.position, f2.orientation, f2.cameraId, NULL, f2.setKfId);
 	cMap->estimateStructure(k1, k2);
 	currentAnchor = k2;
 	initialized = true;
@@ -49,7 +49,7 @@ MapBuilder2::track (const InputFrame &f)
 	if (initialized==false)
 		throw runtime_error("Map not initialized");
 
-	kfid fId = cMap->createKeyFrame(f.image, f.position, f.orientation, f.cameraId);
+	kfid fId = cMap->createKeyFrame(f.image, f.position, f.orientation, f.cameraId, NULL, f.setKfId);
 	cMap->estimateAndTrack(currentAnchor, fId);
 	currentAnchor = fId;
 }

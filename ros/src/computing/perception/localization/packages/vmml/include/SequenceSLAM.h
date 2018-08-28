@@ -12,6 +12,7 @@
 #define _SEQSLAM_H_
 
 #include <vector>
+#include <map>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
 
@@ -19,15 +20,19 @@
 #include <boost/serialization/vector.hpp>
 
 #include "cvobj_serialization.h"
+#include "datasets/GenericDataset.h"
 
 
 class SequenceSLAM
 {
 public:
+
+	static const dataItemId notId=std::numeric_limits<dataItemId>::max();
+
 	SequenceSLAM();
 	virtual ~SequenceSLAM();
 
-	void learn (const cv::Mat &imgsrc);
+	void learn (const cv::Mat &imgsrc, dataItemId frameId=notId);
 //	void learn (const std::vector<cv::Mat> &);
 
 	void build ();
@@ -42,6 +47,7 @@ public:
 	inline void serialize(Archive &ar, const unsigned int version)
 	{
 		ar & learntNormalizedImages;
+		ar & dataSetMap;
 	}
 
 protected:
@@ -54,6 +60,8 @@ protected:
 
 private:
     std::vector<cv::Mat> learntNormalizedImages;
+
+    std::map<int, dataItemId> dataSetMap;
 
 private:
     Eigen::VectorXd calculateDifferenceEnhancedVector (const cv::Mat &f) const;

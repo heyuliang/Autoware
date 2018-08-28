@@ -22,6 +22,8 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>
 
+#include <opencv2/core.hpp>
+
 using std::pair;
 using std::set;
 using std::map;
@@ -226,5 +228,10 @@ struct TTransform : public Eigen::Affine3d
 
 typedef TTransform Pose;
 
+
+/*
+ * Calculate normalized cumulative distribution function over a histogram of an image
+ */
+Eigen::VectorXd cdf (const cv::Mat &grayImage, const cv::Mat &mask=cv::Mat());
 
 #endif /* UTILITIES_H_ */

@@ -14,6 +14,7 @@
 #include <Eigen/Geometry>
 #include <opencv2/core.hpp>
 #include "VMap.h"
+#include "utilities.h"
 
 
 class Viewer;
@@ -26,14 +27,19 @@ public:
 	Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
 	bool positionIsValid = true;
 	uint cameraId = 0;
+	kfid setKfId=std::numeric_limits<kfid>::max();
 
 	InputFrame() {}
 
-	InputFrame (const cv::Mat &i, const Eigen::Vector3d &p, const Eigen::Quaterniond &o) :
+	InputFrame (const cv::Mat &i, const Eigen::Vector3d &p, const Eigen::Quaterniond &o, kfid _forceKfId=std::numeric_limits<kfid>::max()) :
 		image(i),
 		position(p),
-		orientation(o)
+		orientation(o),
+		setKfId(_forceKfId)
 	{}
+
+	Pose getPose()
+	{ return Pose::from_Pos_Quat(position, orientation); }
 };
 
 
@@ -59,6 +65,8 @@ public:
 
 	inline kfid getCurrentKeyFrameId()
 	{ return currentAnchor; }
+
+	void resetMap();
 
 
 protected:

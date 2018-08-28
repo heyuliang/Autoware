@@ -111,6 +111,8 @@ public:
 	VMap (const cv::Mat &_mask, FeatureDetectorT _fdetector, DescriptorMatcherT _dmatcher);
 	virtual ~VMap();
 
+	void reset();
+
 	int addCameraParameter (const CameraPinholeParams &vscamIntr);
 
 	void setMask(cv::Mat maskSrc);

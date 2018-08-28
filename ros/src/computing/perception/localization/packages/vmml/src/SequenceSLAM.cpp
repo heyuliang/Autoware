@@ -25,10 +25,12 @@ SequenceSLAM::~SequenceSLAM()
 
 
 void
-SequenceSLAM::learn (const cv::Mat &imgsrc)
+SequenceSLAM::learn (const cv::Mat &imgsrc, dataItemId frameId)
 {
 	cv::Mat preprocessedImg = normalizePatch(imgsrc, patchSize);
 	learntNormalizedImages.push_back(preprocessedImg);
+	int frameLrn = static_cast<int>(learntNormalizedImages.size()-1);
+	dataSetMap.insert(make_pair(frameLrn, frameId));
 }
 
 

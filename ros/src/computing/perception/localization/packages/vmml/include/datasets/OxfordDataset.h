@@ -118,6 +118,8 @@ class OxfordDataset: public GenericDataset
 {
 public:
 
+	OxfordDataset () {}
+
 	OxfordDataset (const OxfordDataset &cp);
 
 	OxfordDataset (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
@@ -133,6 +135,9 @@ public:
 
 	OxfordDataItem &at(dataItemId i) const;
 
+	/*
+	 * Get item using timestamp
+	 */
 	inline OxfordDataItem& atTime (timestamp_t t) const
 	{ return const_cast<OxfordDataItem&>(stereoRecords.at(t)); }
 

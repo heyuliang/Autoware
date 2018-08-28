@@ -105,7 +105,7 @@ ImageDatabase::rebuildAll()
 void
 ImageDatabase::newKeyFrameCallback (const kfid &k)
 {
-	seqSlamProvider.learn(cMap->keyframe(k)->getImage());
+	seqSlamProvider.learn(cMap->keyframe(k)->getImage(), k);
 }
 
 

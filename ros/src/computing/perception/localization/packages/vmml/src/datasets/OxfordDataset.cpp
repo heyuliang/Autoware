@@ -53,12 +53,20 @@ baseLinkToOffset = TTransform::from_Pos_Quat(
 
 
 OxfordDataset::OxfordDataset(const OxfordDataset &cp):
+
 	oxfCamera(cp.oxfCamera),
 	oxfPath(cp.oxfPath),
 	distortionLUT_center_x(cp.distortionLUT_center_x),
 	distortionLUT_center_y(cp.distortionLUT_center_y),
-	zoomRatio(cp.zoomRatio)
-{}
+	zoomRatio(cp.zoomRatio),
+	stereoTimestamps(cp.stereoTimestamps),
+	stereoRecords(cp.stereoRecords),
+	gpsPoseTable(cp.gpsPoseTable),
+	insPoseTable(cp.insPoseTable)
+
+{
+	zoomRatio = cp.zoomRatio;
+}
 
 
 OxfordDataset::OxfordDataset(

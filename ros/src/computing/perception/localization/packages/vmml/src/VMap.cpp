@@ -472,6 +472,15 @@ CameraPinholeParams::operator* (const float r) const
 }
 
 
+void
+VMap::reset()
+{
+	keyframeInvIdx.clear();
+	mappointInvIdx.clear();
+	pointAppearances.clear();
+	framePoints.clear();
+}
+
 
 cv::Ptr<cv::DescriptorMatcher>
 VMap::createDescriptorMatcher(DescriptorMatcherT dm)
