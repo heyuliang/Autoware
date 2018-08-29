@@ -413,3 +413,55 @@ OxfordDataset::setZoomRatio(float r)
 	zoomRatio = r;
 	oxfCamera = oxfCamera * r;
 }
+
+
+OxfordImagePreprocessor::OxfordImagePreprocessor (const string &modelDir)
+{
+	string
+		centerLut = modelDir + "/stereo_narrow_left_distortion_lut.bin",
+		centerIntrinsic = modelDir + "/stereo_narrow_left.txt";
+
+	// LUT distortion correction table
+	std::ifstream lutfd (centerLut, ifstream::ate|ifstream::binary);
+	const size_t lutfdsize = lutfd.tellg();
+	if (lutfdsize%sizeof(double) != 0)
+		throw runtime_error("File size is not correct");
+	lutfd.seekg(ifstream::beg);
+
+	cv::Mat distortionLUT_center (2, lutfdsize/(sizeof(double)*2), CV_64F);
+	lutfd.read((char*)distortionLUT_center.ptr(0), lutfdsize/2);
+	lutfd.read((char*)distortionLUT_center.ptr(1), lutfdsize/2);
+	distortionLUT_center.row(0).convertTo(distortionLUT_center_x, CV_32F);
+	distortionLUT_center.row(1).convertTo(distortionLUT_center_y, CV_32F);
+
+	distortionLUT_center_x = distortionLUT_center_x.reshape(0, 960);
+	distortionLUT_center_y = distortionLUT_center_y.reshape(0, 960);
+}
+
+
+cv::Mat
+OxfordImagePreprocessor::process(const cv::Mat &rawImage) const
+{
+	assert(rawImage.channels()==1);
+	cv::Mat colorImage;
+	// XXX: need better demosaicing algorithms
+	cv::cvtColor(rawImage, colorImage, CV_BayerGB2RGB);
+
+	cv::remap(colorImage, colorImage, distortionLUT_center_x, distortionLUT_center_y, cv::INTER_LINEAR);
+
+	if (zoomRatio==1.0)
+		return colorImage;
+	else {
+		cv::resize(colorImage, colorImage, cv::Size(), zoomRatio, zoomRatio, cv::INTER_CUBIC);
+		return colorImage;
+	}
+}
+
+
+cv::Mat
+OxfordImagePreprocessor::load (const string &rawImagePath)
+const
+{
+	cv::Mat rawImg = cv::imread(rawImagePath, cv::IMREAD_GRAYSCALE);
+	return process (rawImg);
+}

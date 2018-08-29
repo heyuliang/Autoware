@@ -36,6 +36,10 @@ find_package (OpenMP REQUIRED)
 find_package (PythonLibs REQUIRED)
 find_package (G2O REQUIRED)
 
+# Shell-like interface for testing image-based recognition and localization
+find_package (Libedit REQUIRED)	
+
+
 find_package (Qt5Widgets CONFIG REQUIRED)
 
 add_subdirectory (DBoW2)
@@ -68,7 +72,7 @@ include_directories(
 	${Boost_INCLUDE_DIRS}
 	${G2O_INCLUDE_DIR}	
 	${catkin_INCLUDE_DIRS}
-	
+	${LIBEDIT_INCLUDE_DIRS}
 )
 
 
@@ -160,6 +164,19 @@ target_link_libraries(
 		${REQUIRED_LIBS}
 		${catkin_LIBRARIES}
 )
+
+
+add_executable(test_oxford_localizer
+	src/bin/test_oxford_localizer.cpp
+)
+
+target_link_libraries(test_oxford_localizer
+	vmml
+	${REQUIRED_LIBS}
+	${LIBEDIT_LIBRARIES}
+)
+
+
 
 
 #############

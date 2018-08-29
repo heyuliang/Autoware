@@ -119,6 +119,9 @@ public:
 
 	void newKeyFrameCallback (const kfid &k);
 
+	SequenceSLAM *getSequence ()
+	{ return &seqSlamProvider; }
+
 protected:
 	friend class boost::serialization::access;
 	template<class Archive>
