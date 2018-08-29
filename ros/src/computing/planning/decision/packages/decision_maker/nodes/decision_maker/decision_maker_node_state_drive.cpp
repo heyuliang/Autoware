@@ -215,6 +215,11 @@ void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
   publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
 }
 
+void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
+{
+  publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
+}
+
 void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 {
   std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();

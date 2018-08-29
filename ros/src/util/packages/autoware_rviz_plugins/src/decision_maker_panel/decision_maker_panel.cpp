@@ -87,7 +87,17 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   signalMapper->setMapping(button_engage, QString("engage"));
   connect(button_engage, SIGNAL(clicked()), signalMapper, SLOT(map()));
 
+  QPushButton* button_stop = new QPushButton("Stop");
+  signalMapper->setMapping(button_stop, QString("found_obstacle_in_stopped_area"));
+  connect(button_stop, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
+  QPushButton* button_go = new QPushButton("Go");
+  signalMapper->setMapping(button_go, QString("clear"));
+  connect(button_go, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
   button_layout->addWidget(button_engage);
+  button_layout->addWidget(button_stop);
+  button_layout->addWidget(button_go);
 
   QHBoxLayout* button_low_layout = new QHBoxLayout;
   QPushButton* button_emergency = new QPushButton("Emergency");

@@ -285,6 +285,7 @@ private:
   void updateStoplineState(cstring_t& state_name, int status);
   void updateGoState(cstring_t& state_name, int status);
   void updateWaitState(cstring_t& state_name, int status);
+  void updateStopState(cstring_t& state_name, int status);
 
   void updateMissionCompleteState(cstring_t& state_name, int status);
   void updateMissionAbortedState(cstring_t& state_name, int status);
