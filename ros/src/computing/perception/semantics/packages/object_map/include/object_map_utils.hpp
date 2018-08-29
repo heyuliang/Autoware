@@ -124,6 +124,16 @@ namespace object_map
 	                      const std::string &in_tf_source_frame,
 	                      const tf::TransformListener &in_tf_listener);
 
+  void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map,
+	                      const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
+	                      const std::string &in_grid_layer_name,
+	                      const int in_layer_background_value,
+	                      const int in_layer_min_value,
+	                      const int in_layer_max_value,
+	                      const std::string &in_tf_target_frame,
+	                      const std::string &in_tf_source_frame,
+	                      const tf::TransformListener &in_tf_listener);
+
 
 
 } // namespace object_map

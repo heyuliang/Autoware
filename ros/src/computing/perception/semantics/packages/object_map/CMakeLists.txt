@@ -132,3 +132,20 @@ install(DIRECTORY include/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
+
+
+if (CATKIN_ENABLE_TESTING)
+  include_directories(
+          ${catkin_INCLUDE_DIRS}
+          include
+          nodes/wayarea2grid
+  )
+  catkin_add_gtest(utest
+                   test/utest_wayarea2grid.cpp
+                   nodes/wayarea2grid/wayarea2grid.cpp
+                   nodes/wayarea2grid/wayarea2grid.h)
+  target_link_libraries(utest
+            ${catkin_LIBRARIES}
+            wayarea2grid_lib
+            )
+endif()

@@ -182,6 +182,67 @@ namespace object_map
 		                                                                  in_layer_max_value);
 	}
 
+  void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map, const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
+		                      const std::string &in_grid_layer_name, const int in_layer_background_value,
+		                      const int in_layer_min_value, const int in_layer_max_value,
+		                      const std::string &in_tf_target_frame, const std::string &in_tf_source_frame,
+		                      const tf::TransformListener &in_tf_listener)
+	{
+		if(!out_grid_map.exists(in_grid_layer_name))
+		{
+			out_grid_map.add(in_grid_layer_name);
+		}
+		out_grid_map[in_grid_layer_name].setConstant(in_layer_background_value);
+
+		cv::Mat original_image;
+		grid_map::GridMapCvConverter::toImage<float, 1>(out_grid_map,
+		                                                        in_grid_layer_name,
+		                                                        CV_32FC1,
+		                                                        in_layer_min_value,
+		                                                        in_layer_max_value,
+		                                                        original_image);
+
+		cv::Mat filled_image = original_image.clone();
+
+		tf::StampedTransform tf = FindTransform(in_tf_target_frame, in_tf_source_frame, in_tf_listener);
+
+		// calculate out_grid_map position
+		grid_map::Position map_pos = out_grid_map.getPosition();
+		double origin_x_offset = out_grid_map.getLength().x() / 2.0 - map_pos.x();
+		double origin_y_offset = out_grid_map.getLength().y() / 2.0 - map_pos.y();
+
+		for (const auto &points : in_area_points)
+		{
+			std::vector<cv::Point> cv_points;
+
+      double height = 0;
+			for (const auto &p : points)
+			{
+				// transform to GridMap coordinate
+				geometry_msgs::Point tf_point = TransformPoint(p, tf);
+
+				// coordinate conversion for cv image
+				double cv_x = (out_grid_map.getLength().y() - origin_y_offset - tf_point.y) / out_grid_map.getResolution();
+				double cv_y = (out_grid_map.getLength().x() - origin_x_offset - tf_point.x) / out_grid_map.getResolution();
+				cv_points.emplace_back(cv::Point(cv_x, cv_y));
+        height = tf_point.z;
+			}
+      std::cout << "map height " << points[0].z << std::endl;
+      std::cout << "height "<< height << std::endl;
+			cv::fillConvexPoly(filled_image, cv_points.data(), cv_points.size(), height);
+		}
+    // std::cout << "M = "<< std::endl << " "  << filled_image << std::endl << std::endl;
+
+		// convert to ROS msg
+		grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(filled_image,
+		                                                                  in_grid_layer_name,
+		                                                                  out_grid_map,
+		                                                                  in_layer_min_value,
+		                                                                  in_layer_max_value);
+    // std::cout << out_grid_map << std::endl;
+
+	}
+
 	void LoadRoadAreasFromVectorMap(ros::NodeHandle& in_private_node_handle,
 	                                std::vector<std::vector<geometry_msgs::Point>>& out_area_points)
 	{

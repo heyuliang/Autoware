@@ -51,6 +51,16 @@
 
 #include "object_map_utils.hpp"
 
+class LaneInfo
+{
+public:
+  geometry_msgs::Point point;
+  geometry_msgs::Point forward_point;
+  geometry_msgs::Point backward_point;
+  double left_width;
+  double right_width;
+};
+
 namespace object_map
 {
 class WayareaToGrid
@@ -59,6 +69,8 @@ public:
   WayareaToGrid();
 
   void Run();
+
+  std::vector<geometry_msgs::Point> generateRectangleFromLaneInfo(LaneInfo lf);
 
 private:
   // handle
@@ -94,6 +106,12 @@ private:
    * Initializes Ros Publisher, Subscribers and sets the configuration parameters
    */
   void InitializeRosIo();
+
+  void loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_handle,
+                                  std::vector<LaneInfo>& lane_info_vec);
+
+  std::vector<std::vector<geometry_msgs::Point>>
+  generateLaneAreaPointsFromLaneInfo(std::vector<LaneInfo>& lane_info_vec);
 };
 
 }  // namespace object_map
