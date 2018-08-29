@@ -114,6 +114,26 @@ private:
 };
 
 
+class OxfordImagePreprocessor
+{
+public:
+
+	OxfordImagePreprocessor(const std::string &modelDir);
+
+	cv::Mat load (const std::string &rawImagePath) const;
+
+	cv::Mat process (const cv::Mat &rawImage) const;
+
+protected:
+
+	cv::Mat
+		distortionLUT_center_x,
+		distortionLUT_center_y;
+
+	float zoomRatio = 1.0;
+};
+
+
 class OxfordDataset: public GenericDataset
 {
 public:

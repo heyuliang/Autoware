@@ -78,20 +78,6 @@ void buildMap (OxfordDataset &dataset)
 			break;
 	}
 
-//	OxfordDataItem d0 = dataset.at(0);
-//	OxfordDataItem d1;
-//	for (int i=1; i<dataset.size(); i++) {
-//		d1 = dataset.at(i);
-//		double runTrans, runRot;
-//		d1.groundTruth.displacement(d0.groundTruth, runTrans, runRot);
-//		if (runTrans>=translationThrs or runRot>=rotationThrs or i>=dataset.size()) {
-//			break;
-//		}
-//	}
-
-//	InputFrame frame0 = createInputFrame(d0);
-//	InputFrame frame1 = createInputFrame(d1);
-
 	builder->initialize(frame0, frame1);
 	imgViewer->update(d1.getId(), builder->getCurrentKeyFrameId());
 

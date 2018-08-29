@@ -50,6 +50,9 @@ public:
 		ar & dataSetMap;
 	}
 
+	void imageSize(int &width, int &height) const
+	{ width=learntNormalizedImages[0].cols, height=learntNormalizedImages[0].rows; }
+
 protected:
     int patchSize = 8;
     int localRadius = 10;
