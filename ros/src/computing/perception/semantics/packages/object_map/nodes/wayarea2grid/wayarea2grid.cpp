@@ -39,16 +39,10 @@ WayareaToGrid::WayareaToGrid() : private_node_handle_("~")
 
 std::vector<geometry_msgs::Point> WayareaToGrid::generateRectangleFromLaneInfo(LaneInfo lf)
 {
-  // std::cout << "point " << lf.point << std::endl;
-  // std::cout << "point " << lf.forward_point << std::endl;
-  // std::cout << "point " << lf.backward_point << std::endl;
-  // std::cout << "left "<<lf.left_width << std::endl;
-  // std::cout << "right "<<lf.right_width << std::endl;
-
   double forward_dx  = (lf.forward_point.x - lf.point.x )*3/2;
   double forward_dy  = (lf.forward_point.y - lf.point.y )*3/2;
-  double backward_dx = (lf.backward_point.x - lf.point.x)*3/2;
-  double backward_dy = (lf.backward_point.y - lf.point.y)*3/2;
+  double backward_dx = (lf.point.x- lf.backward_point.x)*3/2;
+  double backward_dy = (lf.point.y- lf.backward_point.y )*3/2;
 
   double direction = atan2(lf.forward_point.y - lf.point.y, lf.forward_point.x - lf.point.x);
 
@@ -65,11 +59,14 @@ std::vector<geometry_msgs::Point> WayareaToGrid::generateRectangleFromLaneInfo(L
   while (right_lane_direction < -M_PI)
     right_lane_direction += 2. * M_PI;
 
-  double left_lane_x = sin(left_lane_direction)*lf.left_width + lf.point.x;
-  double left_lane_y = cos(left_lane_direction)*lf.left_width + lf.point.y;
 
-  double right_lane_x = sin(right_lane_direction)*lf.right_width + lf.point.x;
-  double right_lane_y = cos(right_lane_direction)*lf.right_width + lf.point.y;
+  double left_lane_x = cos(left_lane_direction)*lf.left_width + lf.point.x;
+  double left_lane_y = sin(left_lane_direction)*lf.left_width + lf.point.y;
+
+
+  double right_lane_x = cos(right_lane_direction)*lf.right_width + lf.point.x;
+  double right_lane_y = sin(right_lane_direction)*lf.right_width + lf.point.y;
+
 
   geometry_msgs::Point left_top;
   left_top.x = left_lane_x + forward_dx;
@@ -80,12 +77,12 @@ std::vector<geometry_msgs::Point> WayareaToGrid::generateRectangleFromLaneInfo(L
   right_top.y = right_lane_y + forward_dy;
   right_top.z = lf.point.z;
   geometry_msgs::Point right_bottom;
-  right_bottom.x = right_lane_x + backward_dx;
-  right_bottom.y = right_lane_y + backward_dy;
+  right_bottom.x = right_lane_x - backward_dx;
+  right_bottom.y = right_lane_y - backward_dy;
   right_bottom.z = lf.point.z;
   geometry_msgs::Point left_bottom;
-  left_bottom.x = left_lane_x + backward_dx;
-  left_bottom.y = left_lane_y + backward_dy;
+  left_bottom.x = left_lane_x - backward_dx;
+  left_bottom.y = left_lane_y - backward_dy;
   left_bottom.z = lf.point.z;
 
   std::vector<geometry_msgs::Point> rectangle_points{left_top, right_top, right_bottom, left_bottom};
