@@ -169,6 +169,13 @@ void DecisionMakerNode::updateFreeAreaState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryTurnState(cstring_t& state_name, int status)
 {
+  std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
+  if (get_stopsign.first != 0)
+  {
+    current_status_.found_stopsign_idx = get_stopsign.second;
+    tryNextState("found_stopline");
+    return;
+  }
   tryNextState("clear");
 }
 
@@ -238,7 +245,15 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 }
 void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
 {
-  current_status_.found_stopsign_idx = -1;
-  publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+  std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
+  if (get_stopsign.first != 0)
+  {
+    current_status_.found_stopsign_idx = get_stopsign.second;
+  }
+  else
+  {
+    current_status_.found_stopsign_idx = -1;
+    publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+  }
 }
 }

@@ -119,6 +119,9 @@ autoware_states:
         Key: clear
         Target: L_Go
       -
+        Key: found_stopline
+        Target: L_StopLine
+      -
         Key: wait
         Target: L_Wait
     Parent: LaneArea
@@ -166,6 +169,9 @@ autoware_states:
         Key: clear
         Target: R_Go
       -
+        Key: found_stopline
+        Target: R_StopLine
+      -
         Key: wait
         Target: R_Wait
     Parent: LaneArea
@@ -212,6 +218,9 @@ autoware_states:
       -
         Key: clear
         Target: Go
+      -
+        Key: found_stopline
+        Target: StopLine
       -
         Key: wait
         Target: Wait

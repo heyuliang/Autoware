@@ -183,6 +183,7 @@ inline double getDistance(double ax, double ay, double bx, double by)
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
+  intersects.clear();
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
   for (auto& area : intersects)
@@ -202,16 +203,28 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
         steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
       for (auto& wp_lane : laneinArea.waypoints)
+      {
         for (auto& lane : lane_array.lanes)
+        {
           for (auto& wp : lane.waypoints)
+          {
             if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id)
             {
               wp.wpstate.steering_state = steering_state;
             }
-            else if (wp.wpstate.steering_state == 0)
-            {
-              wp.wpstate.steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
-            }
+          }
+        }
+      }
+    }
+  }
+  for (auto& lane : lane_array.lanes)
+  {
+    for (auto& wp : lane.waypoints)
+    {
+      if (wp.wpstate.steering_state == 0)
+      {
+        wp.wpstate.steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
+      }
     }
   }
 
