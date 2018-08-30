@@ -21,7 +21,9 @@ private:
   ros::Publisher  pub_elevated_points_;
   void pointsCallback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud);
   void adasGridmapCallback(const grid_map_msgs::GridMap& in_adas_grid);
-  bool isPointInGridAndNonGround(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image,
+  // bool isPointInGridAndNonGround(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image,
+  //                       const pcl::PointXYZ &pcl_point);
+  bool isPointInGridAndNonGround(const grid_map::GridMap& in_grid_map, const grid_map::Matrix& in_grid_data,
                         const pcl::PointXYZ &pcl_point);
 };
 

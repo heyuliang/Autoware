@@ -11,10 +11,35 @@ void AdasGroundDetect::run()
 {
   sub_adas_gridmap_ = node_handle_.subscribe("/grid_map_wayarea", 1, &AdasGroundDetect::adasGridmapCallback, this);
   sub_points_       = node_handle_.subscribe("/points_raw", 1, &AdasGroundDetect::pointsCallback, this);
-  pub_elevated_points_ = node_handle_.advertise<sensor_msgs::PointCloud2>("/point_no_ground", 1);
+  pub_elevated_points_ = node_handle_.advertise<sensor_msgs::PointCloud2>("/points_no_ground", 1);
 }
 
-bool AdasGroundDetect::isPointInGridAndNonGround(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image,
+// bool AdasGroundDetect::isPointInGridAndNonGround(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image,
+//                       const pcl::PointXYZ &pcl_point)
+// {
+//   // calculate out_grid_map position
+//   grid_map::Position map_pos = in_grid_map.getPosition();
+//   double origin_x_offset = in_grid_map.getLength().x() / 2.0 - map_pos.x();
+//   double origin_y_offset = in_grid_map.getLength().y() / 2.0 - map_pos.y();
+//   // coordinate conversion for cv image
+//   double cv_x = (in_grid_map.getLength().y() - origin_y_offset - pcl_point.y) / in_grid_map.getResolution();
+//   double cv_y = (in_grid_map.getLength().x() - origin_x_offset - pcl_point.x) / in_grid_map.getResolution();
+//
+//   // check coords are inside the gridmap
+//   if (cv_x < 0 || cv_x > in_grid_image.cols || cv_y < 0 || cv_y > in_grid_image.rows)
+//   {
+//     return false;
+//   }
+//
+//   std::cout << "compare height "<< in_grid_image.at<float>(cv_y, cv_x) << std::endl;
+//   if (pcl_point.z  > in_grid_image.at<float>(cv_y, cv_x))
+//   {
+//     return true;
+//   }
+//   return false;
+// }
+
+bool AdasGroundDetect::isPointInGridAndNonGround(const grid_map::GridMap& in_grid_map, const grid_map::Matrix& in_grid_data,
                       const pcl::PointXYZ &pcl_point)
 {
   // calculate out_grid_map position
@@ -26,13 +51,14 @@ bool AdasGroundDetect::isPointInGridAndNonGround(const grid_map::GridMap& in_gri
   double cv_y = (in_grid_map.getLength().x() - origin_x_offset - pcl_point.x) / in_grid_map.getResolution();
 
   // check coords are inside the gridmap
-  if (cv_x < 0 || cv_x > in_grid_image.cols || cv_y < 0 || cv_y > in_grid_image.rows)
+  // TODO: remove magic number
+  if (cv_x < 0 || cv_x > 750 || cv_y < 0 || cv_y > 750)
   {
     return false;
   }
 
-  std::cout << "compare height "<< in_grid_image.at<float>(cv_y, cv_x) << std::endl;
-  if (pcl_point.z  > in_grid_image.at<float>(cv_y, cv_x))
+  std::cout << "compare height "<< in_grid_data(cv_y, cv_x) << std::endl;
+  if (pcl_point.z  > (in_grid_data(cv_y, cv_x) + 0.25))
   {
     return true;
   }
@@ -52,12 +78,13 @@ void AdasGroundDetect::pointsCallback(const sensor_msgs::PointCloud2ConstPtr& in
     cv::Mat grid_image;
     grid_map::GridMapCvConverter::toImage<float, 1>(adas_gridmap_,"lanearea",CV_32FC1,
                                                     -10,  10, grid_image);
-    std::cout << grid_image << std::endl;
+    // std::cout << grid_image << std::endl;
+    grid_map::Matrix grid_data = adas_gridmap_["lanearea"];
     for (unsigned int i = 0; i < in_pcl_pointcloud.size(); i++)
     {
 
       pcl::PointXYZ pcl_point = in_pcl_pointcloud[i];
-      bool point_in_grid = isPointInGridAndNonGround(adas_gridmap_, grid_image, pcl_point);
+      bool point_in_grid = isPointInGridAndNonGround(adas_gridmap_, grid_data, pcl_point);
       if(point_in_grid)
       {
         out_pcl_pointcloud.push_back(pcl_point);

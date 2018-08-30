@@ -173,55 +173,6 @@ void WayareaToGrid::loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_h
   }
 }
 
-// d::loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_handle,
-//                                 std::vector<LaneInfo>& lane_info_vec)
-// {
-//   vector_map::VectorMap vmap;
-//   vmap.subscribe(in_private_node_handle,
-//                  vector_map::Category::POINT | vector_map::Category::DTLANE |
-//                  vector_map::Category::LANE, 10);
-//
-//   std::vector<vector_map_msgs::Lane> lanes =
-//       vmap.findByFilter([](const vector_map_msgs::Lane &lane)
-//                         {
-//                           return true;
-//                         });
-//
-//   if (lanes.empty())
-//   {
-//     ROS_WARN_STREAM("No Lane...");
-//     return;
-//   }
-//
-//   int debug_count = 0;
-//   for (const auto &lane : lanes)
-//   {
-//     vector_map_msgs::Node backward_node = vmap.findByKey(vector_map::Key<vector_map::Node>(lane.bnid));
-//     vector_map_msgs::Node forward_node = vmap.findByKey(vector_map::Key<vector_map::Node>(lane.fnid));
-//
-//
-//     // vector_map_msgs::Point point = vmap.findByKey(vector_map::Key<vector_map::Point>(dtlane.pid));
-//     vector_map_msgs::Point backward_point = vmap.findByKey(vector_map::Key<vector_map::Point>(backward_node.pid));
-//     vector_map_msgs::Point forward_point = vmap.findByKey(vector_map::Key<vector_map::Point>(forward_node.pid));
-//
-//     LaneInfo li;
-//     // li.point = vector_map::convertPointToGeomPoint(point);
-//     li.backward_point = vector_map::convertPointToGeomPoint(backward_point);
-//     li.forward_point = vector_map::convertPointToGeomPoint(forward_point);
-//     li.left_width  = dtlane.lw;
-//     li.right_width = dtlane.rw;
-//     lane_info_vec.push_back(li);
-//     if(debug_count < 5)
-//     {
-//       std::cout << "lane did " << lane.did << std::endl;
-//       std::cout << "forward lane did "<<forward_lane.did << std::endl;
-//     }
-//     debug_count++;
-//     // std::cout << "lane did " << lane.did << std::endl;
-//     // return;
-//   }
-// }
-
 void WayareaToGrid::InitializeRosIo()
 {
   private_node_handle_.param<std::string>("sensor_frame", sensor_frame_, "velodyne");
@@ -234,6 +185,7 @@ void WayareaToGrid::InitializeRosIo()
 
   publisher_grid_map_ = node_handle_.advertise<grid_map_msgs::GridMap>("grid_map_wayarea", 1, true);
   publisher_occupancy_ = node_handle_.advertise<nav_msgs::OccupancyGrid>("occupancy_wayarea", 1, true);
+  pub_point_ = node_handle_.advertise<sensor_msgs::PointCloud2>("grid_map_point", 1, true);
 }
 
 void WayareaToGrid::Run()
@@ -275,10 +227,16 @@ void WayareaToGrid::Run()
 
     if (!lane_area_points.empty())
     {
-      FillPolygonLaneAreas(gridmap_, lane_area_points, "lanearea", -10, -10,
+      FillPolygonLaneAreas(gridmap_, lane_area_points, "lanearea", 10, -10,
                        10, sensor_frame_, map_frame_, tf_listener_);
       PublishGridMap(gridmap_, publisher_grid_map_);
       PublishOccupancyGrid(gridmap_, publisher_occupancy_, "lanearea", -10, 10);
+
+
+      sensor_msgs::PointCloud2 pointCloud;
+      grid_map::GridMapRosConverter::toPointCloud(gridmap_, "lanearea", pointCloud);
+      pub_point_.publish(pointCloud);
+
     }
 
     // PublishGridMap(gridmap_, publisher_grid_map_);

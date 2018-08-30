@@ -79,6 +79,7 @@ private:
 
   ros::Publisher publisher_grid_map_;
   ros::Publisher publisher_occupancy_;
+  ros::Publisher pub_point_;
 
   grid_map::GridMap gridmap_;
 

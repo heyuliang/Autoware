@@ -182,6 +182,21 @@ namespace object_map
 		                                                                  in_layer_max_value);
 	}
 
+  void addLayerFromImageWithoutNormValues(const cv::Mat& image, const std::string &in_grid_layer_name, grid_map::GridMap& grid_map)
+  {
+    grid_map.add(in_grid_layer_name);
+    grid_map::Matrix& data = grid_map[in_grid_layer_name];
+
+    for (grid_map::GridMapIterator iterator(grid_map); !iterator.isPastEnd(); ++iterator)
+    {
+      const grid_map::Index index(*iterator);
+      // Compute value.
+      const float image_value = image.at<float>(index(0), index(1));
+      // const float mapValue = lowerValue + mapValueDifference * ((float) imageValue / maxImageValue);
+      data(index(0), index(1)) = image_value;
+    }
+  }
+
   void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map, const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
 		                      const std::string &in_grid_layer_name, const int in_layer_background_value,
 		                      const int in_layer_min_value, const int in_layer_max_value,
@@ -203,6 +218,7 @@ namespace object_map
 		                                                        original_image);
 
 		cv::Mat filled_image = original_image.clone();
+    // std::cout << "M = "<< std::endl << " "  << original_image << std::endl << std::endl;
 
 		tf::StampedTransform tf = FindTransform(in_tf_target_frame, in_tf_source_frame, in_tf_listener);
 
@@ -227,20 +243,20 @@ namespace object_map
 				cv_points.emplace_back(cv::Point(cv_x, cv_y));
         height = tf_point.z;
 			}
-      std::cout << "map height " << points[0].z << std::endl;
-      std::cout << "height "<< height << std::endl;
+      // std::cout << "map height " << points[0].z << std::endl;
+      // std::cout << "height "<< height << std::endl;
 			cv::fillConvexPoly(filled_image, cv_points.data(), cv_points.size(), height);
 		}
     // std::cout << "M = "<< std::endl << " "  << filled_image << std::endl << std::endl;
 
 		// convert to ROS msg
-		grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(filled_image,
-		                                                                  in_grid_layer_name,
-		                                                                  out_grid_map,
-		                                                                  in_layer_min_value,
-		                                                                  in_layer_max_value);
+		// grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(filled_image,
+		//                                                                   in_grid_layer_name,
+		//                                                                   out_grid_map,
+		//                                                                   in_layer_min_value,
+		//                                                                   in_layer_max_value);
     // std::cout << out_grid_map << std::endl;
-
+    addLayerFromImageWithoutNormValues(filled_image, in_grid_layer_name, out_grid_map);
 	}
 
 	void LoadRoadAreasFromVectorMap(ros::NodeHandle& in_private_node_handle,

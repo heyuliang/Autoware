@@ -124,6 +124,10 @@ namespace object_map
 	                      const std::string &in_tf_source_frame,
 	                      const tf::TransformListener &in_tf_listener);
 
+  void addLayerFromImageWithoutNormValues(const cv::Mat& image,
+                                 const std::string &in_grid_layer_name,
+                                 grid_map::GridMap& grid_map);
+
   void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map,
 	                      const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
 	                      const std::string &in_grid_layer_name,
