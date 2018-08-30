@@ -106,6 +106,7 @@ private:
 
   bool is_state_drive_ = false;
   bool is_valid_gear_ = false;
+  bool is_emergency_ = false;
 };
 
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
@@ -190,8 +191,14 @@ void TwistGate::check_state()
   }
   if (!is_state_drive_ || !is_valid_gear_)
   {
-    twist_gate_msg_.twist_cmd.twist = geometry_msgs::Twist();
-    twist_gate_msg_.ctrl_cmd = autoware_msgs::ControlCommand();
+    if (!is_emergency_)
+    {
+      twist_gate_msg_.twist_cmd.twist.angular = geometry_msgs::Vector3();
+      twist_gate_msg_.ctrl_cmd.steering_angle = 0.0;
+    }
+    twist_gate_msg_.twist_cmd.twist.linear = geometry_msgs::Vector3();
+    twist_gate_msg_.ctrl_cmd.linear_velocity = 0.0;
+    twist_gate_msg_.ctrl_cmd.linear_acceleration = 0.0;
   }
 }
 
@@ -405,14 +412,8 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
     }
 
     // get drive state
-    if (input_msg->data.find("Drive\n") != std::string::npos)
-    {
-      is_state_drive_ = true;
-    }
-    else
-    {
-      is_state_drive_ = false;
-    }
+    is_state_drive_ = (input_msg->data.find("Drive\n") != std::string::npos) ? true : false;
+    is_emergency_ = (input_msg->data == "Emergency\n") ? true : false;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
