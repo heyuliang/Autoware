@@ -223,6 +223,7 @@ private:
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
   bool waitForEvent(cstring_t& key, const bool& flag);
   bool waitForEvent(cstring_t& key, const bool& flag, const double& timeout);
+  bool drivingMissionCheck(void);
 
   double calcIntersectWayAngle(const autoware_msgs::lane& laneinArea);
   double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
@@ -284,6 +285,7 @@ private:
   void updateStoplineState(cstring_t& state_name, int status);
   void updateGoState(cstring_t& state_name, int status);
   void updateWaitState(cstring_t& state_name, int status);
+  void updateStopState(cstring_t& state_name, int status);
 
   void updateMissionCompleteState(cstring_t& state_name, int status);
   void updateMissionAbortedState(cstring_t& state_name, int status);

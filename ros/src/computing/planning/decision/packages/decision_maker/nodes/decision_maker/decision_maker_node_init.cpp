@@ -103,13 +103,13 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallback(state_machine::CallbackType::UPDATE, "B_StopLine",
                    std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
   ctx->setCallback(state_machine::CallbackType::UPDATE, "Stop",
-                   std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 1));
+                   std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
   ctx->setCallback(state_machine::CallbackType::UPDATE, "L_Stop",
-                   std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 1));
+                   std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
   ctx->setCallback(state_machine::CallbackType::UPDATE, "R_Stop",
-                   std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 1));
+                   std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
   ctx->setCallback(state_machine::CallbackType::UPDATE, "B_Stop",
-                   std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 1));
+                   std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
   ctx->setCallback(state_machine::CallbackType::EXIT, "Wait",
                    std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
   ctx->setCallback(state_machine::CallbackType::EXIT, "L_Wait",

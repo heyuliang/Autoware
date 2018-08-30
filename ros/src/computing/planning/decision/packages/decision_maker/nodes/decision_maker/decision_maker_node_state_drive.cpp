@@ -14,6 +14,30 @@ void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
     return;
   }
 
+  if (isEventFlagTrue("received_based_lane_waypoint"))
+  {
+    setEventFlag("received_based_lane_waypoint", false);
+    // publishOperatorHelpMessage("Received new waypoint.");
+    if (!drivingMissionCheck())
+    {
+      publishOperatorHelpMessage("Failed to change the mission.");
+      tryNextState("mission_aborted");
+      return;
+    }
+    else
+    {
+      publishOperatorHelpMessage("Mission change succeeded.");
+      return;
+    }
+  }
+
+  if (current_status_.closest_waypoint == -1)
+  {
+    publishOperatorHelpMessage("The vehicle passed last waypoint or waypoint does not exist near the vehicle.");
+    tryNextState("mission_aborted");
+    return;
+  }
+
   if (isVehicleOnLaneArea())
   {
     tryNextState("on_lane_area");
@@ -117,7 +141,7 @@ void DecisionMakerNode::updateLaneAreaState(cstring_t& state_name, int status)
     return;
   }
 
-  if(isEventFlagTrue("received_back_state_waypoint"))
+  if (isEventFlagTrue("received_back_state_waypoint"))
   {
     tryNextState("on_back");
     return;
@@ -145,6 +169,13 @@ void DecisionMakerNode::updateFreeAreaState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryTurnState(cstring_t& state_name, int status)
 {
+  std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
+  if (get_stopsign.first != 0)
+  {
+    current_status_.found_stopsign_idx = get_stopsign.second;
+    tryNextState("found_stopline");
+    return;
+  }
   tryNextState("clear");
 }
 
@@ -184,6 +215,11 @@ void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
   publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
 }
 
+void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
+{
+  publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
+}
+
 void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 {
   std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
@@ -214,7 +250,15 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 }
 void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
 {
-  current_status_.found_stopsign_idx = -1;
-  publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+  std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
+  if (get_stopsign.first != 0)
+  {
+    current_status_.found_stopsign_idx = get_stopsign.second;
+  }
+  else
+  {
+    current_status_.found_stopsign_idx = -1;
+    publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+  }
 }
 }
