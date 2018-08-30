@@ -26,11 +26,15 @@ using namespace std;
 typedef vector<string> stringTokens;
 
 
+const string TestPrompt = "OX>";
+
+
 class LineEditor
 {
 public:
-LineEditor(const char *argv0)
+LineEditor(const char *argv0, const string &askPrompt="")
 {
+	prompt = askPrompt + ' ';
 	el = el_init("test_localizer", stdin, stdout, stderr);
 	rl_initialize();
 	tokenizer = tok_init(NULL);
@@ -46,7 +50,7 @@ stringTokens getLine ()
 {
 	int nt;
 	const char **stoklist;
-	char *sline = readline("L> ");
+	char *sline = readline(prompt.c_str());
 	tok_str(tokenizer, sline, &nt, &stoklist);
 
 	stringTokens st;
@@ -62,6 +66,7 @@ stringTokens getLine ()
 protected:
 	EditLine *el;
 	Tokenizer *tokenizer;
+	string prompt;
 };
 
 
@@ -78,33 +83,133 @@ int localize_seq_slam (SequenceSLAM *seqSl, OxfordImagePreprocessor &proc, const
 }
 
 
-int main (int argc, char *argv[])
+
+
+
+
+class LocalizerApp
 {
-	LineEditor mLineEditor (argv[0]);
-	bool doExit = false;
+public:
+LocalizerApp (int argc, char *argv[]):
+	mLineEditor(argv[0], TestPrompt)
+{
 
-	VMap maptest;
-	maptest.load(argv[1]);
-	ImageDatabase *imgDb = maptest.getImageDB();
-	SequenceSLAM *seqSlProv = imgDb->getSequence();
+}
 
-	OxfordImagePreprocessor imgLoader("/home/sujiwo/Sources/robotcar-dataset-sdk/models");
 
+~LocalizerApp ()
+{
+	if (mapSrc)
+		delete(mapSrc);
+	if (localizTestDataSrc)
+		delete(localizTestDataSrc);
+}
+
+
+void loop()
+{
+	bool doExit=false;
 	while (doExit==false) {
+
 		stringTokens command = mLineEditor.getLine();
 
-		if (command[0]=="loc") {
-			int k = localize_seq_slam(seqSlProv, imgLoader, command[1]);
-			cout << k << endl;
-		}
-
-		else if (command[0]=="print") {
-
-		}
-
-		else if (command[0]=="quit") {
+		if (command[0]=="quit")
 			doExit = true;
-			break;
-		}
+
+		else if (command[0]=="map")
+			map_open_cmd(command[1]);
+
+		else if (command[0]=="dataset")
+			dataset_open_cmd(command[1], command[2]);
+
+		else if (command[0]=="trajectory")
+			map_trajectory_dump(command[1]);
+
+		else if (command[0]=="find")
+			map_find_cmd(command[1]);
+
+		else if (command[0]=="save")
+			dataset_save_dsecond(command[1]);
+
+		else if (command[0]=="zoom")
+			dataset_set_zoom(command[1]);
 	}
+}
+
+
+protected:
+	LineEditor mLineEditor;
+
+	VMap *mapSrc = NULL;
+	ImageDatabase *imgDb = NULL;
+	SequenceSLAM *seqSlProv = NULL;
+
+	OxfordDataset *localizTestDataSrc = NULL;
+
+
+private:
+
+	void map_open_cmd(const string &mapPath)
+	{
+		mapSrc = new VMap();
+		mapSrc->load(mapPath);
+		debug("Map loaded");
+		imgDb = mapSrc->getImageDB();
+		seqSlProv = imgDb->getSequence();
+	}
+
+	void map_trajectory_dump(const string &dumpPath)
+	{
+
+	}
+
+	void dataset_open_cmd(const string &dsPath, const string &modelDir)
+	{
+		localizTestDataSrc = new OxfordDataset(dsPath, modelDir);
+		debug("Dataset loaded");
+	}
+
+	void map_find_cmd(const string &durationSecStr)
+	{
+		double d = std::stod(durationSecStr);
+		auto di = localizTestDataSrc->atDurationSecond(d);
+		cv::Mat img = di.getImage();
+		cv::cvtColor(img, img, CV_RGB2GRAY);
+		seqSlProv->find(img, 10);
+	}
+
+	const string dumpImagePath = "/tmp/dump_image.png";
+
+	void dataset_save_dsecond(const string &durationSecStr)
+	{
+		double d = std::stod(durationSecStr);
+		auto di = localizTestDataSrc->atDurationSecond(d);
+		cv::Mat img = di.getImage();
+		cv::imwrite(dumpImagePath, img);
+		debug("Dumped to " + dumpImagePath);
+	}
+
+	void debug(const string &s)
+	{
+		cerr << s << endl;
+	}
+
+	void dataset_set_zoom(const string &zstr)
+	{
+		float z = std::stof(zstr);
+		localizTestDataSrc->setZoomRatio(z);
+	}
+
+};
+
+
+
+
+
+int main (int argc, char *argv[])
+{
+	LocalizerApp mainApp(argc, argv);
+	mainApp.loop();
+
+	return 0;
 }
