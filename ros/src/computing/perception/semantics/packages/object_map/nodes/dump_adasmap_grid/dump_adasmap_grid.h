@@ -51,53 +51,69 @@
 
 #include "object_map_utils.hpp"
 
+class LaneInfo
+{
+public:
+  geometry_msgs::Point point;
+  geometry_msgs::Point forward_point;
+  geometry_msgs::Point backward_point;
+  double left_width;
+  double right_width;
+};
+
 namespace object_map
 {
+class WayareaToGrid
+{
+public:
+  WayareaToGrid();
 
-	class WayareaToGrid
-	{
-	public:
-		WayareaToGrid();
+  void Run();
 
-		void Run();
+  std::vector<geometry_msgs::Point> generateRectangleFromLaneInfo(LaneInfo lf);
 
-	private:
-		// handle
-		ros::NodeHandle         node_handle_;
-		ros::NodeHandle         private_node_handle_;
+private:
+  // handle
+  ros::NodeHandle node_handle_;
+  ros::NodeHandle private_node_handle_;
 
-		ros::Publisher          publisher_grid_map_;
-		ros::Publisher          publisher_occupancy_;
+  ros::Publisher publisher_grid_map_;
+  ros::Publisher publisher_occupancy_;
+  ros::Publisher pub_point_;
 
-		grid_map::GridMap       gridmap_;
+  grid_map::GridMap gridmap_;
 
-		std::string             sensor_frame_;
-		std::string             map_frame_;
+  std::string sensor_frame_;
+  std::string map_frame_;
 
-		const std::string       grid_layer_name_ = "wayarea";
+  const std::string grid_layer_name_ = "wayarea";
 
-		double                  grid_resolution_;
-		double                  grid_length_x_;
-		double                  grid_length_y_;
-		double                  grid_position_x_;
-		double                  grid_position_y_;
+  double grid_resolution_;
+  double grid_length_x_;
+  double grid_length_y_;
+  double grid_position_x_;
+  double grid_position_y_;
 
-		tf::TransformListener   tf_listener_;
+  tf::TransformListener tf_listener_;
 
-		int                     OCCUPANCY_ROAD      = 128;
-		int                     OCCUPANCY_NO_ROAD   = 255;
-		const int               grid_min_value_     = 0;
-		const int               grid_max_value_     = 255;
+  int OCCUPANCY_ROAD = 128;
+  int OCCUPANCY_NO_ROAD = 255;
+  const int grid_min_value_ = 0;
+  const int grid_max_value_ = 255;
 
-		std::vector<std::vector<geometry_msgs::Point>> area_points_;
+  std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
-		/*!
-		 * Initializes Ros Publisher, Subscribers and sets the configuration parameters
-		 */
-		void InitializeRosIo();
+  /*!
+   * Initializes Ros Publisher, Subscribers and sets the configuration parameters
+   */
+  void InitializeRosIo();
 
+  void loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_handle,
+                                  std::vector<LaneInfo>& lane_info_vec);
 
-	};
+  std::vector<std::vector<geometry_msgs::Point>>
+  generateLaneAreaPointsFromLaneInfo(std::vector<LaneInfo>& lane_info_vec);
+};
 
 }  // namespace object_map
 

@@ -94,7 +94,7 @@ target_link_libraries(grid_map_filter
         grid_map_filter_lib
         )
 
-### wayarea2grid ###
+## wayarea2grid ###
 add_library(wayarea2grid_lib
         nodes/wayarea2grid/wayarea2grid.h
         include/object_map_utils.hpp
@@ -133,19 +133,58 @@ install(DIRECTORY include/
         PATTERN ".svn" EXCLUDE
         )
 
+#dump_adasmap_grid
+add_library(dump_adasmap_grid_lib
+        nodes/dump_adasmap_grid/dump_adasmap_grid.h
+        include/object_map_utils.hpp
+        nodes/dump_adasmap_grid/dump_adasmap_grid.cpp
+        )
+target_link_libraries(dump_adasmap_grid_lib
+        ${catkin_LIBRARIES}
+        object_map_utils_lib
+        )
+
+add_executable(dump_adasmap_grid
+        nodes/dump_adasmap_grid/dump_adasmap_grid.h
+        nodes/dump_adasmap_grid/dump_adasmap_grid_node.cpp
+        )
+
+target_link_libraries(dump_adasmap_grid
+        ${catkin_LIBRARIES}
+        dump_adasmap_grid_lib
+        )
+
+install(TARGETS dump_adasmap_grid grid_map_filter potential_field points2costmap laserscan2costmap
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY config/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE
+        )
+
 
 if (CATKIN_ENABLE_TESTING)
   include_directories(
           ${catkin_INCLUDE_DIRS}
           include
-          nodes/wayarea2grid
+          nodes/dump_adasmap_grid
   )
   catkin_add_gtest(utest
-                   test/utest_wayarea2grid.cpp
-                   nodes/wayarea2grid/wayarea2grid.cpp
-                   nodes/wayarea2grid/wayarea2grid.h)
+                   test/utest_dump_adasmap_grid.cpp
+                   nodes/dump_adasmap_grid/dump_adasmap_grid.cpp
+                   nodes/dump_adasmap_grid/dump_adasmap_grid.h)
   target_link_libraries(utest
             ${catkin_LIBRARIES}
-            wayarea2grid_lib
+            dump_adasmap_grid_lib
             )
 endif()

@@ -29,14 +29,14 @@
  ********************
  */
 #include <ros/ros.h>
-#include "wayarea2grid.h"
+#include "dump_adasmap_grid.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "wayarea2grid");
-	object_map::WayareaToGrid wayarea2grid;
+  ros::init(argc, argv, "dump_adasmap_grid");
+  object_map::WayareaToGrid wayarea2grid;
 
-	wayarea2grid.Run();
+  wayarea2grid.Run();
 
-	return 0;
+  return 0;
 }
