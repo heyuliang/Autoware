@@ -86,6 +86,15 @@ SequenceSLAM::normalizePatch (const cv::Mat &src, int patch_size)
 
 
 void
+SequenceSLAM::find (const cv::Mat &f, const int matchingDistance)
+const
+{
+	vector<cv::Mat> MS = {f};
+	return find(MS, matchingDistance);
+}
+
+
+void
 SequenceSLAM::find (const vector<cv::Mat> &imgLst, const int matching_distance)
 const
 {
@@ -95,7 +104,7 @@ const
 		preprocessSrc.at(i) = normalizePatch(imgLst[i], patchSize);
 	}
 
-	MatrixXd diffEnhancedMat = calculateDifferenceEnhancedVector(preprocessSrc);
+	MatrixXd diffEnhancedMat = calculateDifferenceEnhancedMatrix(preprocessSrc);
 
 	int mDist = matching_distance + (matching_distance % 2);
 	int half_mDist = mDist / 2;
@@ -104,12 +113,12 @@ const
 		MatrixXf::Constant(2, diffEnhancedMat.cols(),
 			std::numeric_limits<MatrixXf::Scalar>::max());
 
+	// XXX: This code is still mysterious
 	for (int N=half_mDist+1; N<(diffEnhancedMat.cols() - half_mDist); N++) {
 		pair<int,double> match = findMatch(diffEnhancedMat, N, mDist);
 		matches(0, N) = match.first;
 		matches(1, N) = match.second;
 	}
-
 
 	// XXX: What are the returns ?
 	return;
@@ -212,44 +221,44 @@ void meanStdDev (
 }
 
 
-Eigen::VectorXd
-SequenceSLAM::calculateDifferenceEnhancedVector (const cv::Mat &frame) const
-{
-	const uint32_t N = learntNormalizedImages.size();
-	Eigen::VectorXd diffVec (N+1);
-
-	for (int i=0; i<N; i++) {
-		double S = cv::sum(cv::abs(frame-learntNormalizedImages[i]))[0] / N;
-		diffVec[i] = S;
-	}
-	/* Includes additional value on diff vector with infinite value, to penalize out of bounds cases */
-	diffVec[N] = std::numeric_limits<double>::max();
-
-	// Enhance local contrast
-	Eigen::VectorXd diffEnhanced (diffVec.size());
-	for (int i=0; i<diffVec.size(); i++) {
-		int lowerBound = std::max(0, i-localRadius/2);
-		int upperBound = std::min((int)diffVec.size(), i+1+localRadius/2);
-
-		double mean, stddev;
-		Eigen::VectorXd patch = diffVec.block(lowerBound, 0, upperBound-lowerBound, 1);
-		meanStdDev(patch, mean, stddev, true);
-
-		/* Enhance contrast by (local_patch - patch_mean) / patch_stddev */
-		diffEnhanced[i] = (diffVec[i] - mean) * (1/stddev);
-	}
-
-	/* Shift so that the minimum value in the vector is 0 */
-	double minval = diffEnhanced.minCoeff();
-	for (int i=0; i<diffEnhanced.size(); i++)
-		diffEnhanced[i] -= minval;
-
-	return diffEnhanced;
-}
+//Eigen::VectorXd
+//SequenceSLAM::calculateDifferenceEnhancedMatrix (const cv::Mat &frame) const
+//{
+//	const uint32_t N = learntNormalizedImages.size();
+//	Eigen::VectorXd diffVec (N+1);
+//
+//	for (int i=0; i<N; i++) {
+//		double S = cv::sum(cv::abs(frame-learntNormalizedImages[i]))[0] / N;
+//		diffVec[i] = S;
+//	}
+//	/* Includes additional value on diff vector with infinite value, to penalize out of bounds cases */
+//	diffVec[N] = std::numeric_limits<double>::max();
+//
+//	// Enhance local contrast
+//	Eigen::VectorXd diffEnhanced (diffVec.size());
+//	for (int i=0; i<diffVec.size(); i++) {
+//		int lowerBound = std::max(0, i-localRadius/2);
+//		int upperBound = std::min((int)diffVec.size(), i+1+localRadius/2);
+//
+//		double mean, stddev;
+//		Eigen::VectorXd patch = diffVec.block(lowerBound, 0, upperBound-lowerBound, 1);
+//		meanStdDev(patch, mean, stddev, true);
+//
+//		/* Enhance contrast by (local_patch - patch_mean) / patch_stddev */
+//		diffEnhanced[i] = (diffVec[i] - mean) * (1/stddev);
+//	}
+//
+//	/* Shift so that the minimum value in the vector is 0 */
+//	double minval = diffEnhanced.minCoeff();
+//	for (int i=0; i<diffEnhanced.size(); i++)
+//		diffEnhanced[i] -= minval;
+//
+//	return diffEnhanced;
+//}
 
 
 MatrixXd
-SequenceSLAM::calculateDifferenceEnhancedVector (const std::vector<cv::Mat> &preprocSrc)
+SequenceSLAM::calculateDifferenceEnhancedMatrix (const std::vector<cv::Mat> &preprocSrc)
 const
 {
 	const uint32_t N = learntNormalizedImages.size(),

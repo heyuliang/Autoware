@@ -7,6 +7,7 @@
 
 
 #include <fstream>
+#include <algorithm>
 #include <exception>
 #include <cstdio>
 #include <Eigen/Eigen>
@@ -415,6 +416,22 @@ OxfordDataset::setZoomRatio(float r)
 }
 
 
+OxfordDataItem&
+OxfordDataset::atDurationSecond (const double second) const
+{
+	timestamp_t tx=stereoTimestamps[0] + static_cast<timestamp_t>(second*1e6);
+	return atApproximate(tx);
+}
+
+
+OxfordDataItem&
+OxfordDataset::atApproximate(timestamp_t t) const
+{
+	auto it = std::lower_bound(stereoTimestamps.begin(), stereoTimestamps.end(), t);
+	return atTime(*it);
+}
+
+
 OxfordImagePreprocessor::OxfordImagePreprocessor (const string &modelDir)
 {
 	string
@@ -465,3 +482,5 @@ const
 	cv::Mat rawImg = cv::imread(rawImagePath, cv::IMREAD_GRAYSCALE);
 	return process (rawImg);
 }
+
+

@@ -37,8 +37,11 @@ public:
 
 	void build ();
 
-	void find (const cv::Mat &f);
+	void find (const cv::Mat &f, const int matchingDistance) const;
 
+	/*
+	 * XXX: all input images must have same size with training images
+	 */
 	void find (const std::vector<cv::Mat> &imgLst, const int matchingDistance) const;
 
 	static cv::Mat normalizePatch (const cv::Mat &src, int patch_size);
@@ -67,9 +70,9 @@ private:
     std::map<int, dataItemId> dataSetMap;
 
 private:
-    Eigen::VectorXd calculateDifferenceEnhancedVector (const cv::Mat &f) const;
+//    Eigen::VectorXd calculateDifferenceEnhancedMatrix (const cv::Mat &f) const;
 
-    Eigen::MatrixXd calculateDifferenceEnhancedVector (const std::vector<cv::Mat> &preprocSrc) const;
+    Eigen::MatrixXd calculateDifferenceEnhancedMatrix (const std::vector<cv::Mat> &preprocSrc) const;
 
     std::pair<int,double> findMatch(const Eigen::MatrixXd &diffMat, const int N, const int m_dist) const;
 };

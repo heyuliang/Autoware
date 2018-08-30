@@ -161,6 +161,10 @@ public:
 	inline OxfordDataItem& atTime (timestamp_t t) const
 	{ return const_cast<OxfordDataItem&>(stereoRecords.at(t)); }
 
+	OxfordDataItem& atApproximate (timestamp_t t) const;
+
+	OxfordDataItem& atDurationSecond (const double second) const;
+
 	friend struct OxfordDataItem;
 	cv::Mat undistort (cv::Mat &src);
 
