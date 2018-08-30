@@ -9,7 +9,7 @@ AdasGroundDetect::AdasGroundDetect()
 
 void AdasGroundDetect::run()
 {
-  sub_adas_gridmap_ = node_handle_.subscribe("/grid_map_wayarea", 1, &AdasGroundDetect::adasGridmapCallback, this);
+  sub_adas_gridmap_ = node_handle_.subscribe("/adas_grid_map", 1, &AdasGroundDetect::adasGridmapCallback, this);
   sub_points_       = node_handle_.subscribe("/points_raw", 1, &AdasGroundDetect::pointsCallback, this);
   pub_elevated_points_ = node_handle_.advertise<sensor_msgs::PointCloud2>("/points_no_ground", 1);
 }

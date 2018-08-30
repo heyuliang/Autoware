@@ -183,7 +183,7 @@ void WayareaToGrid::InitializeRosIo()
   private_node_handle_.param<double>("grid_position_x", grid_position_x_, 20);
   private_node_handle_.param<double>("grid_position_x", grid_position_y_, 0);
 
-  publisher_grid_map_ = node_handle_.advertise<grid_map_msgs::GridMap>("grid_map_wayarea", 1, true);
+  publisher_grid_map_ = node_handle_.advertise<grid_map_msgs::GridMap>("adas_grid_map", 1, true);
   publisher_occupancy_ = node_handle_.advertise<nav_msgs::OccupancyGrid>("occupancy_wayarea", 1, true);
   pub_point_ = node_handle_.advertise<sensor_msgs::PointCloud2>("grid_map_point", 1, true);
 }
