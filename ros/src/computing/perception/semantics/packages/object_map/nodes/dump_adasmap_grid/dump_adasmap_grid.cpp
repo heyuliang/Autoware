@@ -159,14 +159,14 @@ void WayareaToGrid::loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_h
     li.left_width  = dtlane.lw;
     li.right_width = dtlane.rw;
     lane_info_vec.push_back(li);
-    if(debug_count < 5)
-    {
-      std::cout << "lane did " << lane.did << std::endl;
-      std::cout << "forward lane did "<<forward_lane.did << std::endl;
-      std::cout << "backward lane did "<<backward_lane.did << std::endl;
-      std::cout << "forward point "<< li.forward_point << std::endl;
-      std::cout << "backward point "<< li.backward_point << std::endl;
-    }
+    // if(debug_count < 5)
+    // {
+    //   std::cout << "lane did " << lane.did << std::endl;
+    //   std::cout << "forward lane did "<<forward_lane.did << std::endl;
+    //   std::cout << "backward lane did "<<backward_lane.did << std::endl;
+    //   std::cout << "forward point "<< li.forward_point << std::endl;
+    //   std::cout << "backward point "<< li.backward_point << std::endl;
+    // }
     debug_count++;
     // std::cout << "lane did " << lane.did << std::endl;
     // return;
@@ -175,11 +175,11 @@ void WayareaToGrid::loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_h
 
 void WayareaToGrid::InitializeRosIo()
 {
-  private_node_handle_.param<std::string>("sensor_frame", sensor_frame_, "velodyne");
+  private_node_handle_.param<std::string>("world_frame", world_frame_, "world");
   private_node_handle_.param<std::string>("map_frame", map_frame_, "map");
   private_node_handle_.param<double>("grid_resolution", grid_resolution_, 0.2);
-  private_node_handle_.param<double>("grid_length_x", grid_length_x_, 80);
-  private_node_handle_.param<double>("grid_length_y", grid_length_y_, 30);
+  private_node_handle_.param<double>("grid_length_x", grid_length_x_, 150);
+  private_node_handle_.param<double>("grid_length_y", grid_length_y_, 150);
   private_node_handle_.param<double>("grid_position_x", grid_position_x_, 20);
   private_node_handle_.param<double>("grid_position_x", grid_position_y_, 0);
 
@@ -206,11 +206,12 @@ void WayareaToGrid::Run()
   {
     if (!set_map)
     {
-      gridmap_.add(grid_layer_name_);
-      gridmap_.setFrameId(sensor_frame_);
+      gridmap_.add("lanearea");
+      // gridmap_.add(grid_layer_name_);
+      // gridmap_.setFrameId(sensor_frame_);
+      gridmap_.setFrameId(world_frame_);
       gridmap_.setGeometry(grid_map::Length(grid_length_x_, grid_length_y_), grid_resolution_,
                            grid_map::Position(grid_position_x_, grid_position_y_));
-      gridmap_.add("lanearea");
       set_map = true;
     }
 
@@ -227,8 +228,8 @@ void WayareaToGrid::Run()
 
     if (!lane_area_points.empty())
     {
-      FillPolygonLaneAreas(gridmap_, lane_area_points, "lanearea", 10, -10,
-                       10, sensor_frame_, map_frame_, tf_listener_);
+      FillPolygonLaneAreas(gridmap_, lane_area_points, "lanearea", 20, -10,
+                       10, "world", map_frame_, tf_listener_);
       PublishGridMap(gridmap_, publisher_grid_map_);
       PublishOccupancyGrid(gridmap_, publisher_occupancy_, "lanearea", -10, 10);
 

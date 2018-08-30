@@ -83,7 +83,7 @@ private:
 
   grid_map::GridMap gridmap_;
 
-  std::string sensor_frame_;
+  std::string world_frame_;
   std::string map_frame_;
 
   const std::string grid_layer_name_ = "wayarea";

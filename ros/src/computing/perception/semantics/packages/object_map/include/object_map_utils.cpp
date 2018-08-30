@@ -216,7 +216,7 @@ namespace object_map
 		                                                        in_layer_min_value,
 		                                                        in_layer_max_value,
 		                                                        original_image);
-
+    original_image.setTo(cv::Scalar(in_layer_background_value));
 		cv::Mat filled_image = original_image.clone();
     // std::cout << "M = "<< std::endl << " "  << original_image << std::endl << std::endl;
 
