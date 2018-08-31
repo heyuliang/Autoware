@@ -10,9 +10,13 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include <histedit.h>
 #include <editline/readline.h>
 #include <opencv2/highgui.hpp>
+
+#include <boost/filesystem.hpp>
 
 #include "VMap.h"
 #include "ImageDatabase.h"
@@ -21,6 +25,7 @@
 
 
 using namespace std;
+namespace fs = boost::filesystem;
 
 
 typedef vector<string> stringTokens;
@@ -83,7 +88,24 @@ int localize_seq_slam (SequenceSLAM *seqSl, OxfordImagePreprocessor &proc, const
 }
 
 
+#define Precision 10
 
+string dumpVector(const Vector3d &v)
+{
+	stringstream s;
+	s.precision(Precision);
+	s << v.x() << " " << v.y() << " " << v.z();
+	return s.str();
+}
+
+
+string dumpVector(const Quaterniond &v)
+{
+	stringstream s;
+	s.precision(Precision);
+	s << v.x() << " " << v.y() << " " << v.z() << ' ' << v.w();
+	return s.str();
+}
 
 
 
@@ -122,8 +144,11 @@ void loop()
 		else if (command[0]=="dataset")
 			dataset_open_cmd(command[1], command[2]);
 
-		else if (command[0]=="trajectory")
-			map_trajectory_dump(command[1]);
+		else if (command[0]=="dataset_trajectory")
+			dataset_trajectory_dump();
+
+		else if (command[0]=="map_trajectory")
+			map_trajectory_dump();
 
 		else if (command[0]=="find")
 			map_find_cmd(command[1]);
@@ -158,10 +183,46 @@ private:
 		seqSlProv = imgDb->getSequence();
 	}
 
-	void map_trajectory_dump(const string &dumpPath)
+	const string dumpMapTrajectoryPath = "/tmp/dump_map_trajectory.csv";
+	void map_trajectory_dump()
 	{
+		fstream mapTrFd (dumpMapTrajectoryPath, ios_base::out|ios_base::trunc);
+		if (!mapTrFd.is_open()) {
+			debug("Unable to create "+dumpMapTrajectoryPath);
+			return;
+		}
 
+		auto mapPoses = mapSrc->dumpCameraPoses();
+		for (auto ps: mapPoses) {
+			mapTrFd << dumpVector(ps.first) << " " << dumpVector(ps.second) << endl;
+		}
+
+		mapTrFd.close();
+		debug("Map trajectory dumped to "+dumpMapTrajectoryPath);
 	}
+
+	const string dumpDatasetTrajectoryPath = "/tmp/dump_dataset_trajectory";
+	void dataset_trajectory_dump()
+	{
+		const string dsDumpPath = dumpDatasetTrajectoryPath + '-' + fs::basename(localizTestDataSrc->getPath());
+		fstream dsTrFd (dsDumpPath, ios_base::out|ios_base::trunc);
+		if (!dsTrFd.is_open()) {
+			debug("Unable to create "+dumpMapTrajectoryPath);
+			return;
+		}
+
+		for (int i=0; i<localizTestDataSrc->size(); i++) {
+			const OxfordDataItem di = localizTestDataSrc->at(i);
+			dsTrFd << di.timestamp << " "
+					<< dumpVector(di.getPosition()) << " "
+					<< dumpVector(di.getOrientation())
+					<< endl;
+		}
+
+		dsTrFd.close();
+		debug("Dataset trajectory dumped to "+dsDumpPath);
+	}
+
 
 	void dataset_open_cmd(const string &dsPath, const string &modelDir)
 	{
