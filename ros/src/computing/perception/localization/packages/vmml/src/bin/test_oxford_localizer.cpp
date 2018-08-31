@@ -258,7 +258,6 @@ private:
 		debug("Dataset trajectory dumped to "+dsDumpPath);
 	}
 
-
 	void dataset_open_cmd(const string &dsPath, const string &modelDir)
 	{
 		localizTestDataSrc = new OxfordDataset(dsPath, modelDir);
