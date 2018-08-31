@@ -15,6 +15,8 @@
 #include <histedit.h>
 #include <editline/readline.h>
 #include <opencv2/highgui.hpp>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 
 #include <boost/filesystem.hpp>
 
@@ -144,6 +146,9 @@ void loop()
 		else if (command[0]=="dataset")
 			dataset_open_cmd(command[1], command[2]);
 
+		else if (command[0]=="map_pcl")
+			map_dump_pcl();
+
 		else if (command[0]=="dataset_trajectory")
 			dataset_trajectory_dump();
 
@@ -158,6 +163,12 @@ void loop()
 
 		else if (command[0]=="zoom")
 			dataset_set_zoom(command[1]);
+
+		else if (command[0]=="dataset_simulate_seqslam")
+			dataset_simulate_seqslam(command[1]);
+
+		else if (command[0]=="dataset_view")
+			dataset_view(command[1]);
 	}
 }
 
@@ -181,6 +192,30 @@ private:
 		debug("Map loaded");
 		imgDb = mapSrc->getImageDB();
 		seqSlProv = imgDb->getSequence();
+	}
+
+	const string imageDumpSeqSlam = "/tmp/seqslam.png";
+	void dataset_simulate_seqslam(const string &cs)
+	{
+		double dt = std::stod(cs);
+		cv::Mat img = localizTestDataSrc->atDurationSecond(dt).getImage();
+		cv::cvtColor(img, img, CV_BGR2GRAY);
+		img = seqSlProv->normalizePatch(img, 8);
+		cv::imwrite(imageDumpSeqSlam, img);
+		debug("Dumped image to "+imageDumpSeqSlam);
+	}
+
+	void dataset_view(const string &dstr)
+	{
+
+	}
+
+	const string mapDumpPcl = "/tmp/map.pcl";
+	void map_dump_pcl()
+	{
+		auto pclDump = mapSrc->dumpPointCloudFromMapPoints();
+		pcl::io::savePCDFile(imageDumpSeqSlam, *pclDump);
+		debug("Point Cloud Map dumped to "+mapDumpPcl);
 	}
 
 	const string dumpMapTrajectoryPath = "/tmp/dump_map_trajectory.csv";
