@@ -28,6 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
+#include <pcl/io/pcd_io.h>
 #include "dump_adasmap_grid.h"
 
 namespace object_map
@@ -35,6 +36,8 @@ namespace object_map
 WayareaToGrid::WayareaToGrid() : private_node_handle_("~")
 {
   InitializeRosIo();
+  use_pcd_map_ = true;
+  // preciseGroundEstimationWithPCD();
 }
 
 std::vector<geometry_msgs::Point> WayareaToGrid::generateRectangleFromLaneInfo(LaneInfo lf)
@@ -98,11 +101,6 @@ WayareaToGrid::generateLaneAreaPointsFromLaneInfo(std::vector<LaneInfo>& lane_in
     std::vector<geometry_msgs::Point> rectangle =
       generateRectangleFromLaneInfo(lane_info_vec[i]);
     lane_area_points.push_back(rectangle);
-    // return lane_area_points;
-    // if(i == 10)
-    // {
-    //   return lane_area_points;
-    // }
   }
   return lane_area_points;
 }
@@ -188,19 +186,155 @@ void WayareaToGrid::InitializeRosIo()
   pub_point_ = node_handle_.advertise<sensor_msgs::PointCloud2>("grid_map_point", 1, true);
 }
 
+void WayareaToGrid::publishPointcloud()
+{
+  sensor_msgs::PointCloud2 pointCloud;
+  grid_map::GridMapRosConverter::toPointCloud(gridmap_, "lanearea", pointCloud);
+
+  pub_point_.publish(pointCloud);
+}
+
+std::vector<std::string> WayareaToGrid::globFilesInDirectory(const std::string& pattern)
+{
+  glob_t glob_result;
+  glob(pattern.c_str(),GLOB_TILDE,NULL,&glob_result);
+  std::vector<std::string> files;
+  for(unsigned int i=0;i<glob_result.gl_pathc;++i){
+      files.push_back(std::string(glob_result.gl_pathv[i]));
+  }
+  globfree(&glob_result);
+  return files;
+}
+
+pcl::PointXYZ WayareaToGrid::makeTransformedPoint(const pcl::PointXYZ &in_pcl_point)
+{
+  geometry_msgs::Point in_point;
+  in_point.x = in_pcl_point.x;
+  in_point.y = in_pcl_point.y;
+  in_point.z = in_pcl_point.z;
+
+  // std::cout << "velo pcl " << in_point << std::endl;
+  tf::Point tf_point;
+  tf::pointMsgToTF(in_point, tf_point);
+
+  tf_point = transform_ * tf_point;
+
+  geometry_msgs::Point out_point;
+  tf::pointTFToMsg(tf_point, out_point);
+
+  // std::cout << "world pcl " << out_point << std::endl;
+
+  pcl::PointXYZ out_pcl_point;
+  out_pcl_point.x = out_point.x;
+  out_pcl_point.y = out_point.y;
+  out_pcl_point.z = out_point.z;
+
+  return out_pcl_point;
+}
+
+std::vector<double> WayareaToGrid::makeGridPointIndex(const pcl::PointXYZ& pcl_point)
+{
+  // calculate out_grid_map position
+  grid_map::Position map_pos = gridmap_.getPosition();
+  double origin_x_offset = gridmap_.getLength().x() / 2.0 - map_pos.x();
+  double origin_y_offset = gridmap_.getLength().y() / 2.0 - map_pos.y();
+  // coordinate conversion for cv image
+  // pcl::PointXYZ grid_point_index;
+  double cv_x = (gridmap_.getLength().y() - origin_y_offset - pcl_point.y) / gridmap_.getResolution();
+  double cv_y = (gridmap_.getLength().x() - origin_x_offset - pcl_point.x) / gridmap_.getResolution();
+  // std::cout << "make index index " << cv_x << " "<<cv_y << std::endl;
+  std::vector<double> grid_point_index;
+  grid_point_index.push_back(cv_x);
+  grid_point_index.push_back(cv_y);
+  // std::cout << "make index index " << grid_point_index[0] << " "<< grid_point_index[1] << std::endl;
+  return grid_point_index;
+}
+
+double WayareaToGrid::fetchGridHeightFromPoint(pcl::PointXYZ transformed_point, const grid_map::Matrix& grid_data)
+{
+  std::vector<double> grid_point_ind = makeGridPointIndex(transformed_point);
+  double cv_x = grid_point_ind[0];
+  double cv_y = grid_point_ind[1];
+  return grid_data(cv_y, cv_x);
+}
+
+bool WayareaToGrid::isPointInGrid(pcl::PointXYZ  pcl_point)
+{
+  std::vector<double> grid_point_ind = makeGridPointIndex(pcl_point);
+  double cv_x = grid_point_ind[0];
+  double cv_y = grid_point_ind[1];
+  // std::cout << "index " << cv_x << " "<<cv_y << std::endl;
+  if (cv_x < 0 || cv_x > 750 || cv_y < 0 || cv_y > 750)
+  {
+    return false;
+  }
+  return true;
+}
+
+void WayareaToGrid::updateGridHeight(const pcl::PointXYZ&  pcl_point,
+  grid_map::Matrix& grid_data)
+{
+  std::vector<double> grid_point_ind = makeGridPointIndex(pcl_point);
+  double cv_x = grid_point_ind[0];
+  double cv_y = grid_point_ind[1];
+  grid_data(cv_y, cv_x) = pcl_point.z;
+}
+
+void WayareaToGrid::updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> partial_pointcloud)
+{
+  pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
+  grid_map::Matrix grid_data = gridmap_["lanearea"];
+  // std::cout << "partial pc size "<< partial_pointcloud.size() << std::endl;
+  for(size_t i = 0; i < partial_pointcloud.size(); i++)
+  {
+    pcl::PointXYZ transformed_point = makeTransformedPoint(partial_pointcloud[i]);
+    // std::cout << "finished transform" << std::endl;
+    bool is_inside_range = isPointInGrid(transformed_point);
+    // std::cout << "finished ispoint in" << std::endl;
+    if(is_inside_range)
+    {
+      double height = fetchGridHeightFromPoint(transformed_point, grid_data);
+      if(std::abs(height - transformed_point.z) < 0.5)
+      {
+        updateGridHeight(transformed_point,  grid_data);
+      }
+    }
+    // transformed_pointcloud.push_back(transformed_point);
+  }
+  gridmap_["lanearea"] = grid_data;
+}
+
+void WayareaToGrid::preciseGroundEstimationWithPCD()
+{
+  // std::cout << "calling file func" << std::endl;
+  std::vector<std::string> file_paths = globFilesInDirectory("/home/kosuke/hdd/shimz/pointcloud_map/orig/*");
+  for (size_t i = 0; i < file_paths.size(); i++)
+  {
+    pcl::PointCloud<pcl::PointXYZ> partial_pointcloud;
+    std::cout << "load pcd file " << std::endl;
+    pcl::io::loadPCDFile<pcl::PointXYZ> (file_paths[i], partial_pointcloud);
+    std::cout << "finished load pcd file " << std::endl;
+    // bool is_inside_range = isPointInGrid(const pcl::PointXYZ &pcl_point);
+    updateGridmapWithPointcloud(partial_pointcloud);
+    std::cout << file_paths[i] << std::endl;
+  }
+}
+
 void WayareaToGrid::Run()
 {
   // load necessary vector map info
+  std::cout << "start loading gridmap" << std::endl;
   std::vector<LaneInfo> lane_info_vec;
   LoadRoadAreasFromVectorMap(private_node_handle_, area_points_);
   loadLaneInfoFromVectorMap(private_node_handle_, lane_info_vec);
+  std::cout << "finished loading gridmap!" << std::endl;
 
   // augment lane point so that they form polygons
   std::vector<std::vector<geometry_msgs::Point>> lane_area_points =
         generateLaneAreaPointsFromLaneInfo(lane_info_vec);
 
   bool set_map = false;
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(0.1);
 
   while (ros::ok())
   {
@@ -218,31 +352,24 @@ void WayareaToGrid::Run()
     // timer start
     // auto start = std::chrono::system_clock::now();
 
-    // if (!area_points_.empty())
-    // {
-    //   FillPolygonAreas(gridmap_, area_points_, grid_layer_name_, OCCUPANCY_NO_ROAD, OCCUPANCY_ROAD, grid_min_value_,
-    //                    grid_max_value_, sensor_frame_, map_frame_, tf_listener_);
-    //   PublishGridMap(gridmap_, publisher_grid_map_);
-    //   PublishOccupancyGrid(gridmap_, publisher_occupancy_, grid_layer_name_, grid_min_value_, grid_max_value_);
-    // }
-
     if (!lane_area_points.empty())
     {
-      FillPolygonLaneAreas(gridmap_, lane_area_points, "lanearea", 20, -10,
+      std::cout << "start making gridmap" << std::endl;
+      FillPolygonLaneAreas(gridmap_, transform_, lane_area_points, "lanearea", 20, -10,
                        10, "world", map_frame_, tf_listener_);
+      // bool use_pcd_map_ =
+      // std::cout << "transofm "<< transform_.frame_id_ << std::endl;
+      if(use_pcd_map_)
+      {
+        preciseGroundEstimationWithPCD();
+      }
+
       PublishGridMap(gridmap_, publisher_grid_map_);
       PublishOccupancyGrid(gridmap_, publisher_occupancy_, "lanearea", -10, 10);
-
-
-      sensor_msgs::PointCloud2 pointCloud;
-      grid_map::GridMapRosConverter::toPointCloud(gridmap_, "lanearea", pointCloud);
-      pub_point_.publish(pointCloud);
+      publishPointcloud();
+      std::cout << "finished making gridmap!" << std::endl;
 
     }
-
-    // PublishGridMap(gridmap_, publisher_grid_map_);
-    // PublishOccupancyGrid(gridmap_, publisher_occupancy_, "lanearea", -10, 10);
-
     // timer end
     // auto end = std::chrono::system_clock::now();
     // auto usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

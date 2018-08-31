@@ -35,6 +35,7 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <glob.h>
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -48,6 +49,8 @@
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/highgui/highgui.hpp>
+
+#include <pcl_ros/point_cloud.h>
 
 #include "object_map_utils.hpp"
 
@@ -86,7 +89,7 @@ private:
   std::string world_frame_;
   std::string map_frame_;
 
-  const std::string grid_layer_name_ = "wayarea";
+  // const std::string grid_layer_name_ = "wayarea";
 
   double grid_resolution_;
   double grid_length_x_;
@@ -95,11 +98,13 @@ private:
   double grid_position_y_;
 
   tf::TransformListener tf_listener_;
+  tf::StampedTransform transform_;
 
-  int OCCUPANCY_ROAD = 128;
-  int OCCUPANCY_NO_ROAD = 255;
-  const int grid_min_value_ = 0;
-  const int grid_max_value_ = 255;
+  // int OCCUPANCY_ROAD = 128;
+  // int OCCUPANCY_NO_ROAD = 255;
+  // const int grid_min_value_ = 0;
+  // const int grid_max_value_ = 255;
+  bool use_pcd_map_;
 
   std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
@@ -113,6 +118,24 @@ private:
 
   std::vector<std::vector<geometry_msgs::Point>>
   generateLaneAreaPointsFromLaneInfo(std::vector<LaneInfo>& lane_info_vec);
+
+  void publishPointcloud();
+
+  std::vector<std::string> globFilesInDirectory(const std::string& pattern);
+
+  void preciseGroundEstimationWithPCD();
+
+  pcl::PointXYZ makeTransformedPoint(const pcl::PointXYZ &in_pcl_point);
+
+  void updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> partial_pointcloud);
+
+  double fetchGridHeightFromPoint(pcl::PointXYZ transformed_point, const grid_map::Matrix& grid_data);
+
+  bool isPointInGrid(pcl::PointXYZ transformed_point);
+
+  std::vector<double> makeGridPointIndex(const pcl::PointXYZ &transformed_point);
+
+  void updateGridHeight(const pcl::PointXYZ&  pcl_point,  grid_map::Matrix& grid_data);
 };
 
 }  // namespace object_map

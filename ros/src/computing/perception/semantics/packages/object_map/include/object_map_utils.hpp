@@ -128,7 +128,7 @@ namespace object_map
                                  const std::string &in_grid_layer_name,
                                  grid_map::GridMap& grid_map);
 
-  void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map,
+  void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map, tf::StampedTransform &transform,
 	                      const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
 	                      const std::string &in_grid_layer_name,
 	                      const int in_layer_background_value,

@@ -197,7 +197,8 @@ namespace object_map
     }
   }
 
-  void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map, const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
+  void FillPolygonLaneAreas(grid_map::GridMap &out_grid_map, tf::StampedTransform &transform,
+                          const std::vector<std::vector<geometry_msgs::Point>> &in_area_points,
 		                      const std::string &in_grid_layer_name, const int in_layer_background_value,
 		                      const int in_layer_min_value, const int in_layer_max_value,
 		                      const std::string &in_tf_target_frame, const std::string &in_tf_source_frame,
@@ -220,7 +221,7 @@ namespace object_map
 		cv::Mat filled_image = original_image.clone();
     // std::cout << "M = "<< std::endl << " "  << original_image << std::endl << std::endl;
 
-		tf::StampedTransform tf = FindTransform(in_tf_target_frame, in_tf_source_frame, in_tf_listener);
+		transform = FindTransform(in_tf_target_frame, in_tf_source_frame, in_tf_listener);
 
 		// calculate out_grid_map position
 		grid_map::Position map_pos = out_grid_map.getPosition();
@@ -235,7 +236,7 @@ namespace object_map
 			for (const auto &p : points)
 			{
 				// transform to GridMap coordinate
-				geometry_msgs::Point tf_point = TransformPoint(p, tf);
+				geometry_msgs::Point tf_point = TransformPoint(p, transform);
 
 				// coordinate conversion for cv image
 				double cv_x = (out_grid_map.getLength().y() - origin_y_offset - tf_point.y) / out_grid_map.getResolution();
