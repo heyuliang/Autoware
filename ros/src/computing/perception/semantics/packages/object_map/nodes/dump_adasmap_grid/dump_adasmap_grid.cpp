@@ -309,6 +309,15 @@ void WayareaToGrid::updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> p
       //   double pcl_height = transformed_point.z;
 
       // std::cout << "ind " << grid_point_ind[0] << " " << grid_point_ind[1] << std::endl;
+      // if(transformed_point.z < -2.0)
+      // {
+      //   continue;
+      // }
+
+      if(transformed_point.z < -0.15)
+      {
+        continue;
+      }
       vec_x_y_height[std::floor(grid_point_ind[0])]
                               [std::floor(grid_point_ind[1])]
                               .push_back(transformed_point.z);
@@ -332,23 +341,27 @@ void WayareaToGrid::updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> p
         }
         else
         {
-          double median_height = 0;
-          std::sort(vec_x_y_height[i][j].begin(),
-                    vec_x_y_height[i][j].end());
-          if (size % 2 == 0)
-          {
-            median_height = (vec_x_y_height[i][j][size / 2 - 1] +
-                            vec_x_y_height[i][j][size / 2]) / 2;
-          }
-          else
-          {
-            median_height = vec_x_y_height[i][j][size / 2];
-          }
+          // double median_height = 0;
+          // std::sort(vec_x_y_height[i][j].begin(),
+          //           vec_x_y_height[i][j].end());
+          // if (size % 2 == 0)
+          // {
+          //   median_height = (vec_x_y_height[i][j][size / 2 - 1] +
+          //                   vec_x_y_height[i][j][size / 2]) / 2;
+          // }
+          // else
+          // {
+          //   median_height = vec_x_y_height[i][j][size / 2];
+          // }
+
+          double min_height = *std::min_element(vec_x_y_height[i][j].begin(),
+                                               vec_x_y_height[i][j].end());
           std::vector<double> ind;
           ind.push_back(i);
           ind.push_back(j);
-          // std::cout << "median height " << median_height << std::endl;
-          updateGridHeight(median_height, ind, grid_data);
+
+          // updateGridHeight(median_height, ind, grid_data);
+          updateGridHeight(min_height, ind, grid_data);
         // }
       }
     }
@@ -365,11 +378,11 @@ void WayareaToGrid::preciseGroundEstimationWithPCD()
   {
     pcl::PointCloud<pcl::PointXYZ> partial_pointcloud;
     std::cout << "loading pcd file " << std::endl;
+    std::cout << file_paths[i] << std::endl;
     pcl::io::loadPCDFile<pcl::PointXYZ> (file_paths[i], partial_pointcloud);
     std::cout << "finished load pcd file " << std::endl;
     // bool is_inside_range = isPointInGrid(const pcl::PointXYZ &pcl_point);
     updateGridmapWithPointcloud(partial_pointcloud);
-    std::cout << file_paths[i] << std::endl;
   }
 }
 
