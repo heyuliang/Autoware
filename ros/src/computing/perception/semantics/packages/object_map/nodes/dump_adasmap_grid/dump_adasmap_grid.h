@@ -129,13 +129,17 @@ private:
 
   void updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> partial_pointcloud);
 
-  double fetchGridHeightFromPoint(pcl::PointXYZ transformed_point, const grid_map::Matrix& grid_data);
+  double fetchGridHeightFromPoint(pcl::PointXYZ transformed_point,
+                                 const grid_map::Matrix& grid_data,
+                                 const std::vector<double> &grid_point_ind);
 
-  bool isPointInGrid(pcl::PointXYZ transformed_point);
+  bool isPointInGrid(const pcl::PointXYZ& pcl_point, const std::vector<double> &grid_point_ind);
 
   std::vector<double> makeGridPointIndex(const pcl::PointXYZ &transformed_point);
 
-  void updateGridHeight(const pcl::PointXYZ&  pcl_point,  grid_map::Matrix& grid_data);
+  void updateGridHeight(double pcl_height,
+                        const std::vector<double> &grid_point_ind,
+                        grid_map::Matrix& grid_data);
 };
 
 }  // namespace object_map
