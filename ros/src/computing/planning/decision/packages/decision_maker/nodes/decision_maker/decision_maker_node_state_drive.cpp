@@ -62,7 +62,7 @@ uint8_t DecisionMakerNode::getSteeringStateFromWaypoint(void)
     return 0;
   }
 
-  for (auto idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
   {
     distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
 
@@ -104,12 +104,12 @@ std::pair<uint8_t, int> DecisionMakerNode::getStopSignStateFromWaypoint(void)
 
   // reset previous stop
   if (current_status_.finalwaypoints.waypoints.at(1).gid > current_status_.prev_stopped_wpidx ||
-      current_status_.prev_stopped_wpidx - current_status_.finalwaypoints.waypoints.at(1).gid > reset_count)
+      (unsigned int)(current_status_.prev_stopped_wpidx - current_status_.finalwaypoints.waypoints.at(1).gid) > reset_count)
   {
     current_status_.prev_stopped_wpidx = -1;
   }
 
-  for (auto idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
   {
     distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
     state = current_status_.finalwaypoints.waypoints.at(idx).wpstate.stop_state;
