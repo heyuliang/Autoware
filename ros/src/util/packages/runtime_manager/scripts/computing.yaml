@@ -44,7 +44,15 @@ subs :
         gui  :
           dialog : MyDialogNdtMapping
           dialog_width  : 700
-          dialog_height : 470
+          dialog_height : 650
+          incremental_voxel_update:
+            depend : method_type
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          use_odom:
+            flags : [ nl ]
+          imu_topic:
+            flags : [ nl ]
       - name : ndt_matching
         desc : ndt_matching desc sample
         cmd  : roslaunch lidar_localizer ndt_matching.launch
@@ -606,14 +614,14 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
         param: op_trajectory_evaluator
       - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner 
+        desc : Decision making by selecting best behavior for local planner
         cmd  : roslaunch op_local_planner op_behavior_selector.launch
 
     - name : OpenPlanner - Utilities
       desc : Testing UI, Loggers , ..
       subs :
       - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file 
+        desc : Publish transformation from ndt_pose read from rosbag file
         cmd  : roslaunch op_utilities op_pose2tf.launch
         param: op_pose2tf
       - name : op_bag_player
@@ -632,7 +640,7 @@ subs :
         cmd  : roslaunch op_simulation_package op_signs_simulator.launch
         param: op_signs_simulator
       - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner 
+        desc : Simulate a car using OpenPlanner
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
         param: op_car_simulator
 
@@ -1204,7 +1212,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLogging
-      desc : Enable Writ csv of internal tracking state 
+      desc : Enable Writ csv of internal tracking state
       label: Enable CSV Logs
       kind : checkbox
       v    : False
@@ -3057,7 +3065,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : maxAcceleration
-      desc : Maximum acceleration allowed 
+      desc : Maximum acceleration allowed
       label: Acceleration
       min  : 0.01
       max  : 25.0
@@ -3200,7 +3208,7 @@ params :
   - name  : op_motion_predictor
     vars  :
     - name : enableCurbObstacles
-      desc : Enable using curb from map as obstacles 
+      desc : Enable using curb from map as obstacles
       label: Detect curbs from map
       kind : checkbox
       v    : False
@@ -3253,7 +3261,7 @@ params :
   - name  : op_trajectory_evaluator
     vars  :
     - name : enablePrediction
-      desc : treat all obstacles as dynamic or as static 
+      desc : treat all obstacles as dynamic or as static
       label: Enable Prediction
       kind : checkbox
       v    : False
@@ -3374,7 +3382,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : logFolder
-      desc : Folder for simulation data logging 
+      desc : Folder for simulation data logging
       label: Log Folder
       kind : path
       cmd_param:
@@ -3879,8 +3887,6 @@ params :
         dash      : ''
         delim     : ':='
 
-
-
   - name  : approximate_ndt_mapping
     topic : /config/approximate_ndt_mapping
     msg   : ConfigApproximateNdtMapping
@@ -3940,25 +3946,43 @@ params :
       min       : 0.0
       max       : 1000
       v         : 100.0
-    - name      : use_imu
-      desc      : Use IMU to try to reduce errors
-      label     : Use IMU
+    - name  : method_type
+      desc  : Method Type
+      label : Method Type
+      kind  : radio_box
+      choices:
+      - pcl_generic
+      - pcl_anh
+      - pcl_anh_gpu
+      - pcl_openmp
+      descs :
+      - PCL Generic Implementation
+      - PCL ANH Implementation
+      - PCL ANH GPU Implementation
+      - PCL OpenMP  Implementation
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : incremental_voxel_update
+      desc      : incremental voxel update
+      label     : Incremental Voxel Update
       kind      : checkbox
       v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : imu_topic
-      desc      : IMU raw data source topic
-      label     : imu_topic
-      v         : /imu_raw
-      kind      : str
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : use_odom
       desc      : Use Odometry to try to reduce errors (read from /odom_pose)
       label     : Use Odometry
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
       kind      : checkbox
       v         : False
       cmd_param :
@@ -3972,11 +3996,11 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : use_openmp
-      desc      : Use OpenMP to accelerate computation
-      label     : Use OpenMP
-      kind      : checkbox
-      v         : False
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
       cmd_param :
         dash      : ''
         delim     : ':='

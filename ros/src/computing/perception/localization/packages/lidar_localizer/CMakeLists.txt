@@ -73,21 +73,23 @@ add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 add_dependencies(ndt_mapping ${catkin_EXPORTED_TARGETS})
 
+add_executable(approximate_ndt_mapping nodes/approximate_ndt_mapping/approximate_ndt_mapping.cpp)
+target_link_libraries(approximate_ndt_mapping ${catkin_LIBRARIES})
+add_dependencies(approximate_ndt_mapping ${catkin_EXPORTED_TARGETS})
+
 if (CUDA_FOUND)
     target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
     target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
+    target_include_directories(approximate_ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
 endif ()
 
 
 if (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
     set_target_properties(ndt_matching PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
     set_target_properties(ndt_mapping PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
+    set_target_properties(approximate_ndt_mapping PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
 endif (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
-
-add_executable(approximate_ndt_mapping nodes/approximate_ndt_mapping/approximate_ndt_mapping.cpp)
-target_link_libraries(approximate_ndt_mapping ${catkin_LIBRARIES})
-add_dependencies(approximate_ndt_mapping ${catkin_EXPORTED_TARGETS})
 
 add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
 target_link_libraries(tf_mapping ${catkin_LIBRARIES})
