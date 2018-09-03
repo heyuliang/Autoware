@@ -16,11 +16,13 @@ namespace state_machine
 class State
 {
 private:
+  std::shared_ptr<State> child_state_;
+
   std::string state_name_;
   uint64_t state_id_;
-
+  
   std::shared_ptr<State> parent_state_;
-  std::shared_ptr<State> child_state_;
+  
 
   std::function<void(const std::string&)> CallbackUpdateFunc;
   std::function<void(const std::string&)> CallbackEntryFunc;
