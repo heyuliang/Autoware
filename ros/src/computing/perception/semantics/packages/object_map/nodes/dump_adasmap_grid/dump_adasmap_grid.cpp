@@ -37,6 +37,7 @@ WayareaToGrid::WayareaToGrid() : private_node_handle_("~")
 {
   InitializeRosIo();
   use_pcd_map_ = true;
+  use_vector_map_ = true;
   // preciseGroundEstimationWithPCD();
 }
 
@@ -125,7 +126,6 @@ void WayareaToGrid::loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_h
     return;
   }
 
-  int debug_count = 0;
   for (const auto &lane : lanes)
   {
     vector_map_msgs::DTLane dtlane = vmap.findByKey(vector_map::Key<vector_map::DTLane>(lane.did));
@@ -150,17 +150,6 @@ void WayareaToGrid::loadLaneInfoFromVectorMap(ros::NodeHandle& in_private_node_h
     li.left_width  = dtlane.lw;
     li.right_width = dtlane.rw;
     lane_info_vec.push_back(li);
-    // if(debug_count < 5)
-    // {
-    //   std::cout << "lane did " << lane.did << std::endl;
-    //   std::cout << "forward lane did "<<forward_lane.did << std::endl;
-    //   std::cout << "backward lane did "<<backward_lane.did << std::endl;
-    //   std::cout << "forward point "<< li.forward_point << std::endl;
-    //   std::cout << "backward point "<< li.backward_point << std::endl;
-    // }
-    debug_count++;
-    // std::cout << "lane did " << lane.did << std::endl;
-    // return;
   }
 }
 
@@ -182,7 +171,8 @@ void WayareaToGrid::InitializeRosIo()
 void WayareaToGrid::publishPointcloud()
 {
   sensor_msgs::PointCloud2 pointCloud;
-  grid_map::GridMapRosConverter::toPointCloud(gridmap_, "lanearea", pointCloud);
+  // grid_map::GridMapRosConverter::toPointCloud(gridmap_, "lanearea", pointCloud);
+  grid_map::GridMapRosConverter::toPointCloud(gridmap_, "elevation_map", pointCloud);
 
   pub_point_.publish(pointCloud);
 }
@@ -243,11 +233,9 @@ std::vector<double> WayareaToGrid::makeGridPointIndex(const pcl::PointXYZ& pcl_p
   return grid_point_index;
 }
 
-double WayareaToGrid::fetchGridHeightFromPoint(pcl::PointXYZ transformed_point,
-                                               const grid_map::Matrix& grid_data,
-                                               const std::vector<double> &grid_point_ind)
+double WayareaToGrid::fetchGridHeightFromIndex(const grid_map::Matrix& grid_data,
+                                               const std::vector<size_t> &grid_point_ind)
 {
-  // std::vector<double> grid_point_ind = makeGridPointIndex(transformed_point);
   double cv_x = grid_point_ind[0];
   double cv_y = grid_point_ind[1];
   return grid_data(cv_y, cv_x);
@@ -259,6 +247,7 @@ bool WayareaToGrid::isPointInGrid(const pcl::PointXYZ& pcl_point, const std::vec
   double cv_x = grid_point_ind[0];
   double cv_y = grid_point_ind[1];
   // std::cout << "index " << cv_x << " "<<cv_y << std::endl;
+  // TODO: use constant or variable here
   if (cv_x < 0 || cv_x >= 750 || cv_y < 0 || cv_y >= 750)
   {
     return false;
@@ -267,7 +256,7 @@ bool WayareaToGrid::isPointInGrid(const pcl::PointXYZ& pcl_point, const std::vec
 }
 
 void WayareaToGrid::updateGridHeight(double  pcl_height,
-                                     const std::vector<double> &grid_point_ind,
+                                     const std::vector<size_t> &grid_point_ind,
                                      grid_map::Matrix& grid_data)
 {
   // std::vector<double> grid_point_ind = makeGridPointIndex(pcl_point);
@@ -276,44 +265,22 @@ void WayareaToGrid::updateGridHeight(double  pcl_height,
   grid_data(cv_y, cv_x) = pcl_height;
 }
 
-void WayareaToGrid::updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> partial_pointcloud)
+std::vector<std::vector<std::vector<double>>>
+    WayareaToGrid::makeHeightVecForGridCell(const pcl::PointCloud<pcl::PointXYZ>& partial_pointcloud)
 {
-  pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
-  grid_map::Matrix grid_data = gridmap_["lanearea"];
-  // std::cout << "partial pc size "<< partial_pointcloud.size() << std::endl;
-  // vector<vector<vector<double> > > vec_record_points_height (
-  //                   grid_length_x_*(1/grid_resolution_),
-  //                   vector<vector<double> >(grid_length_y_*(1/grid_resolution_),
-  //                   vector <double>);
-
-
   std::vector<double> height_vec ;
   std::vector<std::vector<double>> vec_y_height(grid_length_y_*(1/grid_resolution_) , height_vec) ;
   std::vector<std::vector<std::vector<double>>> vec_x_y_height(grid_length_x_*(1/grid_resolution_), vec_y_height) ;
-  // std::vector<std::vector<double> > vec_record_points_height(
-  //   grid_length_x_*(1/grid_resolution_),
-  //   std::vector<double>(grid_length_y_*(1/grid_resolution_)));
+
   for(size_t i = 0; i < partial_pointcloud.size(); i++)
   {
     pcl::PointXYZ transformed_point = makeTransformedPoint(partial_pointcloud[i]);
-    // std::cout << "finished transform" << std::endl;
 
     std::vector<double> grid_point_ind = makeGridPointIndex(transformed_point);
     bool is_inside_range = isPointInGrid(transformed_point, grid_point_ind);
-    // std::cout << "finished ispoint in" << std::endl;
     if(is_inside_range)
     {
-      // double height = fetchGridHeightFromPoint(transformed_point, grid_data, grid_point_ind);
-      // if(std::abs(height - transformed_point.z) < 0.5)
-      // {
-      //   double pcl_height = transformed_point.z;
-
-      // std::cout << "ind " << grid_point_ind[0] << " " << grid_point_ind[1] << std::endl;
-      // if(transformed_point.z < -2.0)
-      // {
-      //   continue;
-      // }
-
+      //TODO: pick min height from vectormap point
       if(transformed_point.z < -0.15)
       {
         continue;
@@ -321,53 +288,81 @@ void WayareaToGrid::updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> p
       vec_x_y_height[std::floor(grid_point_ind[0])]
                               [std::floor(grid_point_ind[1])]
                               .push_back(transformed_point.z);
-
-        // updateGridHeight(transformed_point.z, grid_point_ind, grid_data);
-      // }
     }
-    // transformed_pointcloud.push_back(transformed_point);
   }
+  return vec_x_y_height;
+}
+
+bool WayareaToGrid::isInNonLaneGrid(const std::vector<size_t> &index,
+                                    const grid_map::Matrix &lane_gird_data)
+{
+  //TODO: use constant/variable here
+  size_t x = index[0];
+  size_t y = index[1];
+  if(lane_gird_data(y, x) == 255)
+  {
+    return true;
+  }
+  return false;
+}
+
+void WayareaToGrid::updateGridmapWithPointcloud(const pcl::PointCloud<pcl::PointXYZ>& partial_pointcloud)
+{
+  pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
+  grid_map::Matrix lane_grid_data      = gridmap_["lanearea"];
+  grid_map::Matrix elevation_grid_data = gridmap_["elevation_map"];
+
+  std::vector<std::vector<std::vector<double>>> vec_x_y_height =
+      makeHeightVecForGridCell(partial_pointcloud);
+
 
   for(size_t i = 0; i < vec_x_y_height.size(); i++)
   {
     for(size_t j = 0; j < vec_x_y_height[0].size(); j++)
     {
-      // for(size_t k = 0; k < vec_x_y_height[i][j].size(); k ++)
-      // {
-        size_t size = vec_x_y_height[i][j].size();
-        if(size == 0)
+      size_t size = vec_x_y_height[i][j].size();
+      if(size == 0)
+      {
+        continue;
+      }
+      else
+      {
+        std::vector<size_t> index{i, j};
+        double grid_height = 0;
+        double pcd_min_height = *std::min_element(vec_x_y_height[i][j].begin(),
+                                              vec_x_y_height[i][j].end());
+        //TODO use constant value here
+        if(!use_vector_map_)
         {
-          continue;
+          grid_height = pcd_min_height;
         }
         else
         {
-          // double median_height = 0;
-          // std::sort(vec_x_y_height[i][j].begin(),
-          //           vec_x_y_height[i][j].end());
-          // if (size % 2 == 0)
-          // {
-          //   median_height = (vec_x_y_height[i][j][size / 2 - 1] +
-          //                   vec_x_y_height[i][j][size / 2]) / 2;
-          // }
-          // else
-          // {
-          //   median_height = vec_x_y_height[i][j][size / 2];
-          // }
-
-          double min_height = *std::min_element(vec_x_y_height[i][j].begin(),
-                                               vec_x_y_height[i][j].end());
-          std::vector<double> ind;
-          ind.push_back(i);
-          ind.push_back(j);
-
-          // updateGridHeight(median_height, ind, grid_data);
-          updateGridHeight(min_height, ind, grid_data);
-        // }
+          if(isInNonLaneGrid(index, lane_grid_data))
+          {
+            grid_height = pcd_min_height;
+          }
+          else
+          {
+            double min_height = pcd_min_height;
+            double lane_height = fetchGridHeightFromIndex(lane_grid_data, index);
+            //TODO: use constant/variable
+            if(std::abs(lane_height - min_height) < 0.5)
+            {
+              grid_height = min_height;
+            }
+            else
+            {
+              grid_height = lane_height;
+            }
+          }
+        }
+        updateGridHeight(grid_height, index, elevation_grid_data);
       }
     }
   }
 
-  gridmap_["lanearea"] = grid_data;
+  gridmap_["elevation_map"] = elevation_grid_data;
 }
 
 void WayareaToGrid::preciseGroundEstimationWithPCD()
@@ -391,7 +386,6 @@ void WayareaToGrid::Run()
   // load necessary vector map info
   std::cout << "start loading gridmap" << std::endl;
   std::vector<LaneInfo> lane_info_vec;
-  LoadRoadAreasFromVectorMap(private_node_handle_, area_points_);
   loadLaneInfoFromVectorMap(private_node_handle_, lane_info_vec);
   std::cout << "finished loading gridmap!" << std::endl;
 
@@ -399,8 +393,8 @@ void WayareaToGrid::Run()
   std::vector<std::vector<geometry_msgs::Point>> lane_area_points =
         generateLaneAreaPointsFromLaneInfo(lane_info_vec);
 
-  bool set_map = false;
   ros::Rate loop_rate(0.01);
+  bool set_map = false;
 
   while (ros::ok())
   {
@@ -410,6 +404,7 @@ void WayareaToGrid::Run()
       gridmap_.setFrameId(world_frame_);
       gridmap_.setGeometry(grid_map::Length(grid_length_x_, grid_length_y_), grid_resolution_,
                            grid_map::Position(grid_position_x_, grid_position_y_));
+      gridmap_.add("elevation_map");
       set_map = true;
     }
 
@@ -419,18 +414,21 @@ void WayareaToGrid::Run()
     if (!lane_area_points.empty())
     {
       std::cout << "start making gridmap" << std::endl;
-      // FillPolygonLaneAreas(gridmap_, transform_, lane_area_points, "lanearea", 20, -10,
-      //                  10, "world", map_frame_, tf_listener_);
+      FillPolygonLaneAreas(gridmap_, transform_, lane_area_points, "lanearea", 255, -10,
+                       10, "world", map_frame_, tf_listener_);
 
       if(use_pcd_map_)
       {
-        gridmap_["lanearea"].setConstant(20);
-        transform_ = FindTransform("world", map_frame_, tf_listener_);
+        gridmap_["elevation_map"].setConstant(20);
+        if(!use_vector_map_)
+        {
+          transform_ = FindTransform("world", map_frame_, tf_listener_);
+        }
         preciseGroundEstimationWithPCD();
       }
 
       PublishGridMap(gridmap_, publisher_grid_map_);
-      PublishOccupancyGrid(gridmap_, publisher_occupancy_, "lanearea", -10, 10);
+      // PublishOccupancyGrid(gridmap_, publisher_occupancy_, "lanearea", -10, 10);
       publishPointcloud();
       std::cout << "finished making gridmap!" << std::endl;
 

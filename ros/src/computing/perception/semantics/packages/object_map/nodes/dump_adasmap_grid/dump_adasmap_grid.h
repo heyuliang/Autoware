@@ -105,6 +105,7 @@ private:
   // const int grid_min_value_ = 0;
   // const int grid_max_value_ = 255;
   bool use_pcd_map_;
+  bool use_vector_map_;
 
   std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
@@ -127,18 +128,23 @@ private:
 
   pcl::PointXYZ makeTransformedPoint(const pcl::PointXYZ &in_pcl_point);
 
-  void updateGridmapWithPointcloud(pcl::PointCloud<pcl::PointXYZ> partial_pointcloud);
+  bool isInNonLaneGrid(const std::vector<size_t> &index,
+                      const grid_map::Matrix &lane_gird_data);
 
-  double fetchGridHeightFromPoint(pcl::PointXYZ transformed_point,
-                                 const grid_map::Matrix& grid_data,
-                                 const std::vector<double> &grid_point_ind);
+  void updateGridmapWithPointcloud(const pcl::PointCloud<pcl::PointXYZ> &partial_pointcloud);
+
+  std::vector<std::vector<std::vector<double>>>
+      makeHeightVecForGridCell(const pcl::PointCloud<pcl::PointXYZ>& partial_pointcloud);
+
+  double fetchGridHeightFromIndex(const grid_map::Matrix& grid_data,
+                                  const std::vector<size_t> &grid_point_ind);
 
   bool isPointInGrid(const pcl::PointXYZ& pcl_point, const std::vector<double> &grid_point_ind);
 
   std::vector<double> makeGridPointIndex(const pcl::PointXYZ &transformed_point);
 
   void updateGridHeight(double pcl_height,
-                        const std::vector<double> &grid_point_ind,
+                        const std::vector<size_t> &grid_point_ind,
                         grid_map::Matrix& grid_data);
 };
 
