@@ -270,7 +270,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
             wp.twist.twist.linear.x =
                 (wp.twist.twist.linear.x + lane.waypoints.at(wp_idx + 1).twist.twist.linear.x) / 2;
 
-            ROS_INFO("Inserting stopline_interpolation_wp: #%d(%f, %f, %f)\n", wp_idx + 1, interpolation_point.x,
+            ROS_INFO("Inserting stopline_interpolation_wp: #%zu(%f, %f, %f)\n", wp_idx + 1, interpolation_point.x,
                      interpolation_point.y, interpolation_point.z);
 
             lane.waypoints.insert(lane.waypoints.begin() + wp_idx + 1, wp);
@@ -285,8 +285,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 // MISSION COMPLETE FLAG
 #define NUM_OF_SET_MISSION_COMPLETE_FLAG 3
     size_t wp_idx = lane.waypoints.size();
-    int counter = 0;
-    for (int counter = 0;
+    unsigned counter = 0;
+    for (counter = 0;
          counter <= (wp_idx <= NUM_OF_SET_MISSION_COMPLETE_FLAG ? wp_idx : NUM_OF_SET_MISSION_COMPLETE_FLAG); counter++)
     {
       lane.waypoints.at(--wp_idx).wpstate.event_state = autoware_msgs::WaypointState::TYPE_EVENT_GOAL;
