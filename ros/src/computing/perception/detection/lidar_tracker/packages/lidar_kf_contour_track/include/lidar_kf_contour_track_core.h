@@ -51,9 +51,11 @@
 #include "SimpleTracker.h"
 #include "PolygonGenerator.h"
 
+#include <std_msgs/Float32.h>
 #include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <visualization_msgs/MarkerArray.h>
 
 
@@ -92,7 +94,7 @@ public:
 		bEnableStepByStep = false;
 		bEnableSimulation = false;
 		bEnableLogging = false;
-		bEnableTTC = false;
+		bEnableTTC = true;
 		bEnableLaneChange = false;
 	}
 };
@@ -104,6 +106,7 @@ protected:
 	autoware_msgs::DetectedObjectArray m_OutPutResults;
 	bool bNewClusters;
 	PlannerHNS::WayPoint m_CurrentPos;
+	PlannerHNS::VehicleState m_VehicleState;
 	bool bNewCurrentPos;
 	PerceptionParams m_Params;
 	SimpleTracker m_ObstacleTracking;
@@ -149,15 +152,21 @@ protected:
 	ros::Publisher pub_DetectedPolygonsRviz;
 	ros::Publisher pub_TrackedObstaclesRviz;
 	ros::Publisher pub_TTC_PathRviz;
+	ros::Publisher pub_TTC_Rviz;
+	ros::Publisher pub_TTC_DistanceRviz;
+	ros::Publisher pub_TTC_RelativeSpeedRviz;
+	ros::Publisher pub_LeadingVehicleRviz;
 
 	// define subscribers.
 	ros::Subscriber sub_cloud_clusters;
 	ros::Subscriber sub_current_pose ;
+	ros::Subscriber sub_current_velocity;
 
 
 	// Callback function for subscriber.
 	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 
 	//Helper Functions
 	void VisualizeLocalTracking();

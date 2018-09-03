@@ -61,11 +61,16 @@ ContourTracker::ContourTracker()
 
 	sub_cloud_clusters 		= nh.subscribe("/cloud_clusters", 1, &ContourTracker::callbackGetCloudClusters, this);
 	sub_current_pose 		= nh.subscribe("/current_pose",   1, &ContourTracker::callbackGetCurrentPose, 	this);
+	sub_current_velocity = nh.subscribe("/current_velocity", 1, &ContourTracker::callbackGetVehicleStatus, this);
 
 	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("tracked_objects", 1);
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("op_planner_tracked_boxes", 1);
 	pub_TTC_PathRviz		= nh.advertise<visualization_msgs::MarkerArray>("ttc_direct_path", 1);
+	pub_TTC_Rviz = nh.advertise<std_msgs::Float32>("ttc", 1);
+	pub_TTC_DistanceRviz = nh.advertise<std_msgs::Float32>("ttc_distance", 1);
+	pub_TTC_RelativeSpeedRviz = nh.advertise<std_msgs::Float32>("ttc_relative_velocity", 1);
+	pub_LeadingVehicleRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("leading_vehicle_box", 1);
 
 	//Mapping Section
 	sub_lanes = nh.subscribe("/vector_map_info/lane", 1, &ContourTracker::callbackGetVMLanes,  this);
@@ -318,10 +323,23 @@ bool ContourTracker::IsCar(const PlannerHNS::DetectedObject& obj, const PlannerH
 
 void ContourTracker::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z,
+  m_CurrentPos.pos =  PlannerHNS::GPSPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z,
       tf::getYaw(msg->pose.orientation));
 
   bNewCurrentPos = true;
+}
+
+void ContourTracker::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	m_VehicleState.speed = msg->twist.linear.x;
+	m_CurrentPos.v = m_VehicleState.speed;
+
+	if(m_CurrentPos.v < 0.25)
+		m_CurrentPos.v = 0;
+
+	if(fabs(msg->twist.linear.x) > 0.25)
+		m_VehicleState.steer = atan(2.7 * msg->twist.angular.z/msg->twist.linear.x);
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
 void ContourTracker::VisualizeLocalTracking()
@@ -442,7 +460,7 @@ void ContourTracker::GetFrontTrajectories(std::vector<PlannerHNS::Lane*>& lanes,
 		PlannerHNS::PlanningHelpers::GetRelativeInfoLimited(lanes.at(i)->points, currState, info);
 		PlannerHNS::WayPoint wp = lanes.at(i)->points.at(info.iFront);
 
-		if(!info.bAfter && !info.bBefore && fabs(info.perp_distance) < min_d)
+		if(!info.bAfter && !info.bBefore && fabs(info.perp_distance) < min_d && info.angle_diff < 45)
 		{
 			min_d = fabs(info.perp_distance);
 			pClosest = &lanes.at(i)->points.at(info.iBack);
@@ -463,7 +481,7 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 	std::vector<std::vector<PlannerHNS::WayPoint> > paths;
 	GetFrontTrajectories(m_ClosestLanesList, currState, m_Params.DetectionRadius, paths);
 
-	double min_d = DBL_MAX;
+	double distanceToNext = m_Params.DetectionRadius;
 	int closest_obj_id = -1;
 	int closest_path_id = -1;
 	int i_start = -1;
@@ -481,9 +499,9 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 			{
 				PlannerHNS::PlanningHelpers::GetRelativeInfoLimited(paths.at(i), currState , car_info);
 				double longitudinalDist = PlannerHNS::PlanningHelpers::GetExactDistanceOnTrajectory(paths.at(i), car_info, obj_info);
-				if(longitudinalDist  < min_d)
+				if(longitudinalDist  < distanceToNext)
 				{
-					min_d = longitudinalDist;
+					distanceToNext = longitudinalDist;
 					closest_obj_id = i_obj;
 					closest_path_id = i;
 					i_start = car_info.iFront;
@@ -502,27 +520,92 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 		}
 	}
 
+	double relative_v = currState.v;
+
+	jsk_recognition_msgs::BoundingBoxArray boxes_array;
+	boxes_array.header.frame_id = "map";
+	boxes_array.header.stamp  = ros::Time();
+
+	jsk_recognition_msgs::BoundingBox box;
+	box.header.frame_id = "map";
+	box.header.stamp = ros::Time().now();
+
+	if(direct_paths.size() > 2 && closest_obj_id >= 0)
+	{
+		double leading_vel = objs.at(closest_obj_id).center.v;
+		if(leading_vel < 0.5)
+			leading_vel = 0.0;
+
+		relative_v = leading_vel - currState.v;
+
+		box.pose.position.x = objs.at(closest_obj_id).center.pos.x;
+		box.pose.position.y = objs.at(closest_obj_id).center.pos.y;
+		box.pose.position.z = objs.at(closest_obj_id).center.pos.z;
+
+		box.value = 0.9;
+
+		box.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, objs.at(closest_obj_id).center.pos.a);
+		box.dimensions.x = objs.at(closest_obj_id).l;
+		box.dimensions.y = objs.at(closest_obj_id).w;
+		box.dimensions.z = objs.at(closest_obj_id).h;
+		boxes_array.boxes.push_back(box);
+	}
+
+
+
+
+	//calculate TTC
+//	if(direct_paths.size() > 2 && closest_obj_id >= 0)
+//	{
+//		double dd = min_d;
+//		double dv = objs.at(closest_obj_id).center.v - currState.v;
+//		if(fabs(dv) > 0.1)
+//		{
+//			double ttc = (dd - 4) / dv;
+//			cout << "TTC: " << ttc << ", dv: << " << dv <<", dd:" << dd << endl;
+//		}
+//		else
+//			cout << "TTC: Inf" << endl;
+//	}
+
+	double ttc  = -1;
+
+	if(direct_paths.size() > 2 && closest_obj_id >= 0)
+	{
+
+		if(fabs(currState.v) > 0.1) // reasonable TTC
+		{
+			ttc = distanceToNext / currState.v;
+		}
+		else //too slow to crash
+		{
+		}
+	}
+	else // TTC is infinity (no possible crash)
+	{
+	}
+
+
+
+	pub_LeadingVehicleRviz.publish(boxes_array);
+
+	std_msgs::Float32 _ttc, _distance, _rel_v;
+	_ttc.data = (int)(ttc*10.0)/10.0;
+	_distance.data = (int)(distanceToNext*10.0)/10.0;
+	_rel_v.data = (int)(relative_v*3.6*10.0)/10.0;
+
+	//cout << "Received Velocity: " << currState.v << ", Relative meter: " << relative_v << ", Relative Kilo: " << _rel_v.data << endl;
+
+	pub_TTC_Rviz.publish(_ttc);
+	pub_TTC_DistanceRviz.publish(_distance);
+	pub_TTC_RelativeSpeedRviz.publish(_rel_v);
+
 	//Visualize Direct Path
 	m_TTC_Path.markers.clear();
 	if(direct_paths.size() == 0)
 		direct_paths.push_back(currState);
 	PlannerHNS::RosHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
 	pub_TTC_PathRviz.publish(m_TTC_Path);
-
-
-	//calculate TTC
-	if(direct_paths.size() > 2 && closest_obj_id >= 0)
-	{
-		double dd = min_d;
-		double dv = objs.at(closest_obj_id).center.v - currState.v;
-		if(fabs(dv) > 0.1)
-		{
-			double ttc = (dd - 4) / dv;
-			cout << "TTC: " << ttc << ", dv: << " << dv <<", dd:" << dd << endl;
-		}
-		else
-			cout << "TTC: Inf" << endl;
-	}
 }
 
 void ContourTracker::MainLoop()
@@ -562,7 +645,7 @@ void ContourTracker::MainLoop()
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
 						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
-						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, true);
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, false);
 
 				if(m_Map.roadSegments.size() > 0)
 				{
@@ -576,7 +659,7 @@ void ContourTracker::MainLoop()
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
-						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, true);
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, false);
 
 				if(m_Map.roadSegments.size() > 0)
 				{
