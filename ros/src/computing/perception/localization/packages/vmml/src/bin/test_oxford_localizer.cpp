@@ -23,6 +23,7 @@
 #include "VMap.h"
 #include "ImageDatabase.h"
 #include "SequenceSLAM.h"
+#include "Localizer.h"
 #include "datasets/OxfordDataset.h"
 
 
@@ -117,7 +118,7 @@ public:
 LocalizerApp (int argc, char *argv[]):
 	mLineEditor(argv[0], TestPrompt)
 {
-
+//	localizer = new Localizer()
 }
 
 
@@ -127,6 +128,8 @@ LocalizerApp (int argc, char *argv[]):
 		delete(mapSrc);
 	if (localizTestDataSrc)
 		delete(localizTestDataSrc);
+	if (localizer)
+		delete(localizer);
 }
 
 
@@ -179,6 +182,7 @@ protected:
 	VMap *mapSrc = NULL;
 	ImageDatabase *imgDb = NULL;
 	SequenceSLAM *seqSlProv = NULL;
+	Localizer *localizer = NULL;
 
 	OxfordDataset *localizTestDataSrc = NULL;
 
@@ -189,6 +193,8 @@ private:
 	{
 		mapSrc = new VMap();
 		mapSrc->load(mapPath);
+		localizer = new Localizer(mapSrc);
+
 		debug("Map loaded");
 		imgDb = mapSrc->getImageDB();
 		seqSlProv = imgDb->getSequence();
@@ -205,9 +211,16 @@ private:
 		debug("Dumped image to "+imageDumpSeqSlam);
 	}
 
-	void dataset_view(const string &dstr)
+	const string viewerWindowName="Dataset Viewer";
+	void dataset_view(const string &durationSecStr)
 	{
-
+		cv::namedWindow(viewerWindowName);
+		double d = std::stod(durationSecStr);
+		auto di = localizTestDataSrc->atDurationSecond(d);
+		cv::Mat img = di.getImage();
+		cv::cvtColor(img, img, CV_RGB2GRAY);
+		cv::imshow(viewerWindowName, img);
+		cv::waitKey(1);
 	}
 
 	const string mapDumpPcl = "/tmp/map.pcl";
@@ -271,6 +284,14 @@ private:
 		cv::Mat img = di.getImage();
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 		seqSlProv->find(img, 10);
+	}
+
+	void map_detect_cmd(const string &durationSecStr)
+	{
+//		double d = std::stod(durationSecStr);
+//		auto di = localizTestDataSrc->atDurationSecond(d);
+//		cv::Mat img = di.getImage();
+//		cv::cvtColor(img, img, CV_RGB2GRAY);
 	}
 
 	const string dumpImagePath = "/tmp/dump_image.png";
