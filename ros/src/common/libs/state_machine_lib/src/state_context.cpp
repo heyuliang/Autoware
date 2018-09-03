@@ -294,7 +294,7 @@ std::string StateContext::getStateText(void)
 
 void StateContext::setTransitionMap(const YAML::Node& node, const std::shared_ptr<State>& _state)
 {
-  for (auto j = 0; j < node.size(); j++)
+  for (unsigned int j = 0; j < node.size(); j++)
   {
     _state->addTransition(node[j]["Key"].as<std::string>(), getStateIDbyName(node[j]["Target"].as<std::string>()));
   }
@@ -328,7 +328,7 @@ std::shared_ptr<State> StateContext::getStatePtr(const uint64_t& _state_id)
 
 void StateContext::parseChildTransitionMap(const YAML::Node& node)
 {
-  for (auto j = 0; j < node.size(); j++)
+  for (unsigned int j = 0; j < node.size(); j++)
   {
     setTransitionMap(node[j]["Transition"], getStatePtr(node[j]));
     parseChildTransitionMap(node[j]["Child"]);
@@ -340,14 +340,14 @@ void StateContext::createStateMap(std::string _state_file_name, std::string _msg
   const YAML::Node StateYAML = YAML::LoadFile(_state_file_name)[_msg_name];
 
   // create state
-  for (auto i = 0; i < StateYAML.size(); i++)
+  for (unsigned int i = 0; i < StateYAML.size(); i++)
   {
     state_map_[i] = std::shared_ptr<State>(new State(StateYAML[i]["StateName"].as<std::string>(), i));
   }
 
   // set Parent
   // set transition
-  for (auto i = 0; i < StateYAML.size(); i++)
+  for (unsigned int i = 0; i < StateYAML.size(); i++)
   {
     getStatePtr(StateYAML[i])->setParent(getStatePtr(StateYAML[i]["Parent"].as<std::string>()));
     setTransitionMap(StateYAML[i]["Transition"], getStatePtr(StateYAML[i]));
