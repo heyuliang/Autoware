@@ -328,6 +328,7 @@ bool DecisionMakerNode::drivingMissionCheck()
   // reindexing and calculate new closest_waypoint distance
   gid = 0;
   double min_dist = 100;
+  geometry_msgs::Pose nearest_wp_pose;
   for (auto& lane : current_status_.based_lane_array.lanes)
   {
     int lid = 0;
@@ -338,12 +339,18 @@ bool DecisionMakerNode::drivingMissionCheck()
       wp.gid = gid++;
       wp.lid = lid++;
       double dst = amathutils::find_distance(current_status_.pose.position, wp.pose.pose.position);
-      min_dist = min_dist > dst ? dst : min_dist;
+      if(min_dist > dst)
+      {
+        min_dist = dst;
+        nearest_wp_pose = wp.pose.pose;
+      }
     }
   }
 
+  double angle_diff_degree = fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180/M_PI;
   const double dist_threshold = 1.0;// [m]
-  if(min_dist > dist_threshold )
+  const double angle_threshold = 15;// [deg]
+  if (min_dist > dist_threshold || angle_diff_degree > angle_threshold)
   {
     return false;
   }
