@@ -69,6 +69,8 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
+  dist_threshold_ = msg.dist_threshold;
+  angle_threshold_ = msg.angle_threshold;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event)
@@ -348,9 +350,9 @@ bool DecisionMakerNode::drivingMissionCheck()
   }
 
   double angle_diff_degree = fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180/M_PI;
-  const double dist_threshold = 1.0;// [m]
-  const double angle_threshold = 15;// [deg]
-  if (min_dist > dist_threshold || angle_diff_degree > angle_threshold)
+  //const double dist_threshold = 1.0;// [m]
+  //const double angle_threshold = 15;// [deg]
+  if (min_dist > dist_threshold_ || angle_diff_degree > angle_threshold_)
   {
     return false;
   }

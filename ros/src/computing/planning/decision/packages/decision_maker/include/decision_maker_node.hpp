@@ -167,8 +167,9 @@ private:
 
   // Param
   bool enableDisplayMarker;
-
   uint32_t param_num_of_steer_behind_;
+  double dist_threshold_;
+  double angle_threshold_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
