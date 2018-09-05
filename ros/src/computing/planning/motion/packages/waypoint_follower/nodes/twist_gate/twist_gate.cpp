@@ -162,24 +162,18 @@ void TwistGate::reset_vehicle_cmd_msg()
 
 bool TwistGate::is_using_decisionmaker()
 {
-  static bool first_call = true;
-  static bool using_decision_maker_flag = false;
+  bool using_decision_maker_flag = false;
+  std::vector<std::string> node_list;
+  ros::master::getNodes(node_list);
 
-  if (first_call)
+  for (const auto& i : node_list)
   {
-    std::vector<std::string> node_list;
-    ros::master::getNodes(node_list);
-
-    for (const auto& i : node_list)
+    if (i == "/decision_maker")
     {
-      if (i == "/decision_maker")
-      {
-        using_decision_maker_flag = true;
-        break;
-      }
+      using_decision_maker_flag = true;
+      break;
     }
   }
-  first_call = false;
   return using_decision_maker_flag;
 }
 
