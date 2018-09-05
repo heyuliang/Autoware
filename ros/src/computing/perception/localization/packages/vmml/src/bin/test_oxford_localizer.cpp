@@ -172,6 +172,9 @@ void loop()
 
 		else if (command[0]=="dataset_view")
 			dataset_view(command[1]);
+
+		else if (command[0]=="detect")
+			map_detect_cmd(command[1]);
 	}
 }
 
@@ -288,10 +291,11 @@ private:
 
 	void map_detect_cmd(const string &durationSecStr)
 	{
-//		double d = std::stod(durationSecStr);
-//		auto di = localizTestDataSrc->atDurationSecond(d);
-//		cv::Mat img = di.getImage();
-//		cv::cvtColor(img, img, CV_RGB2GRAY);
+		double d = std::stod(durationSecStr);
+		auto di = localizTestDataSrc->atDurationSecond(d);
+		cv::Mat img = di.getImage();
+		cv::cvtColor(img, img, CV_RGB2GRAY);
+		localizer->detect(img);
 	}
 
 	const string dumpImagePath = "/tmp/dump_image.png";
