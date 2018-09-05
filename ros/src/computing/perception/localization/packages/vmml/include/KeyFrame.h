@@ -139,6 +139,8 @@ protected:
 	template <class Archive>
     friend void boost::serialization::serialize (Archive & ar, KeyFrame &keyframe, const unsigned int version);
 
+	friend class VMap;
+
 	kfid id;
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
@@ -152,6 +154,8 @@ protected:
 	int cameraId;
 
 	static kfid nextId;
+
+	void updateConnections (VMap *parent);
 
 //	KeyFrame* prev;
 };

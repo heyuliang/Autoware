@@ -109,6 +109,9 @@ ImageDatabase::newKeyFrameCallback (const kfid &k)
 }
 
 
+/*
+ * Reserved for loop closing
+ */
 kfid
 ImageDatabase::find (const KeyFrame *kf) const
 {

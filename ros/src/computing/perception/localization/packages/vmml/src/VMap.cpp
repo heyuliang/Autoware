@@ -8,6 +8,8 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 
+#include <boost/graph/adj_list_serialize.hpp>
+
 #include "VMap.h"
 #include "KeyFrame.h"
 #include "MapPoint.h"
@@ -269,6 +271,8 @@ VMap::save(const string &filepath)
 
 	mapStore << cameraList;
 
+	mapStore << covisibility;
+
 	mapFileFd.close();
 	return true;
 }
@@ -307,6 +311,8 @@ VMap::load(const string &filepath)
 	mapStore >> *imageDB;
 
 	mapStore >> cameraList;
+
+	mapStore >> covisibility;
 
 	// Rebuild pointers
 	keyframeInvIdx.clear();

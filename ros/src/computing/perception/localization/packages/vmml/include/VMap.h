@@ -24,15 +24,20 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+#include <boost/graph/adjacency_list.hpp>
+
 
 class KeyFrame;
 class MapPoint;
 class ImageDatabase;
 
-
 typedef uint64_t kfid;
 typedef uint64_t mpid;
 typedef decltype(cv::DMatch::trainIdx) kpid;
+
+typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS> DirectedGraph;
+typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
 
 
 #define MAX_ORB_POINTS_IN_FRAME 6000
@@ -204,6 +209,9 @@ public:
 
 
 protected:
+
+	friend class KeyFrame;
+
 	cv::Mat vocabulary;
 
 //	std::vector<KeyFrame*> keyframeList;
@@ -236,6 +244,9 @@ protected:
 	std::vector<CameraPinholeParams> cameraList;
 
 	ImageDatabase *imageDB;
+
+	// XXX: Follow tutorial at http://www.technical-recipes.com/2015/getting-started-with-the-boost-graph-library/
+	DirectedGraph covisibility;
 };
 
 #endif /* VMAP_H_ */
