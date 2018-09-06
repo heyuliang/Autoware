@@ -132,6 +132,7 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 		pointAppearances[mpidx].insert(kfid1);
 		pointAppearances[mpidx].insert(kfid2);
 	}
+	updateCovisibilityGraph(kfid1);
 }
 
 
@@ -189,6 +190,7 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 		pointAppearances[mpidx].insert(kfid1);
 		pointAppearances[mpidx].insert(kfid2);
 	}
+	updateCovisibilityGraph(kfid1);
 }
 
 
@@ -495,6 +497,19 @@ VMap::createDescriptorMatcher(DescriptorMatcherT dm)
 	case DescriptorMatcherT::BruteForce:
 		return cv::BFMatcher::create(cv::NORM_HAMMING2);
 		break;
+	}
+}
+
+
+void
+VMap::updateCovisibilityGraph(const kfid k)
+{
+	map<kfid,int> kfCounter;
+	auto mpList = framePoints.at(k);
+
+	for (auto mp_ptr: mpList) {
+		mpid pId = mp_ptr.first;
+		// XXX: Unfinished
 	}
 }
 

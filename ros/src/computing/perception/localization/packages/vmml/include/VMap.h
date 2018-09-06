@@ -210,7 +210,7 @@ public:
 
 protected:
 
-	friend class KeyFrame;
+//	friend class KeyFrame;
 
 	cv::Mat vocabulary;
 
@@ -247,6 +247,8 @@ protected:
 
 	// XXX: Follow tutorial at http://www.technical-recipes.com/2015/getting-started-with-the-boost-graph-library/
 	DirectedGraph covisibility;
+
+	void updateCovisibilityGraph(const kfid k);
 };
 
 #endif /* VMAP_H_ */
