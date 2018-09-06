@@ -35,10 +35,6 @@ typedef uint64_t kfid;
 typedef uint64_t mpid;
 typedef decltype(cv::DMatch::trainIdx) kpid;
 
-typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS> DirectedGraph;
-typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
-
 
 #define MAX_ORB_POINTS_IN_FRAME 6000
 
@@ -207,10 +203,12 @@ public:
 	std::vector<CameraPinholeParams> getCameraParameters() const
 	{ return cameraList; }
 
+	std::vector<kfid> getOrderedRelatedKeyFramesFrom (const kfid k, int howMany=-1) const;
+
 
 protected:
 
-//	friend class KeyFrame;
+	friend class KeyFrame;
 
 	cv::Mat vocabulary;
 
@@ -246,7 +244,11 @@ protected:
 	ImageDatabase *imageDB;
 
 	// XXX: Follow tutorial at http://www.technical-recipes.com/2015/getting-started-with-the-boost-graph-library/
-	DirectedGraph covisibility;
+	typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
+	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty> KeyFrameGraph;
+	typedef boost::graph_traits<KeyFrameGraph>::edge_iterator edge_iterator;
+
+	KeyFrameGraph covisibility;
 
 	void updateCovisibilityGraph(const kfid k);
 };

@@ -122,6 +122,13 @@ ImageDatabase::find (const KeyFrame *kf) const
 kfid
 ImageDatabase::find (Frame &f, bool simple) const
 {
+
+}
+
+
+vector<kfid>
+ImageDatabase::findCandidates (Frame &f) const
+{
 	f.computeBoW(*this);
 
 	map<kfid, uint> kfCandidates;
@@ -147,22 +154,52 @@ ImageDatabase::find (Frame &f, bool simple) const
 		}
 	}
 
-	if (simple) {
-		auto ptr = maximumMapElement(kfCandidates);
-		return ptr.first;
-	}
-
 	int minCommonWords = maxCommonWords * 0.8f;
 
 	// Convert to scoring
-	map<kfid,double> kfCandidateScores(kfCandidates.begin(), kfCandidates.end());
+	map<kfid,double> tKfCandidateScores(kfCandidates.begin(), kfCandidates.end());
 	for (auto &ptr: kfCandidates) {
 		const kfid &k = ptr.first;
 		if (ptr.second < minCommonWords)
 			continue;
-		kfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
+		tKfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
 	}
 
-	auto ptr = maximumMapElement(kfCandidateScores);
-	return ptr.first;
+	// Accumulate score by covisibility
+	double bestAccScore = 0;
+	map<kfid,double> tKfAccumScores;
+	for (auto kfp: tKfCandidateScores) {
+
+		double bestScore = kfp.second;
+		double accScore = bestScore;
+		kfid bestKf = kfp.first;
+
+		vector<kfid> kfNeighs = cMap->getOrderedRelatedKeyFramesFrom(kfp.first, 10);
+		for (auto &k2: kfNeighs) {
+			try {
+				double k2score = tKfCandidateScores.at(k2);
+				accScore += k2score;
+				if (bestScore < k2score) {
+					bestKf = k2;
+					bestScore = k2score;
+				}
+			} catch (exception &e) {
+				continue;
+			}
+		}
+
+		tKfAccumScores[kfp.first] = accScore;
+		if (accScore > bestAccScore)
+			bestAccScore = accScore;
+	}
+
+	// return all keyframes with scores higher than 0.75*bestAccumScore
+	double minScoreToRetain = 0.75 * bestAccScore;
+	vector<kfid> relocCandidates;
+	for (auto &p: tKfCandidateScores) {
+		if (p.second > minScoreToRetain)
+			relocCandidates.push_back(p.first);
+	}
+
+	return relocCandidates;
 }

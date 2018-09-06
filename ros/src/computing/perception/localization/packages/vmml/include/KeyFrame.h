@@ -155,7 +155,6 @@ protected:
 
 	static kfid nextId;
 
-	void updateConnections (VMap *parent);
 
 //	KeyFrame* prev;
 };

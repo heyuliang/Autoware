@@ -90,7 +90,7 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 	keyframeInvIdx.insert(pair<kfid,KeyFrame*> (nId, nKf));
 	keyframeInvIdx_mtx->unlock();
 
-	imageDB->newKeyFrameCallback(nId);
+//	imageDB->newKeyFrameCallback(nId);
 
 	if (ptr!=NULL)
 		*ptr = nKf;
@@ -505,12 +505,51 @@ void
 VMap::updateCovisibilityGraph(const kfid k)
 {
 	map<kfid,int> kfCounter;
-	auto mpList = framePoints.at(k);
 
-	for (auto mp_ptr: mpList) {
+	for (auto mp_ptr: framePoints.at(k)) {
 		mpid pId = mp_ptr.first;
-		// XXX: Unfinished
+		for (auto kr: pointAppearances.at(pId)) {
+			if (kr==k)
+				continue;
+			kfCounter[kr]++;
+		}
 	}
+
+	if (kfCounter.empty())
+		return;
+
+	for (auto kfctr: kfCounter) {
+		// XXX: Do NOT put KfID directly to graph; use vertex property instead
+		boost::add_edge(k, kfctr.first, kfctr.second, covisibility);
+	}
+}
+
+
+vector<kfid>
+VMap::getOrderedRelatedKeyFramesFrom (const kfid kx, int howMany) const
+{
+	vector<pair<kfid,int>> covisk;
+
+	auto kfl = boost::out_edges(kx, covisibility);
+	for (auto p=kfl.first; p!=kfl.second; ++p) {
+		auto k = boost::target(*p, covisibility);
+		int w = boost::get(boost::edge_weight_t(), covisibility, *p);
+		covisk.push_back(make_pair(k,w));
+	}
+
+	sort(covisk.begin(), covisk.end(),
+		[](const pair<kfid,int> &u1, const pair<kfid,int> &u2) -> bool
+		{ return u1.second > u2.second;}
+	);
+
+	vector<kfid> sortedKfs(covisk.size());
+	for (int i=0; i<covisk.size(); i++)
+		sortedKfs[i] = covisk.at(i).first;
+
+	if (howMany<0 or sortedKfs.size()<howMany)
+		return sortedKfs;
+	else
+		return vector<kfid> (sortedKfs.begin(), sortedKfs.begin()+howMany);
 }
 
 

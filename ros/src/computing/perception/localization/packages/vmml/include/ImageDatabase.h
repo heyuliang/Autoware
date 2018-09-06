@@ -111,6 +111,9 @@ public:
 
 	kfid find (Frame &f, bool simple=false) const;
 
+	std::vector<kfid>
+	findCandidates (Frame &f) const;
+
 	DBoW2::BowVector getWords (const kfid &k)
 	{ return BoWList[k]; }
 
@@ -133,7 +136,7 @@ protected:
 		ar & FeatVecList;
 
 		// XXX: Resulting string may get too big
-		ar & seqSlamProvider;
+//		ar & seqSlamProvider;
 	}
 
 private:
