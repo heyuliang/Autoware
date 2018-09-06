@@ -66,9 +66,9 @@ public:
   {
     current_waypoints_ = wps;
   }
-  void setCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+  void setCurrentPose(geometry_msgs::PoseStamped msg)
   {
-    current_pose_ = msg->pose;
+    current_pose_ = msg.pose;
   }
   void setLinearInterpolationParameter(const bool &param)
   {
