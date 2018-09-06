@@ -1624,6 +1624,12 @@ params :
       min   : 0.0
       max   : 20.0
       v     : 6.0
+    - name  : delay
+      dsec  : delay between car behavior and vhicle command [sec]
+      label : delay
+      min   : 0.0
+      max   : 2.0
+      v     : 0.0
     - name  : displacement_threshold
       desc  : displacement_threshold desc sample
       label : displacement_threshold
