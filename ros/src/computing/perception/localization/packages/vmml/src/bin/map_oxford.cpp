@@ -29,18 +29,22 @@ const double
 const string
 	mapFileOutput = "/tmp/oxford1.map";
 
+
 InputFrame createInputFrame(OxfordDataItem &d)
 {
 	cv::Mat i=d.getImage();
 	// Oxford datasets output is RGB
 	cv::cvtColor(i, i, CV_BGR2GRAY, 1);
-	return InputFrame(
+	InputFrame f(
 		i,
 		d.groundTruth.position(),
 		d.groundTruth.orientation(),
 		// Force Keyframe ID using timestamp. This way, we can refer to original
 		// image for display purpose
-		static_cast<kfid>(d.getTimestamp()));
+		static_cast<kfid>(d.timestamp));
+	f.tm = d.getTimestamp();
+
+	return f;
 }
 
 

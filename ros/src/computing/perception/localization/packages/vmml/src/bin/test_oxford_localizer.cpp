@@ -295,7 +295,8 @@ private:
 		auto di = localizTestDataSrc->atDurationSecond(d);
 		cv::Mat img = di.getImage();
 		cv::cvtColor(img, img, CV_RGB2GRAY);
-		localizer->detect(img);
+		kfid k = localizer->detect(img);
+		debug("Max.: "+to_string(k));
 	}
 
 	const string dumpImagePath = "/tmp/dump_image.png";

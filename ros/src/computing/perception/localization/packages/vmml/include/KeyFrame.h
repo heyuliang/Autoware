@@ -133,6 +133,9 @@ public:
 	cv::Mat getImage() const
 	{ return image; }
 
+	void setTimestamp
+	(const ptime &t)
+	{ frCreationTime = t; }
 
 protected:
 
@@ -153,8 +156,10 @@ protected:
 
 	int cameraId;
 
-	static kfid nextId;
+	// Time at which the image was taken
+	ptime frCreationTime;
 
+	static kfid nextId;
 
 //	KeyFrame* prev;
 };

@@ -54,7 +54,8 @@ KeyFrame::KeyFrame(
 
 	orientation(o),
 	position(p),
-	cameraId(_cameraId)
+	cameraId(_cameraId),
+	frCreationTime(boost::posix_time::second_clock::local_time())
 
 {
 	if(cameraIntr->width < 0 or cameraIntr->height < 0)

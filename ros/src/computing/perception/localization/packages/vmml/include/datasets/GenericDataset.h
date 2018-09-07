@@ -14,7 +14,9 @@
 #include <exception>
 #include <Eigen/Eigen>
 #include <opencv2/core.hpp>
+
 #include "VMap.h"
+#include "utilities.h"
 
 
 typedef uint64_t dataItemId;
@@ -41,9 +43,14 @@ public:
 	 * position in an array
 	 */
 	virtual dataItemId getId() const = 0;
+//	{ return itemId; }
 
-	inline virtual timestamp_t getTimestamp()
-	{ throw std::runtime_error("Not implemented"); }
+	virtual ptime getTimestamp() const = 0;
+//	{ return iTimestamp; }
+
+//protected:
+//	dataItemId itemId;
+//	ptime iTimestamp;
 };
 
 

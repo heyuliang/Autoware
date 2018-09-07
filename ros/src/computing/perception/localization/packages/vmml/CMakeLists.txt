@@ -88,7 +88,7 @@ set(REQUIRED_LIBS
 add_library(
 	vmml STATIC
 		src/VMap.cpp
-		src/MapBuilder.cpp
+#		src/MapBuilder.cpp
 		src/MapBuilder2.cpp
 		src/KeyFrame.cpp
 		src/MapPoint.cpp
@@ -108,16 +108,16 @@ add_library(
 		src/datasets/MeidaiLocalizerGNSS.cpp
 )
 
-add_executable(map_test
-	src/bin/map_test.cpp
-)
+#add_executable(map_test
+#	src/bin/map_test.cpp
+#)
 
-target_link_libraries(
-	map_test
-	vmml
-	${REQUIRED_LIBS}
-	${catkin_LIBRARIES}
-)
+#target_link_libraries(
+#	map_test
+#	vmml
+#	${REQUIRED_LIBS}
+#	${catkin_LIBRARIES}
+#)
 
 add_executable(map_oxford
 	src/bin/map_oxford.cpp

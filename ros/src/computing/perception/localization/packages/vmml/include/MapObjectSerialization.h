@@ -14,6 +14,8 @@
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
+
 #include "cvobj_serialization.h"
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"
@@ -144,6 +146,8 @@ void serialize (
 		kf.normal &
 		kf.projMatrix,
 		kf.cameraId;
+	ar &
+		kf.frCreationTime;
 }
 
 

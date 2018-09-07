@@ -34,6 +34,15 @@ Localizer::setCameraParameterFromId (int cameraId)
 kfid
 Localizer::detect (cv::Mat &frmImg)
 {
-	Frame frm (frmImg, this);
-	return imgDb->find(frm, true);
+	cv::Mat rzImg;
+	if (frmImg.cols != localizerCamera.width) {
+		float ratio = float(localizerCamera.width) / float(frmImg.cols);
+		cv::resize(frmImg, rzImg, cv::Size(), ratio, ratio, cv::INTER_CUBIC);
+	}
+	else
+		rzImg = frmImg;
+
+	Frame frm (rzImg, this);
+	vector<kfid> placeCandidates = imgDb->findCandidates(frm);
+	return placeCandidates[0];
 }

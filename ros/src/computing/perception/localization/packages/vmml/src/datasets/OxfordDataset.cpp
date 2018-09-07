@@ -53,6 +53,25 @@ baseLinkToOffset = TTransform::from_Pos_Quat(
 	TQuaternion (-0.723, 0.007, 0.002, 0.691));
 
 
+/*
+ * XXX: Oxford Timestamp is in Microsecond
+ */
+
+ptime fromOxfordTimestamp (const uint64_t ot)
+{
+	static const ptime epoch(boost::gregorian::date(1970, 1, 1));
+	return epoch + boost::posix_time::microseconds(ot);
+}
+
+
+uint64_t toOxfordTimestamp (const ptime &t)
+{
+	static const ptime epoch(boost::gregorian::date(1970, 1, 1));
+	auto d = t-epoch;
+	return d.total_microseconds();
+}
+
+
 OxfordDataset::OxfordDataset(const OxfordDataset &cp):
 
 	oxfCamera(cp.oxfCamera),
@@ -174,11 +193,11 @@ void OxfordDataset::loadTimestamps()
 
 
 string
-OxfordDataItem::getPath(OxfordDataItem::StereoImageT t) const
+OxfordDataItem::getPath(OxfordDataItem::StereoImageT type) const
 {
 	const string ss = to_string(timestamp);
 
-	switch (t) {
+	switch (type) {
 	case StereoLeft:
 		return parent->oxfPath + "/stereo/left/" + ss + ".png"; break;
 	case StereoCenter:
@@ -187,6 +206,19 @@ OxfordDataItem::getPath(OxfordDataItem::StereoImageT t) const
 		return parent->oxfPath + "/stereo/right/" + ss + ".png"; break;
 	}
 }
+
+
+ptime
+OxfordDataItem::getTimestamp() const
+{
+	return fromOxfordTimestamp(timestamp);
+}
+
+
+//timestamp_t
+//OxfordDataItem::getTimestampLong()
+//const
+//{ return toOxfordTimestamp(iTimestamp); }
 
 
 cv::Mat
@@ -383,8 +415,9 @@ const
 
 			OxfordDataItem d(&mycopy);
 			d.timestamp = curTimestamp;
-			d.groundTruth = this->stereoRecords.at(curTimestamp).groundTruth;
 			d.iId = sId;
+			d.groundTruth = this->stereoRecords.at(curTimestamp).groundTruth;
+
 			mycopy.stereoRecords.insert(make_pair(curTimestamp, d));
 			sId++;
 		}

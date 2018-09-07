@@ -26,6 +26,8 @@
 
 #include <boost/graph/adjacency_list.hpp>
 
+#include "utilities.h"
+
 
 class KeyFrame;
 class MapPoint;
@@ -134,7 +136,8 @@ public:
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 		const int cameraId,
 		KeyFrame **ptr=NULL,
-		kfid setId=std::numeric_limits<kfid>::max());
+		kfid setId=std::numeric_limits<kfid>::max(),
+		ptime tm=boost::posix_time::not_a_date_time);
 
 	mpid createMapPoint (
 		const Eigen::Vector3d &p,

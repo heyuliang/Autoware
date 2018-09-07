@@ -18,6 +18,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>
@@ -33,6 +34,9 @@ using Eigen::Vector3d;
 
 
 typedef Eigen::Affine3d Transform3d;
+
+typedef boost::posix_time::ptime ptime;
+typedef boost::posix_time::time_duration tduration;
 
 
 template<typename P, typename Q>

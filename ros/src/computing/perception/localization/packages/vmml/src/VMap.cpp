@@ -81,7 +81,8 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 		const int cameraId,
 		KeyFrame **ptr,
-		kfid setId)
+		kfid setId,
+		ptime tm)
 {
 	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &cameraList[cameraId], cameraId, setId);
 	kfid nId = nKf->getId();
@@ -94,6 +95,9 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 	auto vtId = boost::add_vertex(covisibility);
 	kfVtxMap[nId] = vtId;
 	kfVtxInvMap[vtId] = nId;
+
+	if (tm != boost::posix_time::not_a_date_time)
+		nKf->setTimestamp(tm);
 
 	if (ptr!=NULL)
 		*ptr = nKf;

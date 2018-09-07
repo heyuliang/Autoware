@@ -13,8 +13,10 @@
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 #include <opencv2/core.hpp>
+#include <functional>
 #include "VMap.h"
 #include "utilities.h"
+#include "datasets/GenericDataset.h"
 
 
 class Viewer;
@@ -28,6 +30,7 @@ public:
 	bool positionIsValid = true;
 	uint cameraId = 0;
 	kfid setKfId=std::numeric_limits<kfid>::max();
+	ptime tm=boost::posix_time::not_a_date_time;
 
 	InputFrame() {}
 
@@ -55,6 +58,8 @@ public:
 
 	void track (const InputFrame &f);
 
+	void track2 (const InputFrame &f);
+
 	void build ();
 
 	VMap* getMap()
@@ -68,6 +73,11 @@ public:
 
 	void resetMap();
 
+	typedef std::function<void(const InputFrame&)> frameCallback;
+	void registerFrameCallback (const frameCallback& f)
+	{ fInCal = f; }
+
+	void runFromDataset (GenericDataset *ds);
 
 protected:
 
@@ -81,6 +91,10 @@ protected:
 
 	bool initialized = false;
 
+	GenericDataset *sourceDataset=NULL;
+	frameCallback fInCal;
+
+	InputFrame frame0;
 };
 
 #endif /* MAPBUILDER2_H_ */

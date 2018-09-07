@@ -106,11 +106,20 @@ struct OxfordDataItem : public GenericDataItem
 	dataItemId getId() const
 	{ return iId; }
 
-	inline virtual timestamp_t getTimestamp()
-	{ return timestamp; }
+	ptime getTimestamp() const;
+//	{ return timestamp; }
+
+//	timestamp_t getTimestampLong() const
+//	{ return timestamp; }
 
 private:
 	std::string getPath(StereoImageT t=StereoCenter) const;
+
+//	void setId (const dataItemId &i)
+//	{ itemId = i; }
+//
+//	void setTimestamp (const ptime &tm)
+//	{ iTimestamp = tm; }
 };
 
 

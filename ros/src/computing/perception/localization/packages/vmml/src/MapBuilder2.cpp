@@ -11,6 +11,7 @@
 #include "optimizer.h"
 #include "ImageDatabase.h"
 #include "Viewer.h"
+#include "utilities.h"
 
 
 
@@ -56,6 +57,33 @@ MapBuilder2::track (const InputFrame &f)
 
 
 void
+MapBuilder2::track2(const InputFrame &f)
+{
+	if (initialized==false) {
+		auto normcdf = cdf(f.image);
+		if (normcdf[127] < 0.25)
+			return;
+
+		if (frame0.image.empty()) {
+			frame0 = f;
+			return;
+		}
+
+		else {
+			double runTrans, runRot;
+			f.getPose().displacement(frame0.getPose(), runTrans, runRot);
+			if (runTrans>=translationThrs or runRot>=rotationThrs) {
+				initialize(frame0, f);
+				// XXX: Callback here
+				initialized = true;
+				return;
+			}
+		}
+	}
+}
+
+
+void
 MapBuilder2::build ()
 {
 	thread ba([this] {
@@ -74,4 +102,17 @@ MapBuilder2::build ()
 	ba.join();
 	db.join();
 	return;
+}
+
+
+void
+MapBuilder2::runFromDataset(GenericDataset *ds)
+{
+	sourceDataset = ds;
+	if (initialized != false)
+		throw runtime_error("Map has been running; aborted");
+
+	initialized = true;
+
+	this->build();
 }

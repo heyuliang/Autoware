@@ -79,8 +79,8 @@ DatasetBrowser::setImageOnPosition (int v)
 	QImage curImage = fromCvMat(image);
 	frame->setImage(curImage);
 
-	timestamp_t ts = openDs->at(v).getTimestamp() - openDs->at(0).getTimestamp();
-	double tsd = double(ts)/1e6;
+	auto ts = openDs->at(v).getTimestamp() - openDs->at(0).getTimestamp();
+	double tsd = double(ts.total_milliseconds())/1e6;
 
 	stringstream ss;
 	ss << fixed << setprecision(2) << tsd;

@@ -40,6 +40,9 @@ public:
 	dataItemId getId() const
 	{ return id; }
 
+	ptime getTimestamp() const
+	{ throw std::runtime_error("Not implemented"); }
+
 protected:
 	uint64_t id;
 	std::string imagePath;
