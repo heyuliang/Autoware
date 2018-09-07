@@ -34,6 +34,7 @@
 // ROS includes
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float64.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <pacmod_msgs/PacmodCmd.h>
 #include <pacmod_msgs/PositionWithSpeed.h>
@@ -83,25 +84,21 @@ private:
   bool is_current_linear_velocity_initialized_;
   bool is_current_angular_velocity_initialized_;
 
-  double current_time_ = 0;
-  double past_time_ = 0;
+  double current_time_ ;
+  double past_time_ ;
 
   double integration_error_;
 
   // callbacks
   void callbackTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackPACMODControlMode(const std_msgs::BoolConstPtr &msg);
-  void callbackCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackEstimateTwist(const geometry_msgs::TwistStampedConstPtr &msg);
+  void callbackLinearVelocity(const std_msgs::Float64ConstPtr &msg);
 
 
   double calculatePID(const double delta_velocity);
   pacmod_msgs::PacmodCmd makePACMODcmd(double target_acceleration);
   pacmod_msgs::PositionWithSpeed makeSteerMsg(double delta_time);
 
-
-  // initializer
-  // void initForROS();
 };
 
 #endif  // PACMOD_V2_INTERFACE_H

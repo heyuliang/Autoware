@@ -48,12 +48,11 @@ PacmodV2Interface::PacmodV2Interface() :
   private_nh_.param<double>("max_angular_velocity", max_angular_velocity_, 3.0);
   private_nh_.param<double>("pid_kp", pid_kp_, 0.9);
   private_nh_.param<double>("pid_ki", pid_ki_, 0.01);
-  private_nh_.param<double>("pid_kd", pid_kd_, 3.0);
+  private_nh_.param<double>("pid_kd", pid_kd_, 0.0);
 
   // setup subscriber
   twist_cmd_sub_        = nh_.subscribe("/twist_cmd", 10, &PacmodV2Interface::callbackTwistCmd, this);
-  current_linear_velocity_sub_ = nh_.subscribe("/current_velocity", 10, &PacmodV2Interface::callbackCurrentVelocity, this);
-  current_angular_velocity_sub_ = nh_.subscribe("/estimate_twist", 10, &PacmodV2Interface::callbackEstimateTwist, this);
+  current_linear_velocity_sub_ = nh_.subscribe("/as_tx/vehicle_speed", 10, &PacmodV2Interface::callbackLinearVelocity, this);
   control_mode_sub_     = nh_.subscribe("/as_tx/enable", 10, &PacmodV2Interface::callbackPACMODControlMode, this);
 
 
@@ -70,16 +69,10 @@ void PacmodV2Interface::callbackTwistCmd(const geometry_msgs::TwistStampedConstP
   is_twist_cmd_initialized_ = true;
 }
 
-void PacmodV2Interface::callbackCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
+void PacmodV2Interface::callbackLinearVelocity(const std_msgs::Float64ConstPtr &msg)
 {
-  current_linear_velocity_ = msg->twist.linear.x;
+  current_linear_velocity_ = msg->data;
   is_current_linear_velocity_initialized_ = true;
-}
-
-void PacmodV2Interface::callbackEstimateTwist(const geometry_msgs::TwistStampedConstPtr &msg)
-{
-  current_angular_velocity_ = msg->twist.angular.z;
-  is_current_angular_velocity_initialized_ = true;
 }
 
 void PacmodV2Interface::callbackPACMODControlMode(const std_msgs::BoolConstPtr &msg)
@@ -124,7 +117,7 @@ pacmod_msgs::PositionWithSpeed PacmodV2Interface::makeSteerMsg(double delta_time
   pacmod_msgs::PositionWithSpeed pws;
   pws.header.stamp = ros::Time::now();
   pws.header.frame_id = "/can";
-  pws.angular_position = current_angular_velocity_ * delta_time;
+  pws.angular_position = target_angular_velocity_ * delta_time;
   pws.angular_velocity_limit = max_angular_velocity_;
 
   std::cout << "steer " <<  current_angular_velocity_ * delta_time<< std::endl;
