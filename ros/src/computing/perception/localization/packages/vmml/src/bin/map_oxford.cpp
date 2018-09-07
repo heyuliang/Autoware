@@ -26,6 +26,8 @@ const double
 	translationThrs = 1.0,	// meter
 	rotationThrs = 0.04;	// == 2.5 degrees
 
+const string
+	mapFileOutput = "/tmp/oxford1.map";
 
 InputFrame createInputFrame(OxfordDataItem &d)
 {
@@ -122,7 +124,8 @@ int main (int argc, char *argv[])
 
 	string stname = oxfSubset.getName();
 	buildMap (oxfSubset);
-	builder->getMap()->save("/tmp/oxford1.map");
+	builder->getMap()->save(mapFileOutput);
+	cout << "Saved to " << mapFileOutput << endl;
 //	oxf.dump();
 	return 0;
 }

@@ -249,6 +249,8 @@ protected:
 	typedef boost::graph_traits<KeyFrameGraph>::edge_iterator edge_iterator;
 
 	KeyFrameGraph covisibility;
+	std::map<kfid,KeyFrameGraph::vertex_descriptor> kfVtxMap;
+	std::map<KeyFrameGraph::vertex_descriptor,kfid> kfVtxInvMap;
 
 	void updateCovisibilityGraph(const kfid k);
 };

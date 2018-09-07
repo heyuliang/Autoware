@@ -26,6 +26,8 @@ typedef uint64 oid;
 const float thHuber2D = sqrt(5.99);
 const float thHuber3D = sqrt(7.815);
 
+const int baIteration = 6;
+
 
 // XXX: Wrong
 g2o::SE3Quat toSE3Quat
@@ -133,7 +135,7 @@ void bundle_adjustment (VMap *orgMap)
 
 	optimizer.initializeOptimization();
 	// XXX: Determine number of iterations
-	optimizer.optimize(10);
+	optimizer.optimize(baIteration);
 
 	// Recovery of optimized data
 	// KeyFrames

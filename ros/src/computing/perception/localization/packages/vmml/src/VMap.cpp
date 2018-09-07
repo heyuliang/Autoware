@@ -91,6 +91,9 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 	keyframeInvIdx_mtx->unlock();
 
 //	imageDB->newKeyFrameCallback(nId);
+	auto vtId = boost::add_vertex(covisibility);
+	kfVtxMap[nId] = vtId;
+	kfVtxInvMap[vtId] = nId;
 
 	if (ptr!=NULL)
 		*ptr = nKf;
@@ -274,6 +277,8 @@ VMap::save(const string &filepath)
 	mapStore << cameraList;
 
 	mapStore << covisibility;
+	mapStore << kfVtxMap;
+	mapStore << kfVtxInvMap;
 
 	mapFileFd.close();
 	return true;
@@ -315,6 +320,8 @@ VMap::load(const string &filepath)
 	mapStore >> cameraList;
 
 	mapStore >> covisibility;
+	mapStore >> kfVtxMap;
+	mapStore >> kfVtxInvMap;
 
 	// Rebuild pointers
 	keyframeInvIdx.clear();
@@ -518,9 +525,10 @@ VMap::updateCovisibilityGraph(const kfid k)
 	if (kfCounter.empty())
 		return;
 
+	boost::clear_vertex(kfVtxMap[k], covisibility);
 	for (auto kfctr: kfCounter) {
-		// XXX: Do NOT put KfID directly to graph; use vertex property instead
-		boost::add_edge(k, kfctr.first, kfctr.second, covisibility);
+		// XXX: Do NOT put KfID directly to graph; use vertex descriptor instead
+		boost::add_edge(kfVtxMap[k], kfVtxMap[kfctr.first], kfctr.second, covisibility);
 	}
 }
 
@@ -528,9 +536,10 @@ VMap::updateCovisibilityGraph(const kfid k)
 vector<kfid>
 VMap::getOrderedRelatedKeyFramesFrom (const kfid kx, int howMany) const
 {
-	vector<pair<kfid,int>> covisk;
+	vector<pair<KeyFrameGraph::vertex_descriptor,int>> covisk;
 
-	auto kfl = boost::out_edges(kx, covisibility);
+	auto vtx = kfVtxMap.at(kx);
+	auto kfl = boost::out_edges(vtx, covisibility);
 	for (auto p=kfl.first; p!=kfl.second; ++p) {
 		auto k = boost::target(*p, covisibility);
 		int w = boost::get(boost::edge_weight_t(), covisibility, *p);
@@ -543,8 +552,9 @@ VMap::getOrderedRelatedKeyFramesFrom (const kfid kx, int howMany) const
 	);
 
 	vector<kfid> sortedKfs(covisk.size());
-	for (int i=0; i<covisk.size(); i++)
-		sortedKfs[i] = covisk.at(i).first;
+	for (int i=0; i<covisk.size(); i++) {
+		sortedKfs[i] = kfVtxInvMap.at(covisk.at(i).first);
+	}
 
 	if (howMany<0 or sortedKfs.size()<howMany)
 		return sortedKfs;
