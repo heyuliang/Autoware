@@ -61,7 +61,7 @@ folder detection {
     'outputs
     fusion_detector --> detected_objects_fused
 
-    [fusion_tools\n(range_vision_fusion)] as fusion_tools
+    [range_vision_fusion\n(in fusion_tools)] as fusion_tools
     'inputs
     detected_objects_vision --> fusion_tools
     detected_objects_lidar --> fusion_tools
