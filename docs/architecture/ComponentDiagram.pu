@@ -33,7 +33,7 @@ folder sensing {
 }
 
 () "autoware_detection_msgs::ObjectArray\n/detection/tracked_objects" as tracked_objects
-() "autoware_detection_msgs::TrafficLight\n/detection/traffic_light_color" as traffic_light_color
+'() "autoware_detection_msgs::TrafficLight\n/detection/traffic_light_color" as traffic_light_color
 
 folder detection {
     () "autoware_detection_msgs::ObjectArray\n/detection/vision_objects" as detected_objects_vision
@@ -80,11 +80,11 @@ folder detection {
     'outputs
     object_tracker --> tracked_objects
 
-    [trafficlight_recognizer]
+    '[trafficlight_recognizer]
     'inputs
-    image_raw --> trafficlight_recognizer
+    'image_raw --> trafficlight_recognizer
     'outputs
-    trafficlight_recognizer --> traffic_light_color
+    'trafficlight_recognizer --> traffic_light_color
 }
 
 'lidar_localizer
