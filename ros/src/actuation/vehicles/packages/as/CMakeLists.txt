@@ -9,6 +9,7 @@ find_package(
         geometry_msgs
         module_comm_msgs
         dbw_mkz_msgs
+        pacmod_msgs
 )
 
 catkin_package(
@@ -18,6 +19,7 @@ catkin_package(
         geometry_msgs
         module_comm_msgs
         dbw_mkz_msgs
+        pacmod_msgs
 )
 
 # If submodule is not cloned this project will not be build.
@@ -48,3 +50,32 @@ if (EXISTS "${AS_MSG_PATH}")
             PATTERN ".svn" EXCLUDE)
 
 endif ()
+
+# If submodule is not cloned this project will not be build.
+# set(AS_PACMOD_MSG_PATH "${CMAKE_SOURCE_DIR}/msgs/pacmod_msgs/")
+# if (EXISTS "${AS_PACMOD_MSG_PATH}")
+
+    # SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+    #
+    # include_directories(
+    #         ${catkin_INCLUDE_DIRS}
+    # )
+
+add_executable(pacmod_v2_interface
+        nodes/pacmod_v2_interface/pacmod_v2_interface_node.cpp
+        nodes/pacmod_v2_interface/pacmod_v2_interface.cpp
+        )
+target_link_libraries(pacmod_v2_interface ${catkin_LIBRARIES})
+add_dependencies(pacmod_v2_interface ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS pacmod_v2_interface
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+# endif ()
