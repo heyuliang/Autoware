@@ -34,10 +34,9 @@
 // Constructor
 PacmodV2Interface::PacmodV2Interface() :
     private_nh_("~"),
-    is_control_mode_(true),
-    is_twist_cmd_initialized_(false),
-    is_current_linear_velocity_initialized_(false),
-    is_current_angular_velocity_initialized_(false),
+    is_autoware_twist_cmd_initialized_(false),
+    is_pacmod_control_mode_(true),
+    is_pacmod_linear_velocity_initialized_(false),
     current_time_(0),
     past_time_(0),
     integration_error_(0)
@@ -51,33 +50,33 @@ PacmodV2Interface::PacmodV2Interface() :
   private_nh_.param<double>("pid_kd", pid_kd_, 0.0);
 
   // setup subscriber
-  twist_cmd_sub_        = nh_.subscribe("/twist_cmd", 10, &PacmodV2Interface::callbackTwistCmd, this);
-  current_linear_velocity_sub_ = nh_.subscribe("/as_tx/vehicle_speed", 10, &PacmodV2Interface::callbackLinearVelocity, this);
-  control_mode_sub_     = nh_.subscribe("/as_tx/enable", 10, &PacmodV2Interface::callbackPACMODControlMode, this);
+  autoware_twist_cmd_sub_     = nh_.subscribe("/twist_cmd", 10, &PacmodV2Interface::callbackAutowareTwistCmd, this);
+  pacmod_linear_velocity_sub_ = nh_.subscribe("/as_tx/vehicle_speed", 10, &PacmodV2Interface::callbackPACMODLinearVelocity, this);
+  pacmod_control_mode_sub_    = nh_.subscribe("/as_tx/enable", 10, &PacmodV2Interface::callbackPACMODControlMode, this);
 
 
   // setup publisher
-  accel_pub_  = nh_.advertise<pacmod_msgs::PacmodCmd>("/as_rx/accel_cmd", 10);
-  brake_pub_  = nh_.advertise<pacmod_msgs::PacmodCmd>("/as_rx/brake_cmd", 10);
-  steer_pub_ = nh_.advertise<pacmod_msgs::PositionWithSpeed>("/as_rx/steer_cmd", 10);
+  pacmod_accel_pub_ = nh_.advertise<pacmod_msgs::PacmodCmd>("/as_rx/accel_cmd", 10);
+  pacmod_brake_pub_ = nh_.advertise<pacmod_msgs::PacmodCmd>("/as_rx/brake_cmd", 10);
+  pacmod_steer_pub_ = nh_.advertise<pacmod_msgs::PositionWithSpeed>("/as_rx/steer_cmd", 10);
 }
 
-void PacmodV2Interface::callbackTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg)
+void PacmodV2Interface::callbackAutowareTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  target_linear_velocity_ = msg->twist.linear.x;
+  target_linear_velocity_  = msg->twist.linear.x;
   target_angular_velocity_ = msg->twist.angular.z;
-  is_twist_cmd_initialized_ = true;
+  is_autoware_twist_cmd_initialized_ = true;
 }
 
-void PacmodV2Interface::callbackLinearVelocity(const std_msgs::Float64ConstPtr &msg)
+void PacmodV2Interface::callbackPACMODLinearVelocity(const std_msgs::Float64ConstPtr &msg)
 {
-  current_linear_velocity_ = msg->data;
-  is_current_linear_velocity_initialized_ = true;
+  pacmod_linear_velocity_ = msg->data;
+  is_pacmod_linear_velocity_initialized_ = true;
 }
 
 void PacmodV2Interface::callbackPACMODControlMode(const std_msgs::BoolConstPtr &msg)
 {
-  is_control_mode_ = msg->data;
+  is_pacmod_control_mode_ = msg->data;
 }
 
 double PacmodV2Interface::calculatePID(const double velocity_error)
@@ -87,7 +86,7 @@ double PacmodV2Interface::calculatePID(const double velocity_error)
   return pid_output;
 }
 
-pacmod_msgs::PacmodCmd PacmodV2Interface::makePACMODcmd(double target_acceleration)
+pacmod_msgs::PacmodCmd PacmodV2Interface::makePACMODcmd(const double target_acceleration)
 {
   double scaled_value = 0;
   if(target_acceleration > 0)
@@ -108,11 +107,11 @@ pacmod_msgs::PacmodCmd PacmodV2Interface::makePACMODcmd(double target_accelerati
   cmd.header.stamp    = ros::Time::now();
   cmd.header.frame_id = "/can";
   cmd.f64_cmd = non_linear_transfromed_value;
-  cmd.enable = is_control_mode_;
+  cmd.enable = is_pacmod_control_mode_;
   return cmd;
 }
 
-pacmod_msgs::PositionWithSpeed PacmodV2Interface::makeSteerMsg(double delta_time)
+pacmod_msgs::PositionWithSpeed PacmodV2Interface::makeSteerMsg(const double delta_time)
 {
   pacmod_msgs::PositionWithSpeed pws;
   pws.header.stamp = ros::Time::now();
@@ -120,39 +119,38 @@ pacmod_msgs::PositionWithSpeed PacmodV2Interface::makeSteerMsg(double delta_time
   pws.angular_position = target_angular_velocity_ * delta_time;
   pws.angular_velocity_limit = max_angular_velocity_;
 
-  std::cout << "steer " <<  current_angular_velocity_ * delta_time<< std::endl;
+  std::cout << "steer " <<  target_angular_velocity_ * delta_time<< std::endl;
   return pws;
 }
 
 void PacmodV2Interface::run()
 {
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(50);
   while (ros::ok())
   {
     ros::spinOnce();
     current_time_ = ros::Time::now().toSec();
-    if(is_twist_cmd_initialized_ &&
-       is_current_linear_velocity_initialized_ &&
-       is_current_angular_velocity_initialized_ &&
+    if(is_autoware_twist_cmd_initialized_ &&
+       is_pacmod_linear_velocity_initialized_ &&
        (past_time_ != 0))
     {
       double delta_time = current_time_ - past_time_;
-      double delta_velocity = target_linear_velocity_ - current_linear_velocity_;
+      double error_velocity = target_linear_velocity_ - pacmod_linear_velocity_;
 
-      // double target_acceleration = calculatePID(delta_velocity);
-      double target_acceleration = delta_velocity;
+      // double target_acceleration = calculatePID(error_velocity);
+      double target_acceleration = error_velocity;
 
       pacmod_msgs::PacmodCmd cmd = makePACMODcmd(target_acceleration);
       if(target_acceleration > 0)
       {
-        accel_pub_.publish(cmd);
+        pacmod_accel_pub_.publish(cmd);
       }
       else
       {
-        brake_pub_.publish(cmd);
+        pacmod_brake_pub_.publish(cmd);
       }
       pacmod_msgs::PositionWithSpeed pws = makeSteerMsg(delta_time);
-      steer_pub_.publish(pws);
+      pacmod_steer_pub_.publish(pws);
     }
     past_time_ = ros::Time::now().toSec();
     loop_rate.sleep();

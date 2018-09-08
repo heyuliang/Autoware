@@ -52,23 +52,21 @@ public:
 private:
   double target_linear_velocity_;
   double target_angular_velocity_;
-  double current_linear_velocity_;
-  double current_angular_velocity_;
+  double pacmod_linear_velocity_;
 
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher accel_pub_;
-  ros::Publisher brake_pub_;
-  ros::Publisher steer_pub_;
+  ros::Publisher pacmod_accel_pub_;
+  ros::Publisher pacmod_brake_pub_;
+  ros::Publisher pacmod_steer_pub_;
 
   // subscriber
-  ros::Subscriber twist_cmd_sub_;
-  ros::Subscriber control_mode_sub_;
-  ros::Subscriber current_linear_velocity_sub_;
-  ros::Subscriber current_angular_velocity_sub_;
+  ros::Subscriber autoware_twist_cmd_sub_;
+  ros::Subscriber pacmod_control_mode_sub_;
+  ros::Subscriber pacmod_linear_velocity_sub_;
 
   // ros param
   double acceleration_limit_;
@@ -79,10 +77,9 @@ private:
   double pid_kd_;
 
   // variables
-  bool is_control_mode_;
-  bool is_twist_cmd_initialized_;
-  bool is_current_linear_velocity_initialized_;
-  bool is_current_angular_velocity_initialized_;
+  bool is_autoware_twist_cmd_initialized_;
+  bool is_pacmod_control_mode_;
+  bool is_pacmod_linear_velocity_initialized_;
 
   double current_time_ ;
   double past_time_ ;
@@ -90,14 +87,14 @@ private:
   double integration_error_;
 
   // callbacks
-  void callbackTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg);
+  void callbackAutowareTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackPACMODControlMode(const std_msgs::BoolConstPtr &msg);
-  void callbackLinearVelocity(const std_msgs::Float64ConstPtr &msg);
+  void callbackPACMODLinearVelocity(const std_msgs::Float64ConstPtr &msg);
 
 
   double calculatePID(const double delta_velocity);
-  pacmod_msgs::PacmodCmd makePACMODcmd(double target_acceleration);
-  pacmod_msgs::PositionWithSpeed makeSteerMsg(double delta_time);
+  pacmod_msgs::PacmodCmd makePACMODcmd(const double target_acceleration);
+  pacmod_msgs::PositionWithSpeed makeSteerMsg(const double delta_time);
 
 };
 

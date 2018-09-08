@@ -28,9 +28,6 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// ROS Includes
-#include <ros/ros.h>
-
 #include "pacmod_v2_interface.h"
 
 int main(int argc, char **argv)
