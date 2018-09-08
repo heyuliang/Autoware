@@ -21,6 +21,11 @@
 
 class Viewer;
 
+const double
+	translationThrs = 1.0,	// meter
+	rotationThrs = 0.04;	// == 2.5 degrees
+
+
 
 class InputFrame {
 public:
@@ -41,7 +46,7 @@ public:
 		setKfId(_forceKfId)
 	{}
 
-	Pose getPose()
+	Pose getPose() const
 	{ return Pose::from_Pos_Quat(position, orientation); }
 };
 
@@ -69,13 +74,13 @@ public:
 	{ cMap->addCameraParameter(c); }
 
 	inline kfid getCurrentKeyFrameId()
-	{ return currentAnchor; }
+	{ return kfAnchor; }
 
 	void resetMap();
 
 	typedef std::function<void(const InputFrame&)> frameCallback;
-	void registerFrameCallback (const frameCallback& f)
-	{ fInCal = f; }
+	void registerFrameCallback (frameCallback& f)
+	{ inputCallback = f; }
 
 	void runFromDataset (GenericDataset *ds);
 
@@ -87,12 +92,13 @@ protected:
 
 	cv::Mat mask;
 
-	kfid currentAnchor;
+	kfid kfAnchor;
+	InputFrame ifrAnchor;
 
 	bool initialized = false;
 
 	GenericDataset *sourceDataset=NULL;
-	frameCallback fInCal;
+	frameCallback inputCallback;
 
 	InputFrame frame0;
 };

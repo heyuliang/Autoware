@@ -22,9 +22,6 @@ using namespace Eigen;
 MapBuilder2 *builder = NULL;
 Viewer *imgViewer;
 
-const double
-	translationThrs = 1.0,	// meter
-	rotationThrs = 0.04;	// == 2.5 degrees
 
 const string
 	mapFileOutput = "/tmp/oxford1.map";
@@ -45,6 +42,33 @@ InputFrame createInputFrame(OxfordDataItem &d)
 	f.tm = d.getTimestamp();
 
 	return f;
+}
+
+
+void buildMap2
+(OxfordDataset &dataset)
+{
+	builder = new MapBuilder2;
+	builder->addCameraParam(dataset.getCameraParameter());
+
+	imgViewer = new Viewer (dataset);
+	imgViewer->setMap(builder->getMap());
+	dataItemId currentItemId;
+
+	MapBuilder2::frameCallback frmCallback =
+	[&] (const InputFrame &f)
+	{
+		imgViewer->update(currentItemId, builder->getCurrentKeyFrameId());
+		cout << currentItemId << " / " << dataset.size() << endl;
+	};
+	builder->registerFrameCallback(frmCallback);
+
+	for (int framePtr=0; framePtr<dataset.size(); framePtr++) {
+		OxfordDataItem &dx = dataset.at(framePtr);
+		currentItemId = dx.getId();
+		InputFrame frame = createInputFrame(dx);
+		builder->track2(frame);
+	}
 }
 
 
@@ -127,7 +151,7 @@ int main (int argc, char *argv[])
 	}
 
 	string stname = oxfSubset.getName();
-	buildMap (oxfSubset);
+	buildMap2 (oxfSubset);
 	builder->getMap()->save(mapFileOutput);
 	cout << "Saved to " << mapFileOutput << endl;
 //	oxf.dump();
