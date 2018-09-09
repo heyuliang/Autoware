@@ -208,6 +208,7 @@ public:
 
 	std::vector<kfid> getOrderedRelatedKeyFramesFrom (const kfid k, int howMany=-1) const;
 
+	std::vector<kfid> getKeyFramesComeInto (const kfid kTarget) const;
 
 protected:
 
@@ -248,7 +249,7 @@ protected:
 
 	// XXX: Follow tutorial at http://www.technical-recipes.com/2015/getting-started-with-the-boost-graph-library/
 	typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
-	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty> KeyFrameGraph;
+	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, boost::no_property, EdgeWeightProperty> KeyFrameGraph;
 	typedef boost::graph_traits<KeyFrameGraph>::edge_iterator edge_iterator;
 
 	KeyFrameGraph covisibility;
@@ -256,6 +257,7 @@ protected:
 	std::map<KeyFrameGraph::vertex_descriptor,kfid> kfVtxInvMap;
 
 	void updateCovisibilityGraph(const kfid k);
+
 };
 
 #endif /* VMAP_H_ */

@@ -538,6 +538,24 @@ VMap::updateCovisibilityGraph(const kfid k)
 
 
 vector<kfid>
+VMap::getKeyFramesComeInto (const kfid kTarget)
+const
+{
+	vector<kfid> kfListSrc;
+
+	auto kvtx = kfVtxMap.at(kTarget);
+	auto k_in_edges = boost::in_edges(kvtx, covisibility);
+	for (auto vp=k_in_edges.first; vp!=k_in_edges.second; ++vp) {
+		auto v = boost::source(*vp, covisibility);
+		int w = boost::get(boost::edge_weight_t(), covisibility, *vp);
+		kfListSrc.push_back(kfVtxInvMap.at(v));
+	}
+
+	return kfListSrc;
+}
+
+
+vector<kfid>
 VMap::getOrderedRelatedKeyFramesFrom (const kfid kx, int howMany) const
 {
 	vector<pair<KeyFrameGraph::vertex_descriptor,int>> covisk;

@@ -59,11 +59,7 @@ public:
 	MapBuilder2 ();
 	virtual ~MapBuilder2();
 
-	void initialize (const InputFrame &f1, const InputFrame &f2);
-
-	void track (const InputFrame &f);
-
-	void track2 (const InputFrame &f);
+	void input (const InputFrame &f);
 
 	void build ();
 
@@ -101,6 +97,14 @@ protected:
 	frameCallback inputCallback;
 
 	InputFrame frame0;
+
+private:
+	static bool isNormalFrame (const InputFrame &f);
+
+	void initialize (const InputFrame &f1, const InputFrame &f2);
+
+	void track (const InputFrame &f);
+
 };
 
 #endif /* MAPBUILDER2_H_ */

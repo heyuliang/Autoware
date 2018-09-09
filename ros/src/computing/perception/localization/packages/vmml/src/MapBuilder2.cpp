@@ -60,12 +60,9 @@ MapBuilder2::track (const InputFrame &f)
 
 
 void
-MapBuilder2::track2(const InputFrame &f)
+MapBuilder2::input(const InputFrame &f)
 {
-	// throw away over-exposed frames
-	// XXX: also need to do the same for under-exposed frame
-	auto normcdf = cdf(f.image);
-	if (normcdf[127] < 0.25)
+	if (isNormalFrame(f)==false)
 		return;
 
 	double runTrans, runRot;
@@ -91,10 +88,29 @@ MapBuilder2::track2(const InputFrame &f)
 	else {
 		ifrAnchor.getPose().displacement(f.getPose(), runTrans, runRot);
 		if (runTrans>=translationThrs or runRot>=rotationThrs) {
+			kfid lastAnchor = kfAnchor;
 			track (f);
 			inputCallback(f);
+
+			// Build connections
+			vector<kfid> kfInsToAnchor = cMap->getKeyFramesComeInto(lastAnchor);
+			for (auto &kfx: kfInsToAnchor) {
+
+			}
 		}
 	}
+}
+
+
+bool
+MapBuilder2::isNormalFrame (const InputFrame &f)
+{
+	// throw away over-exposed frames
+	// XXX: also need to do the same for under-exposed frame
+	auto normcdf = cdf(f.image);
+	if (normcdf[127] < 0.25)
+		return false;
+	else return true;
 }
 
 

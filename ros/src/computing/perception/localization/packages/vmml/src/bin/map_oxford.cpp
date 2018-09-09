@@ -67,70 +67,70 @@ void buildMap2
 		OxfordDataItem &dx = dataset.at(framePtr);
 		currentItemId = dx.getId();
 		InputFrame frame = createInputFrame(dx);
-		builder->track2(frame);
+		builder->input(frame);
 	}
 }
 
 
-void buildMap (OxfordDataset &dataset)
-{
-	if (builder==NULL) {
-		builder = new MapBuilder2;
-		builder->addCameraParam(dataset.getCameraParameter());
-	}
-
-	imgViewer = new Viewer(dataset);
-	imgViewer->setMap(builder->getMap());
-
-	// Find two initializer frames
-	OxfordDataItem d0, d1;
-	InputFrame frame0, frame1;
-	int iptr;
-	for (iptr=0; iptr<dataset.size(); iptr++) {
-		d0 = dataset.at(iptr);
-		frame0 = createInputFrame(d0);
-		auto normcdf = cdf(frame0.image);
-		if (normcdf[127]<0.25)
-			continue;
-		else {
-			break;
-		}
-	}
-	for (iptr+=1; iptr<dataset.size(); iptr++) {
-		d1 = dataset.at(iptr);
-		frame1 = createInputFrame(d1);
-		auto normcdf = cdf(frame1.image);
-		if (normcdf[127]<0.25)
-			continue;
-		double runTrans, runRot;
-		frame1.getPose().displacement(frame0.getPose(), runTrans, runRot);
-		if (runTrans>=translationThrs or runRot>=rotationThrs)
-			break;
-	}
-
-	builder->initialize(frame0, frame1);
-	imgViewer->update(d1.getId(), builder->getCurrentKeyFrameId());
-
-	OxfordDataItem *anchor = &d1;
-
-	for (int i=2; i<dataset.size(); i++) {
-
-		OxfordDataItem &dCurrent = dataset.at(i);
-		double diffTrans, diffRotn;
-		anchor->groundTruth.displacement(dCurrent.groundTruth, diffTrans, diffRotn);
-		if (diffTrans<translationThrs and diffRotn<rotationThrs)
-			continue;
-
-		// XXX: Store Anchor frame in MapBuilder2 itself
-		InputFrame frameCurrent = createInputFrame(dCurrent);
-		builder->track(frameCurrent);
-		anchor = &dCurrent;
-		cerr << anchor->getId() << endl;
-		imgViewer->update(dCurrent.getId(), builder->getCurrentKeyFrameId());
-	}
-
-	builder->build();
-}
+//void buildMap (OxfordDataset &dataset)
+//{
+//	if (builder==NULL) {
+//		builder = new MapBuilder2;
+//		builder->addCameraParam(dataset.getCameraParameter());
+//	}
+//
+//	imgViewer = new Viewer(dataset);
+//	imgViewer->setMap(builder->getMap());
+//
+//	// Find two initializer frames
+//	OxfordDataItem d0, d1;
+//	InputFrame frame0, frame1;
+//	int iptr;
+//	for (iptr=0; iptr<dataset.size(); iptr++) {
+//		d0 = dataset.at(iptr);
+//		frame0 = createInputFrame(d0);
+//		auto normcdf = cdf(frame0.image);
+//		if (normcdf[127]<0.25)
+//			continue;
+//		else {
+//			break;
+//		}
+//	}
+//	for (iptr+=1; iptr<dataset.size(); iptr++) {
+//		d1 = dataset.at(iptr);
+//		frame1 = createInputFrame(d1);
+//		auto normcdf = cdf(frame1.image);
+//		if (normcdf[127]<0.25)
+//			continue;
+//		double runTrans, runRot;
+//		frame1.getPose().displacement(frame0.getPose(), runTrans, runRot);
+//		if (runTrans>=translationThrs or runRot>=rotationThrs)
+//			break;
+//	}
+//
+//	builder->initialize(frame0, frame1);
+//	imgViewer->update(d1.getId(), builder->getCurrentKeyFrameId());
+//
+//	OxfordDataItem *anchor = &d1;
+//
+//	for (int i=2; i<dataset.size(); i++) {
+//
+//		OxfordDataItem &dCurrent = dataset.at(i);
+//		double diffTrans, diffRotn;
+//		anchor->groundTruth.displacement(dCurrent.groundTruth, diffTrans, diffRotn);
+//		if (diffTrans<translationThrs and diffRotn<rotationThrs)
+//			continue;
+//
+//		// XXX: Store Anchor frame in MapBuilder2 itself
+//		InputFrame frameCurrent = createInputFrame(dCurrent);
+//		builder->track(frameCurrent);
+//		anchor = &dCurrent;
+//		cerr << anchor->getId() << endl;
+//		imgViewer->update(dCurrent.getId(), builder->getCurrentKeyFrameId());
+//	}
+//
+//	builder->build();
+//}
 
 
 int main (int argc, char *argv[])
