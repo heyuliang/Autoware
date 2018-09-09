@@ -163,7 +163,6 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	vector<FeaturePair> pairList12;
 	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, allKp2);
 	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
-	// XXX: Output of this function in pairList12 still needs to be filtered
 
 	// Check the matching with projection
 	for (int i=0; i<pairList12.size(); i++) {
@@ -582,6 +581,45 @@ VMap::getOrderedRelatedKeyFramesFrom (const kfid kx, int howMany) const
 		return sortedKfs;
 	else
 		return vector<kfid> (sortedKfs.begin(), sortedKfs.begin()+howMany);
+}
+
+
+const int matchCountThreshold = 15;
+
+void
+VMap::trackMapPoints (const kfid kfid1, const kfid kfid2)
+{
+	const KeyFrame
+		*kf1 = getKeyFrameById(kfid1),
+		*kf2 = getKeyFrameById(kfid2);
+
+	// Track Map Points from KF1 that are visible in KF2
+	kpidField kp1List = visibleField(kfid1);
+	kpidField allKp2 = makeField(kfid2);
+	vector<FeaturePair> pairList12;
+	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, allKp2);
+	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
+
+	// Check the matching with projection
+	int pointMatchCounter = 0;
+	for (int i=0; i<pairList12.size(); i++) {
+		auto &p = pairList12[i];
+		const mpid ptId = kf1kp2mp[p.kpid1];
+
+		// Try projection
+		Vector2d kpf = kf2->project(getMapPointById(ptId)->getPosition());
+		double d = distance(kpf, p.toEigen2());
+		if (d >= 4.0)
+			continue;
+
+		// This particular mappoint is visible in KF2
+		pointMatchCounter += 1;
+		pointAppearances[ptId].insert(kfid2);
+		framePoints[kfid2][ptId] = p.kpid2;
+	}
+
+	if (pointMatchCounter > matchCountThreshold)
+		updateCovisibilityGraph(kfid1);
 }
 
 

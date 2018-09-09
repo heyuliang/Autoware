@@ -210,6 +210,8 @@ public:
 
 	std::vector<kfid> getKeyFramesComeInto (const kfid kTarget) const;
 
+	void trackMapPoints (const kfid kf1, const kfid kf2);
+
 protected:
 
 	friend class KeyFrame;

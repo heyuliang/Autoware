@@ -94,8 +94,10 @@ MapBuilder2::input(const InputFrame &f)
 
 			// Build connections
 			vector<kfid> kfInsToAnchor = cMap->getKeyFramesComeInto(lastAnchor);
+			const kfid targetKfId = kfAnchor;
+			// XXX: Parallelize this
 			for (auto &kfx: kfInsToAnchor) {
-
+				cMap->trackMapPoints(kfx, targetKfId);
 			}
 		}
 	}
