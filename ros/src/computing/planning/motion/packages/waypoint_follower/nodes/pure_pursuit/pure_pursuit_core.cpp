@@ -231,13 +231,13 @@ void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedCo
   {
     double r = current_linear_velocity_ * delay_ / current_angular_velocity_;
     double theta = current_angular_velocity_ * delay_;
-    double dx = r * std::sin(theta);
-    double dy = r * std::cos(theta);
-    virtual_current_pose.pose.position.x = virtual_current_pose.pose.position.x + dx;
-    virtual_current_pose.pose.position.y = virtual_current_pose.pose.position.y + dy;
     tf::Quaternion current_quat(virtual_current_pose.pose.orientation.x,virtual_current_pose.pose.orientation.y,virtual_current_pose.pose.orientation.z,virtual_current_pose.pose.orientation.w);
     double current_roll, current_pitch, current_yaw;
     tf::Matrix3x3(current_quat).getRPY(current_roll, current_pitch, current_yaw);
+    double dx = r * std::sin(theta + current_yaw);
+    double dy = r * std::cos(theta + current_yaw);
+    virtual_current_pose.pose.position.x = virtual_current_pose.pose.position.x + dx;
+    virtual_current_pose.pose.position.y = virtual_current_pose.pose.position.y + dy;
     tf::Quaternion tf_quat = tf::createQuaternionFromRPY(current_roll, current_pitch, current_yaw + theta);
     geometry_msgs::Quaternion quat;
     quaternionTFToMsg(tf_quat,quat);
@@ -246,12 +246,14 @@ void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedCo
   }
   else
   {
-    double dx = current_linear_velocity_ * delay_;
-    virtual_current_pose.pose.position.x = msg->pose.position.x + dx;
-    virtual_current_pose.pose.position.y = msg->pose.position.y;
+    double l = current_linear_velocity_ * delay_;
     tf::Quaternion current_quat(virtual_current_pose.pose.orientation.x,virtual_current_pose.pose.orientation.y,virtual_current_pose.pose.orientation.z,virtual_current_pose.pose.orientation.w);
     double current_roll, current_pitch, current_yaw;
     tf::Matrix3x3(current_quat).getRPY(current_roll, current_pitch, current_yaw);
+    double dx = l * std::sin(current_yaw);
+    double dy = l * std::cos(current_yaw);
+    virtual_current_pose.pose.position.x = msg->pose.position.x + dx;
+    virtual_current_pose.pose.position.y = msg->pose.position.y + dy;
     tf::Quaternion tf_quat = tf::createQuaternionFromRPY(current_roll, current_pitch, current_yaw);
     geometry_msgs::Quaternion quat;
     quaternionTFToMsg(tf_quat,quat);
