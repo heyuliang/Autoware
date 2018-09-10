@@ -80,6 +80,8 @@ private:
   // publisher
   ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
 
+  ros::Publisher virtual_pose_pub_;
+
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
 
