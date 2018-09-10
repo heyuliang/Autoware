@@ -4,7 +4,8 @@ namespace decision_maker
 {
 void DecisionMakerNode::entryDriveState(cstring_t& state_name, int status)
 {
-  publishOperatorHelpMessage("< Engaged");
+  setEventFlag("received_based_lane_waypoint", false);
+  publishOperatorHelpMessage("Engaged");
 }
 void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
 {

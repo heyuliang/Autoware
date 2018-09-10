@@ -52,6 +52,8 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallback(state_machine::CallbackType::UPDATE, "DriveReady",
                    std::bind(&DecisionMakerNode::updateDriveReadyState, this, std::placeholders::_1, 0));
 
+  ctx->setCallback(state_machine::CallbackType::ENTRY, "Drive",
+                   std::bind(&DecisionMakerNode::entryDriveState, this, std::placeholders::_1, 0));
   ctx->setCallback(state_machine::CallbackType::UPDATE, "Drive",
                    std::bind(&DecisionMakerNode::updateDriveState, this, std::placeholders::_1, 0));
 
