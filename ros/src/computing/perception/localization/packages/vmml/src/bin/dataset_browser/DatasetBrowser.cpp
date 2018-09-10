@@ -73,14 +73,12 @@ DatasetBrowser::setImageOnPosition (int v)
 		throw runtime_error("Invalid time position");
 
 	cv::Mat image = openDs->at(v).getImage();
-//	cv::cvtColor(image, image, CV_RGB2GRAY);
-//	image = ImageDatabaseSeqSLAM::normalizePatch(image, 4);
 
 	QImage curImage = fromCvMat(image);
 	frame->setImage(curImage);
 
 	auto ts = openDs->at(v).getTimestamp() - openDs->at(0).getTimestamp();
-	double tsd = double(ts.total_milliseconds())/1e6;
+	double tsd = double(ts.total_microseconds())/1e6;
 
 	stringstream ss;
 	ss << fixed << setprecision(2) << tsd;

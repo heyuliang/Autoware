@@ -619,8 +619,10 @@ VMap::trackMapPoints (const kfid kfid1, const kfid kfid2)
 		framePoints[kfid2][ptId] = p.kpid2;
 	}
 
-	if (pointMatchCounter > matchCountThreshold)
+	if (pointMatchCounter > matchCountThreshold) {
 		updateCovisibilityGraph(kfid1);
+		cerr << "Backtrace: Found " << pointMatchCounter << "pts\n";
+	}
 }
 
 

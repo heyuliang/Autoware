@@ -90,20 +90,26 @@ MapBuilder2::input(const InputFrame &f)
 		if (runTrans>=translationThrs or runRot>=rotationThrs) {
 			kfid lastAnchor = kfAnchor;
 			track (f);
-			inputCallback(f);
 
 			// Build connections
 			vector<kfid> kfInsToAnchor = cMap->getKeyFramesComeInto(lastAnchor);
+			cerr << "Found " << kfInsToAnchor.size() << " input keyframes\n";
 			const kfid targetKfId = kfAnchor;
 			// XXX: Parallelize this
 			for (auto &kfx: kfInsToAnchor) {
 				cMap->trackMapPoints(kfx, targetKfId);
 			}
+
+			inputCallback(f);
 		}
 	}
 }
 
 
+/*
+ * This function decides when a frame is `good enough' in terms of exposure
+ * to be included for map building
+ */
 bool
 MapBuilder2::isNormalFrame (const InputFrame &f)
 {

@@ -69,6 +69,8 @@ void buildMap2
 		InputFrame frame = createInputFrame(dx);
 		builder->input(frame);
 	}
+
+	builder->build();
 }
 
 

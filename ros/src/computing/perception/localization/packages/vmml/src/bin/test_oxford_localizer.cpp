@@ -194,13 +194,18 @@ private:
 
 	void map_open_cmd(const string &mapPath)
 	{
-		mapSrc = new VMap();
-		mapSrc->load(mapPath);
-		localizer = new Localizer(mapSrc);
+		try {
+			mapSrc = new VMap();
+			mapSrc->load(mapPath);
+			localizer = new Localizer(mapSrc);
+			localizer->setCameraParameterFromId(0);
 
-		debug("Map loaded");
-		imgDb = mapSrc->getImageDB();
-		seqSlProv = imgDb->getSequence();
+			debug("Map loaded");
+			imgDb = mapSrc->getImageDB();
+			seqSlProv = imgDb->getSequence();
+		} catch (exception &e) {
+			debug ("Unable to load map");
+		}
 	}
 
 	const string imageDumpSeqSlam = "/tmp/seqslam.png";
@@ -230,7 +235,7 @@ private:
 	void map_dump_pcl()
 	{
 		auto pclDump = mapSrc->dumpPointCloudFromMapPoints();
-		pcl::io::savePCDFile(imageDumpSeqSlam, *pclDump);
+		pcl::io::savePCDFileBinary(mapDumpPcl, *pclDump);
 		debug("Point Cloud Map dumped to "+mapDumpPcl);
 	}
 
@@ -276,8 +281,12 @@ private:
 
 	void dataset_open_cmd(const string &dsPath, const string &modelDir)
 	{
-		localizTestDataSrc = new OxfordDataset(dsPath, modelDir);
-		debug("Dataset loaded");
+		try {
+			localizTestDataSrc = new OxfordDataset(dsPath, modelDir);
+			debug("Dataset loaded");
+		} catch (exception &e) {
+			debug("Unable to load dataset");
+		}
 	}
 
 	void map_find_cmd(const string &durationSecStr)
