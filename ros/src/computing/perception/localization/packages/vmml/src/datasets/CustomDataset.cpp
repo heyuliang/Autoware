@@ -16,6 +16,7 @@ using namespace Eigen;
 
 cv::Mat
 CustomDataItem::getImage()
+const
 {
 	return cv::imread(this->imagePath, cv::IMREAD_GRAYSCALE);
 }

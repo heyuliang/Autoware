@@ -115,6 +115,16 @@ OxfordDataset::~OxfordDataset()
 }
 
 
+tduration
+OxfordDataset::getTimeLength()
+const
+{
+	auto t2 = stereoTimestamps.at(stereoTimestamps.size()-1),
+		t1 = stereoTimestamps.at(0);
+	return boost::posix_time::microseconds(t2-t1);
+}
+
+
 void
 OxfordDataset::loadGps()
 {
@@ -223,6 +233,7 @@ OxfordDataItem::getTimestamp() const
 
 cv::Mat
 OxfordDataItem::getImage(StereoImageT t)
+const
 {
 	const string path = getPath(t);
 	cv::Mat img = cv::imread(path, cv::IMREAD_GRAYSCALE);
@@ -327,9 +338,13 @@ OxfordDataset::createStereoGroundTruths()
 }
 
 
-OxfordDataItem&
+const OxfordDataItem&
 OxfordDataset::at(dataItemId i) const
-{ return atTime(stereoTimestamps.at(i)); }
+//{ return atTime(stereoTimestamps.at(i)); }
+{
+	timestamp_t ts = stereoTimestamps.at(i);
+	return stereoRecords.at(ts);
+}
 
 
 void
@@ -388,11 +403,11 @@ OxfordDataset::getMask()
 }
 
 
-OxfordDataset
+OxfordDataset*
 OxfordDataset::timeSubset (double startTimeOffsetSecond, double durationSecond)
 const
 {
-	OxfordDataset mycopy = *this;
+	OxfordDataset *mycopy = new OxfordDataset(*this);
 
 	// Determine start time in second
 	double absStartTimeSecond = double(stereoTimestamps[0]/1e6) + startTimeOffsetSecond;
@@ -403,6 +418,11 @@ const
 
 	// Create subset
 	uint32_t sId = 0;
+	mycopy->stereoTimestamps.clear();
+	mycopy->stereoRecords.clear();
+	mycopy->gpsPoseTable.clear();
+	mycopy->insPoseTable.clear();
+
 	for (auto it = stereoTimestamps.begin(); it!=stereoTimestamps.end(); ++it) {
 		timestamp_t curTimestamp = *it;
 
@@ -411,14 +431,14 @@ const
 			if (ts > absStartTimeSecond + durationSecond)
 				break;
 
-			mycopy.stereoTimestamps.push_back(curTimestamp);
+			mycopy->stereoTimestamps.push_back(curTimestamp);
 
-			OxfordDataItem d(&mycopy);
+			OxfordDataItem d(mycopy);
 			d.timestamp = curTimestamp;
 			d.iId = sId;
 			d.groundTruth = this->stereoRecords.at(curTimestamp).groundTruth;
+			mycopy->stereoRecords.insert(make_pair(curTimestamp, d));
 
-			mycopy.stereoRecords.insert(make_pair(curTimestamp, d));
 			sId++;
 		}
 	}
@@ -426,14 +446,14 @@ const
 	for (auto &gp: gpsPoseTable) {
 		double gpTs = double(gp.timestamp) / 1e6;
 		if (absStartTimeSecond < gpTs and gpTs<absStartTimeSecond + durationSecond) {
-			mycopy.gpsPoseTable.push_back(gp);
+			mycopy->gpsPoseTable.push_back(gp);
 		}
 	}
 
 	for (auto &ipp: insPoseTable) {
 		double ipTs = double(ipp.timestamp) / 1e6;
 		if (absStartTimeSecond < ipTs and ipTs<absStartTimeSecond + durationSecond) {
-			mycopy.insPoseTable.push_back(ipp);
+			mycopy->insPoseTable.push_back(ipp);
 		}
 	}
 

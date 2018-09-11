@@ -29,7 +29,7 @@ public:
 
 	inline ~CustomDataItem() {}
 
-	cv::Mat getImage();
+	cv::Mat getImage() const;
 
 	Eigen::Vector3d getPosition() const
 	{ return position; }

@@ -14,6 +14,7 @@
 #include <tuple>
 #include <array>
 #include <set>
+#include <memory>
 #include <opencv2/opencv.hpp>
 
 #include "VMap.h"
@@ -93,8 +94,8 @@ struct OxfordDataItem : public GenericDataItem
 		StereoCenter,
 		StereoRight
 	};
-	cv::Mat getImage (StereoImageT which) ;
-	cv::Mat getImage ()
+	cv::Mat getImage (StereoImageT which) const;
+	cv::Mat getImage () const
 	{ return getImage(StereoImageT::StereoCenter); }
 
 	inline Eigen::Vector3d getPosition() const
@@ -107,6 +108,7 @@ struct OxfordDataItem : public GenericDataItem
 	{ return iId; }
 
 	ptime getTimestamp() const;
+
 //	{ return timestamp; }
 
 //	timestamp_t getTimestampLong() const
@@ -162,7 +164,7 @@ public:
 
 	void dumpGroundTruth(const std::string &fp=std::string());
 
-	OxfordDataItem &at(dataItemId i) const;
+	const OxfordDataItem &at(dataItemId i) const;
 
 	/*
 	 * Get item using timestamp
@@ -179,7 +181,10 @@ public:
 
 	cv::Mat getMask();
 
-	OxfordDataset timeSubset (double startTimeOffsetSecond=0, double mappingDurationSecond=-1) const;
+	OxfordDataset*
+	timeSubset (double startTimeOffsetSecond=0, double mappingDurationSecond=-1) const;
+
+	tduration getTimeLength() const;
 
 	inline std::string getName() const
 	{ return dSetName; }

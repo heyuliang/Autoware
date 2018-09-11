@@ -24,6 +24,8 @@
 #include "ImageDatabase.h"
 #include "SequenceSLAM.h"
 #include "Localizer.h"
+#include "MapBuilder2.h"
+#include "Viewer.h"
 #include "datasets/OxfordDataset.h"
 
 
@@ -111,72 +113,123 @@ string dumpVector(const Quaterniond &v)
 }
 
 
+InputFrame createInputFrame(const OxfordDataItem &d)
+{
+	cv::Mat i=d.getImage();
+	// Oxford datasets output is RGB
+	cv::cvtColor(i, i, CV_BGR2GRAY, 1);
+	InputFrame f(
+		i,
+		d.groundTruth.position(),
+		d.groundTruth.orientation(),
+		// Force Keyframe ID using timestamp. This way, we can refer to original
+		// image for display purpose (which is the case for Oxford Dataset)
+		static_cast<kfid>(d.timestamp));
+	f.tm = d.getTimestamp();
+
+	return f;
+}
+
+
+void buildMap2
+(OxfordDataset &dataset, MapBuilder2 &builder)
+{
+//	MapBuilder2 *builder = *_builder;
+//	builder = new MapBuilder2;
+	builder.addCameraParam(dataset.getCameraParameter());
+
+	Viewer *imgViewer = new Viewer (dataset);
+	imgViewer->setMap(builder.getMap());
+	dataItemId currentItemId;
+
+	MapBuilder2::frameCallback frmCallback =
+	[&] (const InputFrame &f)
+	{
+		imgViewer->update(currentItemId, builder.getCurrentKeyFrameId());
+		cout << currentItemId << " / " << dataset.size() << endl;
+	};
+	builder.registerFrameCallback(frmCallback);
+
+	for (int framePtr=0; framePtr<dataset.size(); framePtr++) {
+		const OxfordDataItem &dx = dataset.at(framePtr);
+		currentItemId = dx.getId();
+		InputFrame frame = createInputFrame(dx);
+		builder.input(frame);
+	}
+
+	builder.build();
+	delete(imgViewer);
+}
+
 
 class LocalizerApp
 {
 public:
-LocalizerApp (int argc, char *argv[]):
-	mLineEditor(argv[0], TestPrompt)
-{
-//	localizer = new Localizer()
-}
-
-
-~LocalizerApp ()
-{
-	if (mapSrc)
-		delete(mapSrc);
-	if (localizTestDataSrc)
-		delete(localizTestDataSrc);
-	if (localizer)
-		delete(localizer);
-}
-
-
-void loop()
-{
-	bool doExit=false;
-	while (doExit==false) {
-
-		stringTokens command = mLineEditor.getLine();
-
-		if (command[0]=="quit")
-			doExit = true;
-
-		else if (command[0]=="map")
-			map_open_cmd(command[1]);
-
-		else if (command[0]=="dataset")
-			dataset_open_cmd(command[1], command[2]);
-
-		else if (command[0]=="map_pcl")
-			map_dump_pcl();
-
-		else if (command[0]=="dataset_trajectory")
-			dataset_trajectory_dump();
-
-		else if (command[0]=="map_trajectory")
-			map_trajectory_dump();
-
-		else if (command[0]=="find")
-			map_find_cmd(command[1]);
-
-		else if (command[0]=="save")
-			dataset_save_dsecond(command[1]);
-
-		else if (command[0]=="zoom")
-			dataset_set_zoom(command[1]);
-
-		else if (command[0]=="dataset_simulate_seqslam")
-			dataset_simulate_seqslam(command[1]);
-
-		else if (command[0]=="dataset_view")
-			dataset_view(command[1]);
-
-		else if (command[0]=="detect")
-			map_detect_cmd(command[1]);
+	LocalizerApp (int argc, char *argv[]):
+		mLineEditor(argv[0], TestPrompt)
+	{
+	//	localizer = new Localizer()
 	}
-}
+
+
+	~LocalizerApp ()
+	{
+		if (mapSrc)
+			delete(mapSrc);
+		if (localizTestDataSrc)
+			delete(localizTestDataSrc);
+		if (localizer)
+			delete(localizer);
+	}
+
+
+	void loop()
+	{
+		bool doExit=false;
+		while (doExit==false) {
+
+			stringTokens command = mLineEditor.getLine();
+
+			if (command[0]=="quit")
+				doExit = true;
+
+			else if (command[0]=="map")
+				map_open_cmd(command[1]);
+
+			else if (command[0]=="dataset")
+				dataset_open_cmd(command[1], command[2]);
+
+			else if (command[0]=="map_pcl")
+				map_dump_pcl();
+
+			else if (command[0]=="dataset_trajectory")
+				dataset_trajectory_dump();
+
+			else if (command[0]=="map_trajectory")
+				map_trajectory_dump();
+
+			else if (command[0]=="find")
+				map_find_cmd(command[1]);
+
+			else if (command[0]=="save")
+				dataset_save_dsecond(command[1]);
+
+			else if (command[0]=="zoom")
+				dataset_set_zoom(command[1]);
+
+			else if (command[0]=="dataset_simulate_seqslam")
+				dataset_simulate_seqslam(command[1]);
+
+			else if (command[0]=="dataset_view")
+				dataset_view(command[1]);
+
+			else if (command[0]=="detect")
+				map_detect_cmd(command[1]);
+
+			else if (command[0]=="map_create")
+				map_create_cmd(stringTokens(command.begin()+1, command.end()));
+		}
+	}
 
 
 protected:
@@ -330,6 +383,41 @@ private:
 		localizTestDataSrc->setZoomRatio(z);
 	}
 
+	/*
+	 * XXX: We should not use naked pointer here
+	 */
+	void map_create_cmd (const stringTokens &cmd)
+	{
+		OxfordDataset* oxfSubset;
+		bool isSubset;
+
+		double start, duration;
+		if (cmd.size() >= 2) {
+			start = stod(cmd[0]);
+			duration = stod(cmd[1]);
+			oxfSubset = localizTestDataSrc->timeSubset(start, duration);
+			isSubset = true;
+		}
+		else {
+			oxfSubset = localizTestDataSrc;
+			start = 0;
+			duration = double(oxfSubset->getTimeLength().total_microseconds())/1e6;
+			isSubset = false;
+		}
+
+		MapBuilder2 mapBld;
+		buildMap2(*oxfSubset, mapBld);
+
+		const string mapFilePath = oxfSubset->getPath() + "/vmml.map";
+		mapBld.getMap()->save(mapFilePath);
+
+		debug ("Mapping done");
+		debug ("Duration " + to_string(duration) + " seconds");
+		debug ("Path: " + mapFilePath);
+
+		if (isSubset)
+			delete(oxfSubset);
+	}
 };
 
 

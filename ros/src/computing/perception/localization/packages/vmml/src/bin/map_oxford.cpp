@@ -71,6 +71,7 @@ void buildMap2
 	}
 
 	builder->build();
+	delete(imgViewer);
 }
 
 
