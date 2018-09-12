@@ -44,5 +44,16 @@ Localizer::detect (cv::Mat &frmImg)
 
 	Frame frm (rzImg, this);
 	vector<kfid> placeCandidates = imgDb->findCandidates(frm);
+
+	// XXX: Check each candidate using projection
+
 	return placeCandidates[0];
+}
+
+
+float
+Localizer::projectionCheck (const Frame &frame, const kfid &keyframe)
+const
+{
+
 }

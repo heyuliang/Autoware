@@ -134,8 +134,6 @@ InputFrame createInputFrame(const OxfordDataItem &d)
 void buildMap2
 (OxfordDataset &dataset, MapBuilder2 &builder)
 {
-//	MapBuilder2 *builder = *_builder;
-//	builder = new MapBuilder2;
 	builder.addCameraParam(dataset.getCameraParameter());
 
 	Viewer *imgViewer = new Viewer (dataset);
@@ -228,6 +226,9 @@ public:
 
 			else if (command[0]=="map_create")
 				map_create_cmd(stringTokens(command.begin()+1, command.end()));
+
+			else if (command[0]=="map_info")
+				map_info_cmd();
 		}
 	}
 
@@ -292,6 +293,16 @@ private:
 		debug("Point Cloud Map dumped to "+mapDumpPcl);
 	}
 
+	void map_info_cmd()
+	{
+		if (mapSrc==NULL) {
+			debug("Map not loaded");
+			return;
+		}
+		debug("# of keyframe(s): "+to_string(mapSrc->numOfKeyFrames()));
+		debug("# of map point(s): " +to_string(mapSrc->numOfMapPoints()));
+	}
+
 	const string dumpMapTrajectoryPath = "/tmp/dump_map_trajectory.csv";
 	void map_trajectory_dump()
 	{
@@ -353,6 +364,10 @@ private:
 
 	void map_detect_cmd(const string &durationSecStr)
 	{
+		if (localizer==NULL) {
+			debug("Map not loaded");
+			return;
+		}
 		double d = std::stod(durationSecStr);
 		auto di = localizTestDataSrc->atDurationSecond(d);
 		cv::Mat img = di.getImage();
@@ -404,6 +419,8 @@ private:
 			duration = double(oxfSubset->getTimeLength().total_microseconds())/1e6;
 			isSubset = false;
 		}
+
+		debug ("About to run mapping with duration "+to_string(duration) +" seconds, " +to_string(oxfSubset->size()) + " frames");
 
 		MapBuilder2 mapBld;
 		buildMap2(*oxfSubset, mapBld);

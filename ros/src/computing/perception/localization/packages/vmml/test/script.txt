@@ -1,0 +1,5 @@
+dataset /media/sujiwo/ssd/oxford/map/2014-06-26-09-24-58 /home/sujiwo/Sources/robotcar-dataset-sdk/models/
+map /media/sujiwo/ssd/oxford/map/2014-06-26-09-24-58/vmml.map
+dataset /media/sujiwo/ssd/oxford/map/2014-06-23-15-36-04 /home/sujiwo/Sources/robotcar-dataset-sdk/models
+
+detect 89.38

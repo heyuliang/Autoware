@@ -54,6 +54,8 @@ protected:
 	CameraPinholeParams localizerCamera;
 
 	cv::Mat locMask;
+
+	float projectionCheck (const Frame &frame, const kfid &keyframe) const;
 };
 
 #endif /* LOCALIZER_H_ */

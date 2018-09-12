@@ -136,11 +136,13 @@ ImageDatabase::findCandidates (Frame &f) const
 
 	int maxCommonWords = 0;
 	for (auto &bWrdPtr : f.getWords()) {
-		auto wid = bWrdPtr.first;
-		const set<kfid> &relatedKf = invertedKeywordDb.at(wid);
+		auto wordId = bWrdPtr.first;
+		const set<kfid> &relatedKf = invertedKeywordDb.at(wordId);
 
+		/*
+		 * XXX: Mysteriously, the following loop changes kfCandidates when reading
+		 */
 		for (const kfid &k: relatedKf) {
-
 			try {
 				const uint count = kfCandidates.at(k);
 				kfCandidates.at(k) = count+1;
@@ -161,8 +163,9 @@ ImageDatabase::findCandidates (Frame &f) const
 	for (auto &ptr: kfCandidates) {
 		const kfid &k = ptr.first;
 		if (ptr.second < minCommonWords)
-			continue;
-		tKfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
+			tKfCandidateScores[k] = 0;
+		else
+			tKfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
 	}
 
 	// Accumulate score by covisibility
@@ -193,13 +196,22 @@ ImageDatabase::findCandidates (Frame &f) const
 			bestAccScore = accScore;
 	}
 
-	// return all keyframes with scores higher than 0.75*bestAccumScore
+	// return all keyframes with accumulated scores higher than 0.75*bestAccumScore
 	double minScoreToRetain = 0.75 * bestAccScore;
 	vector<kfid> relocCandidates;
-	for (auto &p: tKfCandidateScores) {
+	for (auto &p: tKfAccumScores) {
 		if (p.second > minScoreToRetain)
 			relocCandidates.push_back(p.first);
 	}
+	// Sort
+	sort(relocCandidates.begin(), relocCandidates.end(),
+		[&](const kfid &k1, const kfid &k2)
+		{
+			double v1 = tKfAccumScores[k1],
+				v2 = tKfAccumScores[k2];
+			return v1>v2;
+		}
+	);
 
 	return relocCandidates;
 }
