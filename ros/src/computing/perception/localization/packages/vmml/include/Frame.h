@@ -37,6 +37,9 @@ public:
 	const DBoW2::BowVector& getWords() const
 	{ return words; }
 
+	DBoW2::FeatureVector& getFeatureVector()
+	{ return featureVec; }
+
 protected:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;

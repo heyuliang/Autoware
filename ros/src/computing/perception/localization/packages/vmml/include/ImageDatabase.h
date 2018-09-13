@@ -125,6 +125,9 @@ public:
 	SequenceSLAM *getSequence ()
 	{ return &seqSlamProvider; }
 
+	DBoW2::FeatureVector& getFeatureVectorFromKeyFrame (const kfid kf)
+	{ return FeatVecList.at(kf); }
+
 protected:
 	friend class boost::serialization::access;
 	template<class Archive>

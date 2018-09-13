@@ -91,6 +91,8 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 	keyframeInvIdx.insert(pair<kfid,KeyFrame*> (nId, nKf));
 	keyframeInvIdx_mtx->unlock();
 
+	framePoints[nId] = map<mpid,kpid>();
+
 //	imageDB->newKeyFrameCallback(nId);
 	auto vtId = boost::add_vertex(covisibility);
 	kfVtxMap[nId] = vtId;
@@ -126,8 +128,8 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 	vector<FeaturePair> featurePairs_1_2;
 	KeyFrame::match(*kf1, *kf2, descriptorMatcher, featurePairs_1_2);
 
-	std::map<mpid, kpid> &kf1kp = framePoints[kfid1];
-	std::map<mpid, kpid> &kf2kp = framePoints[kfid2];
+//	map<mpid, kpid> &kf1kp = framePoints[kfid1];
+//	map<mpid, kpid> &kf2kp = framePoints[kfid2];
 
 	vector<mpid> newMapPointList;
 	KeyFrame::triangulate(kf1, kf2, newMapPointList, featurePairs_1_2,
@@ -189,6 +191,7 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	vector<mpid> newMapPointList;
 	KeyFrame::triangulate(kf1, kf2, newMapPointList, pairList12,
 		framePoints[kfid1], framePoints[kfid2],
+
 		this);
 
 	// Update visibility information
@@ -273,6 +276,7 @@ VMap::save(const string &filepath)
 
 	mapStore << pointAppearances;
 	mapStore << framePoints;
+
 	mapStore << mask;
 
 	mapStore << *imageDB;
@@ -316,6 +320,7 @@ VMap::load(const string &filepath)
 
 	mapStore >> pointAppearances;
 	mapStore >> framePoints;
+
 	mapStore >> mask;
 
 	mapStore >> *imageDB;
