@@ -229,6 +229,9 @@ public:
 
 			else if (command[0]=="map_info")
 				map_info_cmd();
+
+			else if (command[0]=="mask")
+				mask_set_cmd(command[1]);
 		}
 	}
 
@@ -242,6 +245,8 @@ protected:
 	Localizer *localizer = NULL;
 
 	OxfordDataset *localizTestDataSrc = NULL;
+
+	cv::Mat mask;
 
 
 private:
@@ -257,6 +262,13 @@ private:
 			debug("Map loaded");
 			imgDb = mapSrc->getImageDB();
 			seqSlProv = imgDb->getSequence();
+
+			mask = mapSrc->getMask();
+			if (mask.empty()==false) {
+				debug ("Map contains mask image file");
+				localizer->setMask(mask);
+			}
+
 		} catch (exception &e) {
 			debug ("Unable to load map");
 		}
@@ -423,6 +435,13 @@ private:
 		debug ("About to run mapping with duration "+to_string(duration) +" seconds, " +to_string(oxfSubset->size()) + " frames");
 
 		MapBuilder2 mapBld;
+		if (mask.empty()==false) {
+			float zr = localizTestDataSrc->getZoomRatio();
+			cv::Mat mapMask;
+			cv::resize(mask, mapMask, cv::Size(), zr, zr, cv::INTER_CUBIC);
+			mapBld.setMask(mapMask);
+		}
+
 		buildMap2(*oxfSubset, mapBld);
 
 		const string mapFilePath = oxfSubset->getPath() + "/vmml.map";
@@ -434,6 +453,23 @@ private:
 
 		if (isSubset)
 			delete(oxfSubset);
+	}
+
+	void mask_set_cmd(const string &maskpath)
+	{
+		mask = cv::imread(maskpath, cv::IMREAD_GRAYSCALE);
+		if (mask.empty()) {
+			debug("Unable to fetch mask image file");
+			return;
+		}
+		else
+			debug("Mask read; size is "+to_string(mask.cols)+'x'+to_string(mask.rows));
+
+		if (localizTestDataSrc) {
+			cv::Mat localizerMask;
+			float zr = localizTestDataSrc->getZoomRatio();
+			cv::resize(mask, localizerMask, cv::Size(), zr, zr, cv::INTER_CUBIC);
+		}
 	}
 };
 

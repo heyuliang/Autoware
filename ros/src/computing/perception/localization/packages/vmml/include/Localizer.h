@@ -56,6 +56,8 @@ protected:
 	cv::Mat locMask;
 
 	float projectionCheck (const Frame &frame, const kfid &keyframe) const;
+
+	int SearchBoW (const kfid &k, Frame &f, vector<mpid> &vpMapPts);
 };
 
 #endif /* LOCALIZER_H_ */

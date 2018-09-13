@@ -155,3 +155,11 @@ MapBuilder2::runFromDataset(GenericDataset *ds)
 
 	this->build();
 }
+
+
+void
+MapBuilder2::setMask(const cv::Mat &m)
+{
+	mask = m.clone();
+	cMap->setMask(mask);
+}

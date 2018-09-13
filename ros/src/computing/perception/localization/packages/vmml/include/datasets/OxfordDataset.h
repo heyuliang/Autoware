@@ -192,6 +192,9 @@ public:
 	// Bug: Do Not set ratio more than once
 	void setZoomRatio (float r);
 
+	float getZoomRatio () const
+	{ return zoomRatio; }
+
 	std::string getPath() const
 	{ return oxfPath; }
 

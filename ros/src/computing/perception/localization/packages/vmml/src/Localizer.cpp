@@ -6,6 +6,7 @@
  */
 
 #include "Localizer.h"
+#include "utilities.h"
 
 
 Localizer::Localizer(VMap *parentMap, bool emptyMask) :
@@ -56,4 +57,11 @@ Localizer::projectionCheck (const Frame &frame, const kfid &keyframe)
 const
 {
 
+}
+
+
+int
+Localizer::SearchBoW (const kfid &k, Frame &frame, vector<mpid> &vpMapPts)
+{
+	auto mapPtsInKF = sourceMap->allMapPointsAtKeyFrame(k);
 }

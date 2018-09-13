@@ -27,8 +27,7 @@ Frame::	Frame(
 {
 	parent->getFeatureDetector()->detectAndCompute(
 		image,
-		// XXX: get a proper mask
-		cv::Mat(),
+		parent->getMask(),
 		keypoints,
 		descriptors,
 		false);

@@ -80,6 +80,8 @@ public:
 
 	void runFromDataset (GenericDataset *ds);
 
+	void setMask (const cv::Mat &m);
+
 protected:
 
 	CameraPinholeParams cparams;
