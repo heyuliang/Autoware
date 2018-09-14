@@ -8,7 +8,6 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/filesystem.hpp>
-#include <cv_bridge/cv_bridge.h>
 
 #include <datasets/MeidaiBagDataset.h>
 #include <exception>
@@ -185,6 +184,7 @@ void
 MeidaiDataItem::init()
 {
 	bImageMsg = parent->cameraRawBag->at<sensor_msgs::Image>(pId);
+	imgPtr = cv_bridge::toCvCopy(bImageMsg, sensor_msgs::image_encodings::BGR8);
 }
 
 
@@ -211,7 +211,7 @@ MeidaiDataItem::getOrientation() const
 cv::Mat
 MeidaiDataItem::getImage() const
 {
-	// XXX: CV Bridge
+	return imgPtr->image;
 }
 
 

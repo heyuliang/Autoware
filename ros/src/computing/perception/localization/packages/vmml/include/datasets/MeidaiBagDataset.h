@@ -13,6 +13,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <boost/filesystem.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
@@ -129,7 +130,8 @@ protected:
 	MeidaiBagDataset * const parent;
 	dataItemId pId;
 
-	sensor_msgs::Image::Ptr bImageMsg;
+	sensor_msgs::Image::ConstPtr bImageMsg;
+	cv_bridge::CvImagePtr imgPtr;
 	void init();
 };
 
