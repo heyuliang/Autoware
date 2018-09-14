@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 #include <rosbag/bag.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 #include <boost/filesystem.hpp>
 
 #include <boost/serialization/serialization.hpp>
@@ -104,15 +106,31 @@ class MeidaiBagDataset;
 class MeidaiDataItem : public GenericDataItem
 {
 public:
-	MeidaiDataItem (const MeidaiBagDataset &b, uint64_t ptr);
+	MeidaiDataItem ():
+		parent(NULL)
+	{}
+
+	MeidaiDataItem (MeidaiBagDataset &p, uint64_t idx):
+		parent(&p), pId(idx)
+	{ init(); }
+
 	cv::Mat getImage() const;
+
 	Eigen::Vector3d getPosition() const;
+
 	Eigen::Quaterniond getOrientation() const;
-	dataItemId getId() const;
+
+	dataItemId getId() const
+	{ return pId; }
+
 	ptime getTimestamp() const;
 
 protected:
+	MeidaiBagDataset * const parent;
+	dataItemId pId;
 
+	sensor_msgs::Image::Ptr bImageMsg;
+	void init();
 };
 
 
@@ -149,6 +167,8 @@ private:
 
 	Trajectory gnssTrack;
 	Trajectory ndtTrack;
+
+	friend class MeidaiDataItem;
 };
 
 

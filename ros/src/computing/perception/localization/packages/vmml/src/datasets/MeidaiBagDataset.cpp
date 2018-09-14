@@ -8,6 +8,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/filesystem.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 #include <datasets/MeidaiBagDataset.h>
 #include <exception>
@@ -180,8 +181,42 @@ Trajectory::interpolate (const ros::Time& t) const
 }
 
 
-MeidaiDataItem::MeidaiDataItem
-(const MeidaiBagDataset &b, uint64_t ptr)
+void
+MeidaiDataItem::init()
 {
+	bImageMsg = parent->cameraRawBag->at<sensor_msgs::Image>(pId);
+}
 
+
+/*
+ * XXX: Stub
+ */
+Vector3d
+MeidaiDataItem::getPosition() const
+{
+	return Vector3d::Zero();
+}
+
+
+/*
+ * XXX: Stub
+ */
+Quaterniond
+MeidaiDataItem::getOrientation() const
+{
+	return Quaterniond::Identity();
+}
+
+
+cv::Mat
+MeidaiDataItem::getImage() const
+{
+	// XXX: CV Bridge
+}
+
+
+ptime
+MeidaiDataItem::getTimestamp() const
+{
+	return bImageMsg->header.stamp.toBoost();
 }
