@@ -40,11 +40,14 @@ public:
 	DBoW2::FeatureVector& getFeatureVector()
 	{ return featureVec; }
 
-	cv::Mat& descriptor()
+	const cv::Mat& descriptor()
 	{ return mDescriptors; }
 
-	cv::Mat& descriptor(const int r)
+	cv::Mat descriptor(const int r)
 	{ return mDescriptors.row(r); }
+
+	const cv::KeyPoint &keypoint(const kpid kp)
+	{ return keypoints.at(kp); }
 
 protected:
 	cv::Mat image;
