@@ -180,3 +180,8 @@ Trajectory::interpolate (const ros::Time& t) const
 }
 
 
+MeidaiDataItem::MeidaiDataItem
+(const MeidaiBagDataset &b, uint64_t ptr)
+{
+
+}

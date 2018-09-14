@@ -57,9 +57,8 @@ Localizer::detect (cv::Mat &frmImg)
 	for (int i=0; i<placeCandidates.size(); i++) {
 		set<mpid> kfMapPtsMatches;
 		int nmatches = SearchBoW(placeCandidates[i], frame, kfMapPtsMatches);
-		if (nmatches < 15) {
-
-		}
+		if (nmatches < 15)
+			continue;
 		else {
 
 		}

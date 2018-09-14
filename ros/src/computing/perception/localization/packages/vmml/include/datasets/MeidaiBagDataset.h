@@ -100,8 +100,19 @@ private:
 };
 
 
+class MeidaiBagDataset;
 class MeidaiDataItem : public GenericDataItem
 {
+public:
+	MeidaiDataItem (const MeidaiBagDataset &b, uint64_t ptr);
+	cv::Mat getImage() const;
+	Eigen::Vector3d getPosition() const;
+	Eigen::Quaterniond getOrientation() const;
+	dataItemId getId() const;
+	ptime getTimestamp() const;
+
+protected:
+
 };
 
 

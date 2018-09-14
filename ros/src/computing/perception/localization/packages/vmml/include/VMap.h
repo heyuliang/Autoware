@@ -212,6 +212,9 @@ public:
 
 	void trackMapPoints (const kfid kf1, const kfid kf2);
 
+	bool removeMapPoint (const mpid &i);
+
+
 protected:
 
 	friend class KeyFrame;
@@ -249,7 +252,6 @@ protected:
 
 	ImageDatabase *imageDB;
 
-	// XXX: Follow tutorial at http://www.technical-recipes.com/2015/getting-started-with-the-boost-graph-library/
 	typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
 	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, boost::no_property, EdgeWeightProperty> KeyFrameGraph;
 	typedef boost::graph_traits<KeyFrameGraph>::edge_iterator edge_iterator;

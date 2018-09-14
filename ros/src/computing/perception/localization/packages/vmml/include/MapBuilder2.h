@@ -107,6 +107,8 @@ private:
 
 	void track (const InputFrame &f);
 
+	void mapPointCulling();
+
 };
 
 #endif /* MAPBUILDER2_H_ */

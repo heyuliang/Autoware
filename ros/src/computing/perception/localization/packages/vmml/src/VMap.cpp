@@ -636,3 +636,25 @@ VMap::search (const Frame &f) const
 {
 	return 0;
 }
+
+
+bool
+VMap::removeMapPoint (const mpid &i)
+{
+	assert(mappointInvIdx.find(i) != mappointInvIdx.end());
+
+	mappointInvIdx.erase(i);
+	set<kfid> ptAppears = pointAppearances[i];
+	for (auto k: ptAppears) {
+		framePoints[k].erase(i);
+	}
+
+	pointAppearances.erase(i);
+
+	// Modify Graph
+	for (auto k: ptAppears) {
+		updateCovisibilityGraph(k);
+	}
+
+	return true;
+}
