@@ -297,7 +297,7 @@ private:
 		cv::waitKey(1);
 	}
 
-	const string mapDumpPcl = "/tmp/map.pcl";
+	const string mapDumpPcl = "/tmp/map.pcd";
 	void map_dump_pcl()
 	{
 		auto pclDump = mapSrc->dumpPointCloudFromMapPoints();
