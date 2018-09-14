@@ -81,4 +81,8 @@ private:
 	static mpid nextId;
 };
 
+
+int ORBDescriptorDistance(const cv::Mat &a, const cv::Mat &b);
+
+
 #endif /* MAPPOINT_H_ */

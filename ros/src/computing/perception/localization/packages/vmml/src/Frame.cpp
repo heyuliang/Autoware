@@ -29,7 +29,7 @@ Frame::	Frame(
 		image,
 		parent->getMask(),
 		keypoints,
-		descriptors,
+		mDescriptors,
 		false);
 }
 
@@ -43,7 +43,7 @@ void
 Frame::computeBoW(const ImageDatabase &idb)
 {
 	if (words.empty()) {
-		vector<cv::Mat> descWrd = toDescriptorVector(descriptors);
+		vector<cv::Mat> descWrd = toDescriptorVector(mDescriptors);
 		idb.vocabulary().transform(descWrd, words, featureVec, 4);
 	}
 }

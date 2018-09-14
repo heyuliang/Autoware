@@ -6,6 +6,7 @@
  */
 
 #include "Localizer.h"
+#include "MapPoint.h"
 #include "utilities.h"
 
 
@@ -61,7 +62,7 @@ const
 
 
 int
-Localizer::SearchBoW (const kfid &k, Frame &frame, vector<mpid> &vpMapPts)
+Localizer::SearchBoW (const kfid &k, Frame &frame, set<mpid> &vpMapPts)
 {
 	auto mapPtsInKF = sourceMap->allMapPointsAtKeyFrame(k);
 	auto KeyFrameFeatureVec = imgDb->getFeatureVectorFromKeyFrame(k);
@@ -94,6 +95,13 @@ Localizer::SearchBoW (const kfid &k, Frame &frame, vector<mpid> &vpMapPts)
 
 				for (uint32_t iF=0; iF<vIndicesF.size(); iF++) {
 					const auto realKpIdxF = vIndicesF[iF];
+
+					if (vpMapPts.find(keyPtMapPoint.at(realKpIdxF)) != vpMapPts.end())
+						continue;
+
+					const cv::Mat descF = frame.descriptor(realKpIdxF);
+//					compare `distance' of mappoint descriptor to this keypoint descriptor
+//					int descDist = ORBDescriptorDistance(a, b)
 				}
 			}
 

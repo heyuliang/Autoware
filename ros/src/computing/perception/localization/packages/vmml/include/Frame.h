@@ -40,10 +40,16 @@ public:
 	DBoW2::FeatureVector& getFeatureVector()
 	{ return featureVec; }
 
+	cv::Mat& descriptor()
+	{ return mDescriptors; }
+
+	cv::Mat& descriptor(const int r)
+	{ return mDescriptors.row(r); }
+
 protected:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
-	cv::Mat descriptors;
+	cv::Mat mDescriptors;
 
 	Eigen::Vector3d _mPos;
 	Eigen::Quaterniond _mOri;
