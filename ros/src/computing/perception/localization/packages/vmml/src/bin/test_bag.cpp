@@ -25,7 +25,7 @@ int main (int argc, char *argv[])
 {
 //	MeidaiBagDataset dataset("/home/sujiwo/Data/log_2016-12-26-13-21-10-filtered.bag");
 
-	rosbag::Bag testbag("/home/sujiwo/Data/log_2016-12-26-13-21-10-filtered.bag");
+	rosbag::Bag testbag("/media/sujiwo/ssd/log_2016-12-26-13-21-10.bag");
 	RandomAccessBag gnssBag(testbag, "/nmea_sentence");
 
 	Trajectory gnssTrack;

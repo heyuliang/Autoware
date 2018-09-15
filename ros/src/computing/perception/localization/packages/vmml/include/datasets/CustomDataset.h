@@ -43,6 +43,9 @@ public:
 	ptime getTimestamp() const
 	{ throw std::runtime_error("Not implemented"); }
 
+	typedef std::shared_ptr<CustomDataItem> Ptr;
+	typedef std::shared_ptr<CustomDataItem const> ConstPtr;
+
 protected:
 	uint64_t id;
 	std::string imagePath;
@@ -66,6 +69,8 @@ public:
 	{ return mask; }
 
 	CustomDataItem& at(dataItemId i) const;
+
+	GenericDataItem::ConstPtr get(dataItemId i) const;
 
 protected:
 	const std::string rootPath;

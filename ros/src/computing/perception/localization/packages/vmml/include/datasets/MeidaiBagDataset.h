@@ -107,12 +107,9 @@ class MeidaiBagDataset;
 class MeidaiDataItem : public GenericDataItem
 {
 public:
-	MeidaiDataItem ():
-		parent(NULL)
-	{}
 
-	MeidaiDataItem (MeidaiBagDataset &p, uint64_t idx):
-		parent(&p), pId(idx)
+	MeidaiDataItem (const MeidaiBagDataset &p, uint64_t idx):
+		parent(p), pId(idx)
 	{ init(); }
 
 	cv::Mat getImage() const;
@@ -126,12 +123,15 @@ public:
 
 	ptime getTimestamp() const;
 
+	typedef std::shared_ptr<MeidaiDataItem> Ptr;
+	typedef std::shared_ptr<MeidaiDataItem const> ConstPtr;
+
 protected:
-	MeidaiBagDataset * const parent;
+	const MeidaiBagDataset &parent;
 	dataItemId pId;
 
 	sensor_msgs::Image::ConstPtr bImageMsg;
-	cv_bridge::CvImagePtr imgPtr;
+//	cv_bridge::CvImagePtr imgPtr;
 	void init();
 };
 
@@ -140,7 +140,16 @@ class MeidaiBagDataset : public GenericDataset
 {
 public:
 
-	MeidaiBagDataset(const std::string &filePath, double startTimeOffsetSecond=0, double mappingDurationSecond=-1, const std::string &calibrationPath=std::string());
+	MeidaiBagDataset(
+		const std::string &filePath,
+		double startTimeOffsetSecond=0,
+		double mappingDurationSecond=-1,
+		const std::string &calibrationPath=std::string(),
+		bool loadPositions=true
+	);
+
+	void loadPosition();
+
 	virtual ~MeidaiBagDataset();
 
 	size_t size() const;
@@ -153,6 +162,8 @@ public:
 
 	const Trajectory& getGnssTrajectory() const
 	{ return gnssTrack; }
+
+	GenericDataItem::ConstPtr get(dataItemId i) const;
 
 protected:
 	static std::string dSetName;

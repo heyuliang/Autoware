@@ -29,12 +29,21 @@ MeidaiBagDataset::MeidaiBagDataset(
 	const string &path,
 	double startTimeOffsetSecond,
 	double mappingDurationSecond,
-	const std::string &calibrationPath) :
+	const std::string &calibrationPath,
+	bool loadPositions) :
 
 		bagPath(path)
 {
 	bagfd = new rosbag::Bag(path);
 	cameraRawBag = new RandomAccessBag(*bagfd, "/camera1/image_raw");
+	if (loadPositions==true)
+		loadCache();
+}
+
+
+void
+MeidaiBagDataset::loadPosition()
+{
 	loadCache();
 }
 
@@ -72,6 +81,15 @@ MeidaiBagDataset::at(dataItemId i) const
 {
 	// XXX: Stub
 	throw runtime_error("Not implemented");
+}
+
+
+GenericDataItem::ConstPtr
+MeidaiBagDataset::get(dataItemId i)
+const
+{
+	MeidaiDataItem::ConstPtr dp(new MeidaiDataItem(*this, i));
+	return dp;
 }
 
 
@@ -183,8 +201,7 @@ Trajectory::interpolate (const ros::Time& t) const
 void
 MeidaiDataItem::init()
 {
-	bImageMsg = parent->cameraRawBag->at<sensor_msgs::Image>(pId);
-	imgPtr = cv_bridge::toCvCopy(bImageMsg, sensor_msgs::image_encodings::BGR8);
+	bImageMsg = parent.cameraRawBag->at<sensor_msgs::Image>(pId);
 }
 
 
@@ -211,6 +228,7 @@ MeidaiDataItem::getOrientation() const
 cv::Mat
 MeidaiDataItem::getImage() const
 {
+	auto imgPtr = cv_bridge::toCvShare(bImageMsg, sensor_msgs::image_encodings::BGR8);
 	return imgPtr->image;
 }
 

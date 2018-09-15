@@ -114,6 +114,9 @@ struct OxfordDataItem : public GenericDataItem
 //	timestamp_t getTimestampLong() const
 //	{ return timestamp; }
 
+	typedef std::shared_ptr<OxfordDataItem> Ptr;
+	typedef std::shared_ptr<OxfordDataItem const> ConstPtr;
+
 private:
 	std::string getPath(StereoImageT t=StereoCenter) const;
 
@@ -197,6 +200,8 @@ public:
 
 	std::string getPath() const
 	{ return oxfPath; }
+
+	GenericDataItem::ConstPtr get(dataItemId i) const;
 
 protected:
 	CameraPinholeParams oxfCamera;

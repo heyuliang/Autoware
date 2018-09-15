@@ -347,6 +347,18 @@ OxfordDataset::at(dataItemId i) const
 }
 
 
+GenericDataItem::ConstPtr
+OxfordDataset::get(dataItemId i) const
+{
+	timestamp_t ts = stereoTimestamps.at(i);
+	OxfordDataItem::ConstPtr oxfItem(&stereoRecords.at(ts),
+		// do not delete this pointer
+		[](OxfordDataItem const* p){}
+	);
+	return oxfItem;
+}
+
+
 void
 OxfordDataset::loadModel(const string &modelDir)
 {

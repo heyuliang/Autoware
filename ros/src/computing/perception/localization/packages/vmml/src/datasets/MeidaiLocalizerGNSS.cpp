@@ -70,11 +70,15 @@ void convertNMEASentenceToState (nmea_msgs::SentencePtr &msg, GnssLocalizerState
 
 	else if(nmea.at(0).compare(3, 3, "GGA") == 0)
 	{
-		state.position_time_ = stod(nmea.at(1));
-		state.latitude = stod(nmea.at(2));
-		state.longitude = stod(nmea.at(4));
-		state.height = stod(nmea.at(9));
-		state.geo.set_llh_nmea_degrees(state.latitude, state.longitude, state.height);
+		try {
+			state.position_time_ = stod(nmea.at(1));
+			state.latitude = stod(nmea.at(2));
+			state.longitude = stod(nmea.at(4));
+			state.height = stod(nmea.at(9));
+			state.geo.set_llh_nmea_degrees(state.latitude, state.longitude, state.height);
+		} catch (std::invalid_argument &e) {
+			throw wrong_nmea_sentence();
+		}
 	}
 
 	else if(nmea.at(0) == "$GPRMC")
@@ -115,6 +119,7 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 	trajectory.clear();
 
 	for (uint32_t ix=0; ix<bagsrc.size(); ix++) {
+		cout << ix << "/" << bagsrc.size() << "         ";
 
 		auto currentMessage = bagsrc.at<nmea_msgs::Sentence>(ix);
 		ros::Time current_time = currentMessage->header.stamp;
@@ -150,6 +155,8 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 			trajectory.push_back(px);
 		}
 	}
+
+	cout << "\nDone\n";
 }
 
 

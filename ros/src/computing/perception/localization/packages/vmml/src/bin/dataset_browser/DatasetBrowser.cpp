@@ -52,7 +52,7 @@ void
 DatasetBrowser::on_saveImageButton_clicked(bool checked)
 {
 	QString fname = QFileDialog::getSaveFileName(this, tr("Save Image"));
-	cv::Mat image = openDs->at(timelineSlider->value()).getImage();
+	cv::Mat image = openDs->get(timelineSlider->value())->getImage();
 	cv::imwrite(fname.toStdString(), image);
 }
 
@@ -62,6 +62,7 @@ DatasetBrowser::changeDataset(GenericDataset *ds)
 {
 	openDs = ds;
 	timelineSlider->setRange(0, ds->size()-1);
+	dataItem0 = ds->get(0);
 	setImageOnPosition(0);
 }
 
@@ -69,15 +70,16 @@ DatasetBrowser::changeDataset(GenericDataset *ds)
 void
 DatasetBrowser::setImageOnPosition (int v)
 {
-	if (v<0 and v>=openDs->size())
+	if (v<0 or v>=openDs->size())
 		throw runtime_error("Invalid time position");
 
-	cv::Mat image = openDs->at(v).getImage();
+	auto curItem = openDs->get(v);
+	cv::Mat image = curItem->getImage();
 
 	QImage curImage = fromCvMat(image);
 	frame->setImage(curImage);
 
-	auto ts = openDs->at(v).getTimestamp() - openDs->at(0).getTimestamp();
+	auto ts = curItem->getTimestamp() - dataItem0->getTimestamp();
 	double tsd = double(ts.total_microseconds())/1e6;
 
 	stringstream ss;

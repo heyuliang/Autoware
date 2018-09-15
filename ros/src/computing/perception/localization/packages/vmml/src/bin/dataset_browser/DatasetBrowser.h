@@ -46,7 +46,7 @@ private:
 
 private:
 	void setImageOnPosition (int v);
-
+	GenericDataItem::ConstPtr dataItem0;
 };
 
 #endif /* _DATASETBROWSER_H_ */

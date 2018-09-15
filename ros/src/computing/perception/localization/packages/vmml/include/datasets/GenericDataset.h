@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <string>
 #include <exception>
+#include <memory>
 #include <Eigen/Eigen>
 #include <opencv2/core.hpp>
 
@@ -51,6 +52,9 @@ public:
 //protected:
 //	dataItemId itemId;
 //	ptime iTimestamp;
+
+	typedef std::shared_ptr<GenericDataItem> Ptr;
+	typedef std::shared_ptr<GenericDataItem const> ConstPtr;
 };
 
 
@@ -68,6 +72,8 @@ public:
 	virtual cv::Mat getMask() = 0;
 
 	virtual const GenericDataItem& at(dataItemId i) const = 0;
+
+	virtual GenericDataItem::ConstPtr get(dataItemId i) const = 0;
 
 	void dump(const std::string &filename="");
 
