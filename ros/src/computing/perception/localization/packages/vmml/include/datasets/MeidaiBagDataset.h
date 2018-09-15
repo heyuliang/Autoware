@@ -165,6 +165,14 @@ public:
 
 	GenericDataItem::ConstPtr get(dataItemId i) const;
 
+	bool hasPositioning() const
+	{ return gnssTrack.empty(); }
+
+	void setZoomRatio (float r);
+
+	float getZoomRatio () const;
+
+
 protected:
 	static std::string dSetName;
 	rosbag::Bag *bagfd;
@@ -180,6 +188,7 @@ private:
 
 	Trajectory gnssTrack;
 	Trajectory ndtTrack;
+	float zoomRatio = 1.0;
 
 	friend class MeidaiDataItem;
 };

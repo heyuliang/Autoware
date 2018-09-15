@@ -72,6 +72,13 @@ public:
 
 	GenericDataItem::ConstPtr get(dataItemId i) const;
 
+	void setZoomRatio (float r)
+	{}
+
+	float getZoomRatio () const
+	{ return 1.0; }
+
+
 protected:
 	const std::string rootPath;
 

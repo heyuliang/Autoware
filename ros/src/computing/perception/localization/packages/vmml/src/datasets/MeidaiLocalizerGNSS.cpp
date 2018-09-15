@@ -119,7 +119,7 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 	trajectory.clear();
 
 	for (uint32_t ix=0; ix<bagsrc.size(); ix++) {
-		cout << ix << "/" << bagsrc.size() << "         ";
+		cout << ix << "/" << bagsrc.size() << "         \r";
 
 		auto currentMessage = bagsrc.at<nmea_msgs::Sentence>(ix);
 		ros::Time current_time = currentMessage->header.stamp;

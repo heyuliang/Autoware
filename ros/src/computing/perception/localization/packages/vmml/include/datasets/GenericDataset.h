@@ -79,6 +79,10 @@ public:
 
 	virtual std::string getName() const;
 
+	virtual void setZoomRatio (float r) = 0;
+
+	virtual float getZoomRatio () const = 0;
+
 protected:
 	static std::string dSetName;
 };

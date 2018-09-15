@@ -94,6 +94,18 @@ const
 
 
 void
+MeidaiBagDataset::setZoomRatio (float r)
+{
+	zoomRatio = r;
+}
+
+
+float
+MeidaiBagDataset::getZoomRatio () const
+{ return zoomRatio; }
+
+
+void
 MeidaiBagDataset::loadCache()
 {
 	bfs::path bagCachePath = bagPath;
@@ -229,7 +241,13 @@ cv::Mat
 MeidaiDataItem::getImage() const
 {
 	auto imgPtr = cv_bridge::toCvShare(bImageMsg, sensor_msgs::image_encodings::BGR8);
-	return imgPtr->image;
+	if (parent.zoomRatio==1.0)
+		return imgPtr->image;
+	else {
+		cv::Mat imgrs;
+		cv::resize(imgPtr->image, imgrs, cv::Size(), parent.zoomRatio, parent.zoomRatio, cv::INTER_CUBIC);
+		return imgrs;
+	}
 }
 
 

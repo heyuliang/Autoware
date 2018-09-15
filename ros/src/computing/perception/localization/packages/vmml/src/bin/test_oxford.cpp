@@ -27,6 +27,7 @@
 #include "MapBuilder2.h"
 #include "Viewer.h"
 #include "datasets/OxfordDataset.h"
+#include "datasets/MeidaiBagDataset.h"
 
 
 using namespace std;
@@ -129,6 +130,43 @@ InputFrame createInputFrame(const OxfordDataItem &d)
 
 	return f;
 }
+
+
+InputFrame createInputFrame(OxfordDataItem::ConstPtr &DI)
+{
+	cv::Mat img=DI->getImage();
+	cv::cvtColor(img, img, CV_BGR2GRAY, 1);
+
+	InputFrame f(
+		img,
+		DI->getPosition(),
+		DI->getOrientation(),
+		// Force Keyframe ID using timestamp. This way, we can refer to original
+		// image for display purpose (which is the case for Oxford Dataset)
+		static_cast<kfid>(DI->timestamp));
+	f.tm = DI->getTimestamp();
+
+	return f;
+}
+
+
+InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
+{
+	cv::Mat img=DI->getImage();
+	cv::cvtColor(img, img, CV_BGR2GRAY, 1);
+
+	/*
+	 * Contrarily, we let VMap use autonumbering for keymap ID
+	 */
+	InputFrame f(
+		img,
+		DI->getPosition(),
+		DI->getOrientation());
+	f.tm = DI->getTimestamp();
+
+	return f;
+}
+
 
 
 void buildMap2
