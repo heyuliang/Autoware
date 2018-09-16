@@ -165,6 +165,8 @@ public:
 
 	GenericDataItem::ConstPtr get(dataItemId i) const;
 
+	GenericDataItem::ConstPtr atDurationSecond (const double second);
+
 	bool hasPositioning() const
 	{ return gnssTrack.empty(); }
 

@@ -172,6 +172,14 @@ void MeidaiBagDataset::writeCache(const string &path)
 }
 
 
+GenericDataItem::ConstPtr
+MeidaiBagDataset::atDurationSecond (const double second)
+{
+	uint32_t pos = cameraRawBag->getPositionAtDurationSecond(second);
+	return get(pos);
+}
+
+
 void
 Trajectory::push_back(const PoseTimestamp &pt)
 {

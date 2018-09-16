@@ -26,6 +26,9 @@ find_package(catkin REQUIRED COMPONENTS
 	# Test offline GNSS localization
 	nmea_msgs
 	gnss
+	
+	# Test offline NDT localization
+	ndt_tku
 )
 
 find_package (Boost REQUIRED COMPONENTS serialization python graph filesystem)
@@ -106,6 +109,7 @@ add_library(
 		src/datasets/RandomAccessBag.cpp
 		src/datasets/MeidaiBagDataset.cpp
 		src/datasets/MeidaiLocalizerGNSS.cpp
+		src/datasets/MeidaiLocalizerNDT.cpp
 )
 
 #add_executable(map_test

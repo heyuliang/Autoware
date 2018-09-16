@@ -5,6 +5,7 @@
  *      Author: sujiwo
  */
 
+#include <algorithm>
 #include <rosbag/query.h>
 #include "datasets/RandomAccessBag.h"
 
@@ -37,8 +38,9 @@ RandomAccessBag::~RandomAccessBag()
 void
 RandomAccessBag::createCache()
 {
+	rosbag::View::size();
 	iterator it = begin();
-	size_t sz = size();
+	size_t sz = this->size();
 	msgPtr.resize(sz);
 
 	for (uint32_t p=0; p<sz; p++) {
@@ -47,4 +49,19 @@ RandomAccessBag::createCache()
 		msgPtr.at(p) = ie;
 		++it;
 	}
+}
+
+
+uint32_t
+RandomAccessBag::getPositionAtDurationSecond (const double S) const
+{
+	ros::Duration Sd (S);
+	ros::Time Tx = msgPtr.at(0).time + Sd;
+	assert (Tx>= msgPtr.at(0).time and Tx<=msgPtr.back().time);
+
+	auto it = std::lower_bound(msgPtr.begin(), msgPtr.end(), Tx,
+		[](const rosbag::IndexEntry &iptr, const ros::Time &t)
+		{ return (iptr.time < t); }
+	);
+	return it - msgPtr.begin();
 }
