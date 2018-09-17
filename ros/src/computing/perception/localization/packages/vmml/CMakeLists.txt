@@ -112,29 +112,6 @@ add_library(
 		src/datasets/MeidaiLocalizerNDT.cpp
 )
 
-#add_executable(map_test
-#	src/bin/map_test.cpp
-#)
-
-#target_link_libraries(
-#	map_test
-#	vmml
-#	${REQUIRED_LIBS}
-#	${catkin_LIBRARIES}
-#)
-
-#add_executable(map_oxford
-#	src/bin/map_oxford.cpp
-#)
-#
-#target_link_libraries(
-#	map_oxford
-#	vmml
-#	${REQUIRED_LIBS}
-#	${catkin_LIBRARIES}
-#)
-
-
 # Dataset Browser
 add_executable(dataset_browser
 	src/bin/dataset_browser/main.cpp
@@ -170,15 +147,15 @@ target_link_libraries(
 )
 
 
-add_executable(test_oxford
-	src/bin/test_oxford.cpp
-)
+#add_executable(test_oxford
+#	src/bin/test_oxford.cpp
+#)
 
-target_link_libraries(test_oxford
-	vmml
-	${REQUIRED_LIBS}
-	${LIBEDIT_LIBRARIES}
-)
+#target_link_libraries(test_oxford
+#	vmml
+#	${REQUIRED_LIBS}
+#	${LIBEDIT_LIBRARIES}
+#)
 
 
 
