@@ -107,7 +107,12 @@ void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int st
   {
     setEventFlag("received_based_lane_waypoint", false);
   }
+
+  if(auto_mission_reload_){
+    publishOperatorHelpMessage("Reload mission.");
+    tryNextState("re_enter_mission");
+    return;
+  }
   tryNextState("goto_wait_order");
-  // tryNextState("re_enter_mission");
 }
 }

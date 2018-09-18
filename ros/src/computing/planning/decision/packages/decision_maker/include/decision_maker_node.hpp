@@ -167,6 +167,7 @@ private:
 
   // Param
   bool enableDisplayMarker;
+  bool auto_mission_reload_;
   uint32_t param_num_of_steer_behind_;
   double dist_threshold_;
   double angle_threshold_;
@@ -329,7 +330,7 @@ public:
   VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char** argv)
-    : private_nh_("~"), enableDisplayMarker(false), param_num_of_steer_behind_(30)
+    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), param_num_of_steer_behind_(30)
   {
     std::string file_name;
     private_nh_.getParam("state_file_name", file_name);
