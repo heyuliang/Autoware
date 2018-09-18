@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 project(vmml)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -frtti)
 
 set (CMAKE_MODULE_PATH 
 		${CMAKE_MODULE_PATH} 
@@ -105,7 +105,7 @@ add_library(
 		src/SequenceSLAM.cpp
 		src/datasets/OxfordDataset.cpp	
 		src/datasets/GenericDataset.cpp
-		src/datasets/CustomDataset.cpp
+#		src/datasets/CustomDataset.cpp
 		src/datasets/RandomAccessBag.cpp
 		src/datasets/MeidaiBagDataset.cpp
 		src/datasets/MeidaiLocalizerGNSS.cpp
@@ -147,15 +147,16 @@ target_link_libraries(
 )
 
 
-#add_executable(test_oxford
-#	src/bin/test_oxford.cpp
-#)
+add_executable(test_oxford
+	src/bin/test_oxford.cpp
+)
 
-#target_link_libraries(test_oxford
-#	vmml
-#	${REQUIRED_LIBS}
-#	${LIBEDIT_LIBRARIES}
-#)
+target_link_libraries(test_oxford
+	vmml
+	${REQUIRED_LIBS}
+	${LIBEDIT_LIBRARIES}
+	${catkin_LIBRARIES}
+)
 
 
 

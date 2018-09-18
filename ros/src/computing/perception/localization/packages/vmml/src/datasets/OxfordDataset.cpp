@@ -110,6 +110,15 @@ OxfordDataset::OxfordDataset(
 }
 
 
+static OxfordDataset::Ptr create(const std::string &dirpath,
+		const std::string &modelDir,
+		GroundTruthSrc gts)
+{
+	OxfordDataset::Ptr oxDatasetMem(new OxfordDataset(dirpath, modelDir, gts));
+	return oxDatasetMem;
+}
+
+
 OxfordDataset::~OxfordDataset()
 {
 }
@@ -415,7 +424,7 @@ OxfordDataset::getMask()
 }
 
 
-OxfordDataset*
+OxfordDataset::Ptr
 OxfordDataset::timeSubset (double startTimeOffsetSecond, double durationSecond)
 const
 {
@@ -469,7 +478,7 @@ const
 		}
 	}
 
-	return mycopy;
+	return OxfordDataset::Ptr(mycopy);
 }
 
 
@@ -481,7 +490,7 @@ OxfordDataset::setZoomRatio(float r)
 }
 
 
-OxfordDataItem&
+GenericDataItem::ConstPtr
 OxfordDataset::atDurationSecond (const double second) const
 {
 	timestamp_t tx=stereoTimestamps[0] + static_cast<timestamp_t>(second*1e6);
@@ -489,7 +498,7 @@ OxfordDataset::atDurationSecond (const double second) const
 }
 
 
-OxfordDataItem&
+OxfordDataItem::ConstPtr
 OxfordDataset::atApproximate(timestamp_t t) const
 {
 	auto it = std::lower_bound(stereoTimestamps.begin(), stereoTimestamps.end(), t);

@@ -41,6 +41,25 @@ MeidaiBagDataset::MeidaiBagDataset(
 }
 
 
+MeidaiBagDataset::Ptr
+MeidaiBagDataset::create (
+		const string &path,
+		double startTimeOffsetSecond,
+		double mappingDurationSecond,
+		const std::string &calibrationPath,
+		bool loadPositions
+)
+{
+	MeidaiBagDataset::Ptr nuDatasetMem(new MeidaiBagDataset(
+		path,
+		startTimeOffsetSecond,
+		mappingDurationSecond,
+		calibrationPath,
+		loadPositions));
+	return nuDatasetMem;
+}
+
+
 void
 MeidaiBagDataset::loadPosition()
 {
@@ -64,6 +83,7 @@ MeidaiBagDataset::size() const
 
 CameraPinholeParams
 MeidaiBagDataset::getCameraParameter()
+const
 {
 	throw runtime_error("Not implemented");
 }
@@ -174,6 +194,7 @@ void MeidaiBagDataset::writeCache(const string &path)
 
 GenericDataItem::ConstPtr
 MeidaiBagDataset::atDurationSecond (const double second)
+const
 {
 	uint32_t pos = cameraRawBag->getPositionAtDurationSecond(second);
 	return get(pos);

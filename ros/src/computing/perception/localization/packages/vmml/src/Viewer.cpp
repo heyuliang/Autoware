@@ -19,7 +19,7 @@ static string wndName ("Viewer");
 static cv::Vec3b kpColor(255,0,0);
 
 
-Viewer::Viewer (const GenericDataset &genset) :
+Viewer::Viewer (GenericDataset::ConstPtr genset) :
 	dataset(genset),
 	cMap(NULL)
 {
@@ -54,7 +54,7 @@ Viewer::update (int dataItemId, kfid frameId)
 {
 	assert (cMap != NULL);
 	KeyFrame *kf = cMap->keyframe(frameId);
-	cv::Mat imagebuf = dataset.at(dataItemId).getImage();
+	cv::Mat imagebuf = dataset->get(dataItemId)->getImage();
 
 	// Draw visible map points
 	const map<mpid,kpid> visibleMp = cMap->allMapPointsAtKeyFrame(frameId);

@@ -152,6 +152,9 @@ class OxfordDataset: public GenericDataset
 {
 public:
 
+	typedef std::shared_ptr<OxfordDataset> Ptr;
+	typedef std::shared_ptr<OxfordDataset const> ConstPtr;
+
 	OxfordDataset () {}
 
 	OxfordDataset (const OxfordDataset &cp);
@@ -159,10 +162,13 @@ public:
 	OxfordDataset (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
 	virtual ~OxfordDataset();
 
+	static
+	OxfordDataset::Ptr create (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
+
 	inline size_t size() const
 	{ return stereoTimestamps.size(); }
 
-	CameraPinholeParams getCameraParameter()
+	CameraPinholeParams getCameraParameter() const
 	{ return oxfCamera; }
 
 	void dumpGroundTruth(const std::string &fp=std::string());
@@ -172,19 +178,24 @@ public:
 	/*
 	 * Get item using timestamp
 	 */
-	inline OxfordDataItem& atTime (timestamp_t t) const
-	{ return const_cast<OxfordDataItem&>(stereoRecords.at(t)); }
+//	inline OxfordDataItem& atTime (timestamp_t t) const
+//	{ return const_cast<OxfordDataItem&>(stereoRecords.at(t)); }
 
-	OxfordDataItem& atApproximate (timestamp_t t) const;
+	inline OxfordDataItem::ConstPtr atTime (timestamp_t t) const
+	{ return OxfordDataItem::ConstPtr (&stereoRecords.at(t)); }
 
-	OxfordDataItem& atDurationSecond (const double second) const;
+//	OxfordDataItem& atApproximate (timestamp_t t) const;
+	OxfordDataItem::ConstPtr atApproximate (timestamp_t t) const;
+
+//	OxfordDataItem& atDurationSecond (const double second) const;
+	GenericDataItem::ConstPtr atDurationSecond (const double second) const;
 
 	friend struct OxfordDataItem;
 	cv::Mat undistort (cv::Mat &src);
 
 	cv::Mat getMask();
 
-	OxfordDataset*
+	OxfordDataset::Ptr
 	timeSubset (double startTimeOffsetSecond=0, double mappingDurationSecond=-1) const;
 
 	tduration getTimeLength() const;
@@ -202,6 +213,7 @@ public:
 	{ return oxfPath; }
 
 	GenericDataItem::ConstPtr get(dataItemId i) const;
+
 
 protected:
 	CameraPinholeParams oxfCamera;

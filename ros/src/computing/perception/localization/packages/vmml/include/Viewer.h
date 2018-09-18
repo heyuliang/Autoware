@@ -20,7 +20,8 @@
 class Viewer {
 public:
 
-	Viewer (const GenericDataset &genset);
+//	Viewer (const GenericDataset &genset);
+	Viewer (GenericDataset::ConstPtr getset);
 	~Viewer ();
 
 	// Frame and dataItem may be decoupled
@@ -29,7 +30,7 @@ public:
 	void setMap (VMap *m);
 
 private:
-	const GenericDataset &dataset;
+	GenericDataset::ConstPtr dataset;
 	VMap *cMap;
 };
 

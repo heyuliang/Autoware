@@ -168,39 +168,43 @@ InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
 }
 
 
-
-void buildMap2
-(OxfordDataset &dataset, MapBuilder2 &builder)
-{
-	builder.addCameraParam(dataset.getCameraParameter());
-
-	Viewer *imgViewer = new Viewer (dataset);
-	imgViewer->setMap(builder.getMap());
-	dataItemId currentItemId;
-
-	MapBuilder2::frameCallback frmCallback =
-	[&] (const InputFrame &f)
-	{
-		imgViewer->update(currentItemId, builder.getCurrentKeyFrameId());
-		cout << currentItemId << " / " << dataset.size() << endl;
-	};
-	builder.registerFrameCallback(frmCallback);
-
-	for (int framePtr=0; framePtr<dataset.size(); framePtr++) {
-		const OxfordDataItem &dx = dataset.at(framePtr);
-		currentItemId = dx.getId();
-		InputFrame frame = createInputFrame(dx);
-		builder.input(frame);
-	}
-
-	builder.build();
-	delete(imgViewer);
-}
+//void buildMap2
+//(OxfordDataset &dataset, MapBuilder2 &builder)
+//{
+//	builder.addCameraParam(dataset.getCameraParameter());
+//
+//	Viewer *imgViewer = new Viewer (dataset);
+//	imgViewer->setMap(builder.getMap());
+//	dataItemId currentItemId;
+//
+//	MapBuilder2::frameCallback frmCallback =
+//	[&] (const InputFrame &f)
+//	{
+//		imgViewer->update(currentItemId, builder.getCurrentKeyFrameId());
+//		cout << currentItemId << " / " << dataset.size() << endl;
+//	};
+//	builder.registerFrameCallback(frmCallback);
+//
+//	for (int framePtr=0; framePtr<dataset.size(); framePtr++) {
+//		const OxfordDataItem &dx = dataset.at(framePtr);
+//		currentItemId = dx.getId();
+//		InputFrame frame = createInputFrame(dx);
+//		builder.input(frame);
+//	}
+//
+//	builder.build();
+//	delete(imgViewer);
+//}
 
 
 class LocalizerApp
 {
 public:
+	enum datasetType {
+		OXFORD_DATASET_TYPE,
+		MEIDAI_DATASET_TYPE
+	} ;
+
 	LocalizerApp (int argc, char *argv[]):
 		mLineEditor(argv[0], TestPrompt)
 	{
@@ -212,8 +216,6 @@ public:
 	{
 		if (mapSrc)
 			delete(mapSrc);
-		if (localizTestDataSrc)
-			delete(localizTestDataSrc);
 		if (localizer)
 			delete(localizer);
 	}
@@ -244,8 +246,8 @@ public:
 			else if (command[0]=="map_trajectory")
 				map_trajectory_dump();
 
-			else if (command[0]=="find")
-				map_find_cmd(command[1]);
+//			else if (command[0]=="find")
+//				map_find_cmd(command[1]);
 
 			else if (command[0]=="save")
 				dataset_save_dsecond(command[1]);
@@ -253,8 +255,8 @@ public:
 			else if (command[0]=="zoom")
 				dataset_set_zoom(command[1]);
 
-			else if (command[0]=="dataset_simulate_seqslam")
-				dataset_simulate_seqslam(command[1]);
+//			else if (command[0]=="dataset_simulate_seqslam")
+//				dataset_simulate_seqslam(command[1]);
 
 			else if (command[0]=="dataset_view")
 				dataset_view(command[1]);
@@ -274,6 +276,44 @@ public:
 	}
 
 
+	void buildMap
+	(GenericDataset::Ptr datasetSrc, MapBuilder2 &builder)
+	{
+		builder.addCameraParam(datasetSrc->getCameraParameter());
+
+		Viewer *imgViewer = new Viewer (datasetSrc);
+		imgViewer->setMap(builder.getMap());
+		dataItemId currentItemId;
+
+		MapBuilder2::frameCallback frmCallback =
+		[&] (const InputFrame &f)
+		{
+			imgViewer->update(currentItemId, builder.getCurrentKeyFrameId());
+			cout << currentItemId << " / " << datasetSrc->size() << endl;
+		};
+		builder.registerFrameCallback(frmCallback);
+
+		for (int framePtr=0; framePtr<datasetSrc->size(); framePtr++) {
+
+			InputFrame frame;
+			if (slDatasourceType==OXFORD_DATASET_TYPE) {
+				OxfordDataItem::ConstPtr dx = static_pointer_cast<OxfordDataItem const> (datasetSrc->get(framePtr));
+				frame = createInputFrame(dx);
+				currentItemId = dx->getId();
+			}
+			else if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+				MeidaiDataItem::ConstPtr dx = static_pointer_cast<MeidaiDataItem const> (datasetSrc->get(framePtr));
+				frame = createInputFrame(dx);
+				currentItemId = dx->getId();
+			}
+			builder.input(frame);
+		}
+
+		builder.build();
+		delete(imgViewer);
+	}
+
+
 protected:
 	LineEditor mLineEditor;
 
@@ -282,7 +322,10 @@ protected:
 	SequenceSLAM *seqSlProv = NULL;
 	Localizer *localizer = NULL;
 
-	OxfordDataset *localizTestDataSrc = NULL;
+//	OxfordDataset *localizTestDataSrc = NULL;
+	datasetType slDatasourceType;
+	GenericDataset::Ptr loadedDataset;
+
 
 	cv::Mat mask;
 
@@ -312,24 +355,24 @@ private:
 		}
 	}
 
-	const string imageDumpSeqSlam = "/tmp/seqslam.png";
-	void dataset_simulate_seqslam(const string &cs)
-	{
-		double dt = std::stod(cs);
-		cv::Mat img = localizTestDataSrc->atDurationSecond(dt).getImage();
-		cv::cvtColor(img, img, CV_BGR2GRAY);
-		img = seqSlProv->normalizePatch(img, 8);
-		cv::imwrite(imageDumpSeqSlam, img);
-		debug("Dumped image to "+imageDumpSeqSlam);
-	}
+//	const string imageDumpSeqSlam = "/tmp/seqslam.png";
+//	void dataset_simulate_seqslam(const string &cs)
+//	{
+//		double dt = std::stod(cs);
+//		cv::Mat img = localizTestDataSrc->atDurationSecond(dt).getImage();
+//		cv::cvtColor(img, img, CV_BGR2GRAY);
+//		img = seqSlProv->normalizePatch(img, 8);
+//		cv::imwrite(imageDumpSeqSlam, img);
+//		debug("Dumped image to "+imageDumpSeqSlam);
+//	}
 
 	const string viewerWindowName="Dataset Viewer";
 	void dataset_view(const string &durationSecStr)
 	{
 		cv::namedWindow(viewerWindowName);
 		double d = std::stod(durationSecStr);
-		auto di = localizTestDataSrc->atDurationSecond(d);
-		cv::Mat img = di.getImage();
+		auto di = loadedDataset->atDurationSecond(d);
+		cv::Mat img = di->getImage();
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 		cv::imshow(viewerWindowName, img);
 		cv::waitKey(1);
@@ -374,43 +417,61 @@ private:
 	const string dumpDatasetTrajectoryPath = "/tmp/dump_dataset_trajectory";
 	void dataset_trajectory_dump()
 	{
-		const string dsDumpPath = dumpDatasetTrajectoryPath + '-' + fs::basename(localizTestDataSrc->getPath());
-		fstream dsTrFd (dsDumpPath, ios_base::out|ios_base::trunc);
-		if (!dsTrFd.is_open()) {
-			debug("Unable to create "+dumpMapTrajectoryPath);
+		if (slDatasourceType==OXFORD_DATASET_TYPE) {
+			OxfordDataset::Ptr oxfDataset = static_pointer_cast<OxfordDataset>(loadedDataset);
+			const string dsDumpPath = dumpDatasetTrajectoryPath + '-' + fs::basename(oxfDataset->getPath());
+			fstream dsTrFd (dsDumpPath, ios_base::out|ios_base::trunc);
+			if (!dsTrFd.is_open()) {
+				debug("Unable to create "+dumpMapTrajectoryPath);
+				return;
+			}
+
+			for (int i=0; i<oxfDataset->size(); i++) {
+				OxfordDataItem::ConstPtr di = static_pointer_cast<OxfordDataItem const> (oxfDataset->get(i));
+				dsTrFd << di->timestamp << " "
+						<< dumpVector(di->getPosition()) << " "
+						<< dumpVector(di->getOrientation())
+						<< endl;
+			}
+
+			dsTrFd.close();
+			debug("Dataset trajectory dumped to "+dsDumpPath);
 			return;
 		}
 
-		for (int i=0; i<localizTestDataSrc->size(); i++) {
-			const OxfordDataItem di = localizTestDataSrc->at(i);
-			dsTrFd << di.timestamp << " "
-					<< dumpVector(di.getPosition()) << " "
-					<< dumpVector(di.getOrientation())
-					<< endl;
+		else if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+			const Trajectory &Tr = meidaiDs->getGnssTrajectory();
+			fstream dsTrFd (dumpDatasetTrajectoryPath, ios_base::out|ios_base::trunc);
 		}
-
-		dsTrFd.close();
-		debug("Dataset trajectory dumped to "+dsDumpPath);
 	}
 
 	void dataset_open_cmd(const string &dsPath, const string &modelDir)
 	{
-		try {
-			localizTestDataSrc = new OxfordDataset(dsPath, modelDir);
-			debug("Dataset loaded");
-		} catch (exception &e) {
-			debug("Unable to load dataset");
+		boost::filesystem::path datasetPath(dsPath);
+		if (boost::filesystem::is_directory(datasetPath)) {
+			loadedDataset = OxfordDataset::create(dsPath, modelDir);
+			debug ("Oxford-type Dataset Loaded");
+		}
+		else if (datasetPath.extension()==".bag") {
+			loadedDataset = MeidaiBagDataset::create(datasetPath.string(), 0, 1, "", false);
+			debug ("Nagoya University Dataset Loaded");
+		}
+
+		else {
+			debug("Unsupported dataset type");
+			return;
 		}
 	}
 
-	void map_find_cmd(const string &durationSecStr)
-	{
-		double d = std::stod(durationSecStr);
-		auto di = localizTestDataSrc->atDurationSecond(d);
-		cv::Mat img = di.getImage();
-		cv::cvtColor(img, img, CV_RGB2GRAY);
-		seqSlProv->find(img, 10);
-	}
+//	void map_find_cmd(const string &durationSecStr)
+//	{
+//		double d = std::stod(durationSecStr);
+//		auto di = localizTestDataSrc->atDurationSecond(d);
+//		cv::Mat img = di.getImage();
+//		cv::cvtColor(img, img, CV_RGB2GRAY);
+//		seqSlProv->find(img, 10);
+//	}
 
 	void map_detect_cmd(const string &durationSecStr)
 	{
@@ -419,8 +480,8 @@ private:
 			return;
 		}
 		double d = std::stod(durationSecStr);
-		auto di = localizTestDataSrc->atDurationSecond(d);
-		cv::Mat img = di.getImage();
+		auto di = loadedDataset->atDurationSecond(d);
+		cv::Mat img = di->getImage();
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 		kfid k = localizer->detect(img);
 		debug("Max.: "+to_string(k));
@@ -431,8 +492,8 @@ private:
 	void dataset_save_dsecond(const string &durationSecStr)
 	{
 		double d = std::stod(durationSecStr);
-		auto di = localizTestDataSrc->atDurationSecond(d);
-		cv::Mat img = di.getImage();
+		auto di = loadedDataset->atDurationSecond(d);
+		cv::Mat img = di->getImage();
 		cv::imwrite(dumpImagePath, img);
 		debug("Dumped to " + dumpImagePath);
 	}
@@ -445,7 +506,22 @@ private:
 	void dataset_set_zoom(const string &zstr)
 	{
 		float z = std::stof(zstr);
-		localizTestDataSrc->setZoomRatio(z);
+		loadedDataset->setZoomRatio(z);
+	}
+
+	string createMapFilename ()
+	{
+		string mapResName;
+
+		if (slDatasourceType==OXFORD_DATASET_TYPE) {
+			OxfordDataset::Ptr oxfDs = static_pointer_cast<OxfordDataset> (loadedDataset);
+			mapResName = oxfDs->getPath() + "/vmml.map";
+		}
+		else if(slDatasourceType==MEIDAI_DATASET_TYPE) {
+			MeidaiBagDataset::Ptr mdiDs = static_pointer_cast<MeidaiBagDataset> (loadedDataset);
+			mapResName = mdiDs->getPath() + ".map";
+		}
+		return mapResName;
 	}
 
 	/*
@@ -453,18 +529,24 @@ private:
 	 */
 	void map_create_cmd (const stringTokens &cmd)
 	{
-		OxfordDataset* oxfSubset;
+		if (slDatasourceType==OXFORD_DATASET_TYPE) {
+			debug ("Error: Mapping (still) not supported on NU Dataset");
+			return;
+		}
+
+		OxfordDataset::Ptr oxfSubset;
+		OxfordDataset::Ptr oxfAll = static_pointer_cast<OxfordDataset>(loadedDataset);
 		bool isSubset;
 
 		double start, duration;
 		if (cmd.size() >= 2) {
 			start = stod(cmd[0]);
 			duration = stod(cmd[1]);
-			oxfSubset = localizTestDataSrc->timeSubset(start, duration);
+			oxfSubset = oxfAll->timeSubset(start, duration);
 			isSubset = true;
 		}
 		else {
-			oxfSubset = localizTestDataSrc;
+			oxfSubset = oxfAll;
 			start = 0;
 			duration = double(oxfSubset->getTimeLength().total_microseconds())/1e6;
 			isSubset = false;
@@ -474,23 +556,21 @@ private:
 
 		MapBuilder2 mapBld;
 		if (mask.empty()==false) {
-			float zr = localizTestDataSrc->getZoomRatio();
+			float zr = loadedDataset->getZoomRatio();
 			cv::Mat mapMask;
 			cv::resize(mask, mapMask, cv::Size(), zr, zr, cv::INTER_CUBIC);
 			mapBld.setMask(mapMask);
 		}
 
-		buildMap2(*oxfSubset, mapBld);
+		buildMap(oxfSubset, mapBld);
 
-		const string mapFilePath = oxfSubset->getPath() + "/vmml.map";
+		const string mapFilePath = createMapFilename();
 		mapBld.getMap()->save(mapFilePath);
 
 		debug ("Mapping done");
 		debug ("Duration " + to_string(duration) + " seconds");
 		debug ("Path: " + mapFilePath);
 
-		if (isSubset)
-			delete(oxfSubset);
 	}
 
 	void mask_set_cmd(const string &maskpath)
@@ -503,9 +583,9 @@ private:
 		else
 			debug("Mask read; size is "+to_string(mask.cols)+'x'+to_string(mask.rows));
 
-		if (localizTestDataSrc) {
+		if (loadedDataset) {
 			cv::Mat localizerMask;
-			float zr = localizTestDataSrc->getZoomRatio();
+			float zr = loadedDataset->getZoomRatio();
 			cv::resize(mask, localizerMask, cv::Size(), zr, zr, cv::INTER_CUBIC);
 		}
 	}

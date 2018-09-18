@@ -140,7 +140,18 @@ class MeidaiBagDataset : public GenericDataset
 {
 public:
 
+	typedef std::shared_ptr<MeidaiBagDataset> Ptr;
+	typedef std::shared_ptr<MeidaiBagDataset const> ConstPtr;
+
 	MeidaiBagDataset(
+		const std::string &filePath,
+		double startTimeOffsetSecond=0,
+		double mappingDurationSecond=-1,
+		const std::string &calibrationPath=std::string(),
+		bool loadPositions=true
+	);
+
+	static MeidaiBagDataset::Ptr create (
 		const std::string &filePath,
 		double startTimeOffsetSecond=0,
 		double mappingDurationSecond=-1,
@@ -154,9 +165,12 @@ public:
 
 	size_t size() const;
 
-	CameraPinholeParams getCameraParameter();
+	CameraPinholeParams getCameraParameter() const;
 
 	cv::Mat getMask();
+
+	std::string getPath() const
+	{ return bagfd->getFileName(); }
 
 	MeidaiDataItem& at(dataItemId i) const;
 
@@ -165,7 +179,7 @@ public:
 
 	GenericDataItem::ConstPtr get(dataItemId i) const;
 
-	GenericDataItem::ConstPtr atDurationSecond (const double second);
+	GenericDataItem::ConstPtr atDurationSecond (const double second) const;
 
 	bool hasPositioning() const
 	{ return gnssTrack.empty(); }

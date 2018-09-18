@@ -67,13 +67,15 @@ public:
 
 	virtual size_t size() const = 0;
 
-	virtual CameraPinholeParams getCameraParameter() = 0;
+	virtual CameraPinholeParams getCameraParameter() const = 0;
 
 	virtual cv::Mat getMask() = 0;
 
 	virtual const GenericDataItem& at(dataItemId i) const = 0;
 
 	virtual GenericDataItem::ConstPtr get(dataItemId i) const = 0;
+
+	virtual GenericDataItem::ConstPtr atDurationSecond (const double second) const;
 
 	void dump(const std::string &filename="");
 
@@ -82,6 +84,9 @@ public:
 	virtual void setZoomRatio (float r) = 0;
 
 	virtual float getZoomRatio () const = 0;
+
+	typedef std::shared_ptr<GenericDataset> Ptr;
+	typedef std::shared_ptr<GenericDataset const> ConstPtr;
 
 protected:
 	static std::string dSetName;
