@@ -173,8 +173,6 @@ public:
 
 	void dumpGroundTruth(const std::string &fp=std::string());
 
-	const OxfordDataItem &at(dataItemId i) const;
-
 	/*
 	 * Get item using timestamp
 	 */
@@ -233,6 +231,8 @@ protected:
 	float zoomRatio=1.0;
 
 	static std::string dSetName;
+
+	const OxfordDataItem &at(dataItemId i) const;
 
 private:
 	void loadIns ();

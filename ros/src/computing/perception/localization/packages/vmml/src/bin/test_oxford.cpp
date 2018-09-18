@@ -450,7 +450,7 @@ private:
 	{
 		boost::filesystem::path datasetPath(dsPath);
 		if (boost::filesystem::is_directory(datasetPath)) {
-			loadedDataset = OxfordDataset::create(dsPath, modelDir);
+			loadedDataset = OxfordDataset::create(datasetPath.string(), modelDir);
 			debug ("Oxford-type Dataset Loaded");
 		}
 		else if (datasetPath.extension()==".bag") {

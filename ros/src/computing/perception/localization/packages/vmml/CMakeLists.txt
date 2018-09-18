@@ -102,9 +102,9 @@ add_library(
 		src/triangulation.cpp
 		src/optimizer.cpp
 		src/utilities.cpp
-		src/SequenceSLAM.cpp
-		src/datasets/OxfordDataset.cpp	
+		src/SequenceSLAM.cpp	
 		src/datasets/GenericDataset.cpp
+		src/datasets/OxfordDataset.cpp
 #		src/datasets/CustomDataset.cpp
 		src/datasets/RandomAccessBag.cpp
 		src/datasets/MeidaiBagDataset.cpp
@@ -158,6 +158,16 @@ target_link_libraries(test_oxford
 	${catkin_LIBRARIES}
 )
 
+
+add_executable (test_instance
+	src/bin/temporaries/test_instance.cpp
+)
+
+target_link_libraries(
+	test_instance
+		vmml
+		${REQUIRED_LIBS}
+)
 
 
 

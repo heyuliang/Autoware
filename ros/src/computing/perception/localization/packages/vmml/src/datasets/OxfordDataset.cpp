@@ -83,7 +83,6 @@ OxfordDataset::OxfordDataset(const OxfordDataset &cp):
 	stereoRecords(cp.stereoRecords),
 	gpsPoseTable(cp.gpsPoseTable),
 	insPoseTable(cp.insPoseTable)
-
 {
 	zoomRatio = cp.zoomRatio;
 }
@@ -110,7 +109,8 @@ OxfordDataset::OxfordDataset(
 }
 
 
-static OxfordDataset::Ptr create(const std::string &dirpath,
+OxfordDataset::Ptr
+OxfordDataset::create(const std::string &dirpath,
 		const std::string &modelDir,
 		GroundTruthSrc gts)
 {
@@ -349,7 +349,6 @@ OxfordDataset::createStereoGroundTruths()
 
 const OxfordDataItem&
 OxfordDataset::at(dataItemId i) const
-//{ return atTime(stereoTimestamps.at(i)); }
 {
 	timestamp_t ts = stereoTimestamps.at(i);
 	return stereoRecords.at(ts);
@@ -395,7 +394,7 @@ OxfordDataset::loadModel(const string &modelDir)
 	oxfCamera.cx = stod(intr.get(0,2));
 	oxfCamera.cy = stod(intr.get(0,3));
 
-	const OxfordDataItem &d0 = this->at(0);
+	auto &d0 = this->at(0);
 	cv::Mat img0 = cv::imread(d0.getPath());
 	oxfCamera.width = img0.cols;
 	oxfCamera.height = img0.rows;

@@ -34,10 +34,10 @@ GenericDataset::dump(const std::string &filename)
 	*fd << setprecision(4);
 
 	for (int i=0; i<this->size(); i++) {
-		auto &di = this->at(i);
-		Vector3d pos = di.getPosition();
-		Quaterniond orn = di.getOrientation();
-		*fd << di.getId()
+		auto di = this->get(i);
+		Vector3d pos = di->getPosition();
+		Quaterniond orn = di->getOrientation();
+		*fd << di->getId()
 			<< dumpSep << pos.x()
 			<< dumpSep << pos.y()
 			<< dumpSep << pos.z()
@@ -53,12 +53,4 @@ GenericDataset::dump(const std::string &filename)
 }
 
 
-GenericDataItem::~GenericDataItem()
-{}
 
-
-string
-GenericDataset::getName() const
-{
-	return dSetName;
-}
