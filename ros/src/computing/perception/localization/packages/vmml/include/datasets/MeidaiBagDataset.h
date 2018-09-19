@@ -159,7 +159,7 @@ public:
 		bool loadPositions=true
 	);
 
-	static MeidaiBagDataset::Ptr create (
+	static MeidaiBagDataset::Ptr load (
 		const std::string &filePath,
 		double startTimeOffsetSecond=0,
 		double mappingDurationSecond=-1,
@@ -191,6 +191,8 @@ public:
 
 	bool hasPositioning() const
 	{ return gnssTrack.empty(); }
+
+	void forceCreateCache ();
 
 	void setZoomRatio (float r);
 

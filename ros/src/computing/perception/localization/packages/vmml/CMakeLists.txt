@@ -147,11 +147,11 @@ target_link_libraries(
 )
 
 
-add_executable(test_oxford
-	src/bin/test_oxford.cpp
+add_executable(vmml_cli
+	src/bin/vmml_cli.cpp
 )
 
-target_link_libraries(test_oxford
+target_link_libraries(vmml_cli
 	vmml
 	${REQUIRED_LIBS}
 	${LIBEDIT_LIBRARIES}
@@ -159,16 +159,16 @@ target_link_libraries(test_oxford
 )
 
 
-add_executable (test_instance
+add_executable(test_instance
 	src/bin/temporaries/test_instance.cpp
 )
 
-target_link_libraries(
-	test_instance
-		vmml
-		${REQUIRED_LIBS}
+target_link_libraries(test_instance
+	vmml
+	${REQUIRED_LIBS}
+	${LIBEDIT_LIBRARIES}
+	${catkin_LIBRARIES}
 )
-
 
 
 #############

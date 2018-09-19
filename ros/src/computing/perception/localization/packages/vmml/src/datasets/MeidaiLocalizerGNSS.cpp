@@ -18,11 +18,33 @@ using namespace std;
 
 
 const Vector3d
-	GNSS_Translation_Offset (18138, 93634, -39);
+	GNSS_Translation_Offset (18500, 93800, -33);
 
 
 class wrong_nmea_sentence : public exception
 {};
+
+
+/*
+These are expected results (without offset)
+
+header:
+  seq: 198
+  stamp:
+    secs: 1482726415
+    nsecs: 842756032
+  frame_id: "map"
+pose:
+  position:
+    x: -18266.4001572
+    y: -93879.5007049
+    z: 43.0621
+  orientation:
+    x: -0.0742241380626
+    y: 0.029065332244
+    z: -0.962810799329
+    w: -0.258149856645
+*/
 
 
 struct GnssLocalizerState
@@ -98,7 +120,7 @@ void convertNMEASentenceToState (nmea_msgs::SentencePtr &msg, GnssLocalizerState
 PoseTimestamp createFromState(const GnssLocalizerState &state)
 {
 	TQuaternion q(state.roll_, state.pitch_, state.yaw_);
-	Vector3d p(state.geo.x(), state.geo.y(), state.geo.z());
+	Vector3d p(state.geo.y(), state.geo.x(), state.geo.z());
 	p = p + GNSS_Translation_Offset;
 	Pose pt = Pose::from_Pos_Quat(p, q);
 	return pt;
@@ -112,7 +134,6 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 	if (bagsrc.getTopic() != "/nmea_sentence")
 		throw runtime_error("Not GNSS bag");
 
-//	geo_pos_conv geoconv, last_geo;
 	GnssLocalizerState state;
 	state.geo.set_plane(plane_number);
 
@@ -123,9 +144,6 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 
 		auto currentMessage = bagsrc.at<nmea_msgs::Sentence>(ix);
 		ros::Time current_time = currentMessage->header.stamp;
-
-//		cout << currentMessage->sentence << endl;
-//		continue;
 
 		try {
 			convertNMEASentenceToState(currentMessage, state);
@@ -153,6 +171,7 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 			PoseTimestamp px = createFromState(state);
 			px.timestamp = current_time;
 			trajectory.push_back(px);
+			continue;
 		}
 	}
 

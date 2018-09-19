@@ -432,11 +432,13 @@ private:
 	{
 		boost::filesystem::path datasetPath(dsPath);
 		if (boost::filesystem::is_directory(datasetPath)) {
-			loadedDataset = OxfordDataset::create(datasetPath.string(), modelDir);
+			loadedDataset = OxfordDataset::load(datasetPath.string(), modelDir);
+			slDatasourceType = OXFORD_DATASET_TYPE;
 			debug ("Oxford-type Dataset Loaded");
 		}
 		else if (datasetPath.extension()==".bag") {
-			loadedDataset = MeidaiBagDataset::create(datasetPath.string(), 0, 1, "", false);
+			loadedDataset = MeidaiBagDataset::load(datasetPath.string());
+			slDatasourceType = MEIDAI_DATASET_TYPE;
 			debug ("Nagoya University Dataset Loaded");
 		}
 

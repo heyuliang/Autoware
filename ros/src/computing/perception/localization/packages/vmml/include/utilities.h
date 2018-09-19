@@ -22,6 +22,7 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/array.hpp>
 
 #include <opencv2/core.hpp>
 
@@ -207,24 +208,17 @@ struct TTransform : public Eigen::Affine3d
 //		translation() = Eigen::Translation3d(x, y, z);
 //	}
 
-
 	template<class Archive>
 	inline void save(Archive &ar, const unsigned int v) const
 	{
-		const int sz = rows() * cols();
-		std::vector<TTransform::Scalar> mptr(data(), data()+sz);
-		ar << mptr;
+		ar << boost::serialization::make_array(data(), 16);
 	}
-
 
 	template<class Archive>
 	inline void load(Archive &ar, const unsigned int v)
 	{
-		const int sz = rows() * cols();
-		std::vector<TTransform::Scalar> mptr(data(), data()+sz);
-		ar >> mptr;
+		ar >> boost::serialization::make_array(data(), 16);
 	}
-
 
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
 };

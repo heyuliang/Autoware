@@ -110,7 +110,7 @@ OxfordDataset::OxfordDataset(
 
 
 OxfordDataset::Ptr
-OxfordDataset::create(const std::string &dirpath,
+OxfordDataset::load(const std::string &dirpath,
 		const std::string &modelDir,
 		GroundTruthSrc gts)
 {

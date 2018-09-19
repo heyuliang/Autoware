@@ -163,7 +163,7 @@ public:
 	virtual ~OxfordDataset();
 
 	static
-	OxfordDataset::Ptr create (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
+	OxfordDataset::Ptr load (const std::string &dirpath, const std::string &modelDir, GroundTruthSrc gts=GroundTruthSrc::INS);
 
 	inline size_t size() const
 	{ return stereoTimestamps.size(); }

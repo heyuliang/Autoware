@@ -42,7 +42,7 @@ MeidaiBagDataset::MeidaiBagDataset(
 
 
 MeidaiBagDataset::Ptr
-MeidaiBagDataset::create (
+MeidaiBagDataset::load (
 		const string &path,
 		double startTimeOffsetSecond,
 		double mappingDurationSecond,
@@ -148,6 +148,18 @@ MeidaiBagDataset::loadCache()
 		createCache();
 		writeCache(bagCachePath.string());
 	}
+}
+
+
+void
+MeidaiBagDataset::forceCreateCache ()
+{
+	bfs::path bagCachePath = bagPath;
+	bagCachePath += ".cache";
+
+	gnssTrack.clear();
+	createCache();
+	writeCache(bagCachePath.string());
 }
 
 
