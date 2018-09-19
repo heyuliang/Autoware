@@ -41,6 +41,9 @@ struct PoseTimestamp : public Pose
 		timestamp = ros::Time(0);
 	}
 
+	double timeSecond () const
+	{ return timestamp.toSec(); }
+
 	static PoseTimestamp interpolate(
 		const PoseTimestamp &p1,
 		const PoseTimestamp &p2,
@@ -87,12 +90,17 @@ public:
 	// Return nearest element of provided time
 	PoseTimestamp at(const ros::Time&) const;
 
+	PoseTimestamp at(const ptime &t) const;
+
 	// Interpolate value
 	PoseTimestamp interpolate (const ros::Time&) const;
 
 private:
 	uint32_t
 	find_lower_bound(const ros::Time&) const;
+
+	uint32_t
+	find_lower_bound(const ptime&) const;
 
 	typedef std::vector<PoseTimestamp> Parent;
 

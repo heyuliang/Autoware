@@ -221,10 +221,28 @@ Trajectory::find_lower_bound(const ros::Time &t) const
 }
 
 
+uint32_t
+Trajectory::find_lower_bound(const ptime &t) const
+{
+//	auto it = std::lower_bound(begin(), end(), t,
+//		[](const PoseTimestamp &el, const ptime& tv)
+//			-> bool {return el.timestamp < tv;}
+//	);
+//	return it-begin();
+}
+
+
 PoseTimestamp
 Trajectory::at(const ros::Time& t) const
 {
 	return Parent::at(find_lower_bound(t));
+}
+
+
+PoseTimestamp
+Trajectory::at(const ptime &t) const
+{
+
 }
 
 

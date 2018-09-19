@@ -168,35 +168,6 @@ InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
 }
 
 
-//void buildMap2
-//(OxfordDataset &dataset, MapBuilder2 &builder)
-//{
-//	builder.addCameraParam(dataset.getCameraParameter());
-//
-//	Viewer *imgViewer = new Viewer (dataset);
-//	imgViewer->setMap(builder.getMap());
-//	dataItemId currentItemId;
-//
-//	MapBuilder2::frameCallback frmCallback =
-//	[&] (const InputFrame &f)
-//	{
-//		imgViewer->update(currentItemId, builder.getCurrentKeyFrameId());
-//		cout << currentItemId << " / " << dataset.size() << endl;
-//	};
-//	builder.registerFrameCallback(frmCallback);
-//
-//	for (int framePtr=0; framePtr<dataset.size(); framePtr++) {
-//		const OxfordDataItem &dx = dataset.at(framePtr);
-//		currentItemId = dx.getId();
-//		InputFrame frame = createInputFrame(dx);
-//		builder.input(frame);
-//	}
-//
-//	builder.build();
-//	delete(imgViewer);
-//}
-
-
 class LocalizerApp
 {
 public:
@@ -441,8 +412,19 @@ private:
 
 		else if (slDatasourceType==MEIDAI_DATASET_TYPE) {
 			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
-			const Trajectory &Tr = meidaiDs->getGnssTrajectory();
+			const Trajectory &Traj = meidaiDs->getGnssTrajectory();
 			fstream dsTrFd (dumpDatasetTrajectoryPath, ios_base::out|ios_base::trunc);
+
+			for (auto &ps: Traj) {
+				dsTrFd << ps.timeSecond() << " "
+						<< dumpVector(ps.position()) << " "
+						<< dumpVector(ps.orientation())
+						<< endl;
+			}
+
+			dsTrFd.close();
+			debug("Dataset trajectory dumped to "+dumpDatasetTrajectoryPath);
+			return;
 		}
 	}
 
@@ -524,13 +506,10 @@ private:
 		return mapResName;
 	}
 
-	/*
-	 * XXX: We should not use naked pointer here
-	 */
 	void map_create_cmd (const stringTokens &cmd)
 	{
-		if (slDatasourceType==OXFORD_DATASET_TYPE) {
-			debug ("Error: Mapping (still) not supported on NU Dataset");
+		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+			debug ("Mapping (still) not supported on NU Dataset");
 			return;
 		}
 
