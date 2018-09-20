@@ -14,7 +14,8 @@ public:
     emergency_stopper();
     ~emergency_stopper();
 private:
-    void publish_state_cmd_();
+    void _diag_callback(diag_msgs::diag msg);
+    void _publish_state_cmd();
     ros::NodeHandle _nh;
     ros::Subscriber _diag_sub;
     ros::Publisher _cmd_pub;
