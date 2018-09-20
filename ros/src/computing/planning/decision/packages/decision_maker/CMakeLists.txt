@@ -56,8 +56,14 @@ add_executable(decision_maker_node
 target_link_libraries(decision_maker_node ${catkin_LIBRARIES})
 add_dependencies(decision_maker_node ${catkin_EXPORTED_TARGETS})
 
+add_executable(emergency_stopper_node
+        nodes/decision_maker/emergency_stopper.cpp
+        nodes/decision_maker/emergency_stopper_node.cpp
+        )
+target_link_libraries(emergency_stopper_node ${catkin_LIBRARIES})
+add_dependencies(emergency_stopper_node ${catkin_EXPORTED_TARGETS})
 
-install(TARGETS decision_maker_node 
+install(TARGETS decision_maker_node emergency_stopper_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
