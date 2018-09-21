@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <stdexcept>
 #include <rosbag/bag.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>

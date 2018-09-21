@@ -23,9 +23,14 @@ using namespace std;
 using velodyne_rawdata::VPointCloud;
 
 
+/*
+ * XXX: These values may need to be adjusted
+ */
 const float
 	velodyneMinRange = 2.0,
-	velodyneMaxRange = 130;
+	velodyneMaxRange = 130,
+	velodyneViewDirection = 0,
+	velodyneViewWidth = 2*M_PI;
 
 
 class VelodynePreprocessor
@@ -37,6 +42,7 @@ public:
 		 data_(new velodyne_rawdata::RawData())
 	{
 		data_->setupOffline(lidarCalibFile, velodyneMaxRange, velodyneMinRange);
+		data_->setParameters(velodyneMinRange, velodyneMaxRange, velodyneViewDirection, velodyneViewWidth);
 	}
 
 	VPointCloud::ConstPtr
@@ -74,12 +80,15 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 		auto cMsg = bagsrc.at<velodyne_msgs::VelodyneScan>(ip);
 		auto clx = VP.convert(cMsg);
 
-		if (clx->size()>0) {
-			pcl::io::savePCDFileBinary("/tmp/p.pcd", *clx);
+		if (!initialized) {
+			try {
+
+				auto cGnssPos = gnssTrack.at(cMsg->header.stamp);
+
+			} catch (out_of_range &e) {
+				continue;
+			}
 		}
-
-		auto cGnssPos = gnssTrack.at(cMsg->header.stamp);
-
 	}
 
 	return;

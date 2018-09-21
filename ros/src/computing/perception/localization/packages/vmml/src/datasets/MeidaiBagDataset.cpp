@@ -231,6 +231,9 @@ Trajectory::push_back(const PoseTimestamp &pt)
 uint32_t
 Trajectory::find_lower_bound(const ros::Time &t) const
 {
+	if ( t < front().timestamp or t > back().timestamp )
+		throw out_of_range("Time out of range");
+
 	auto it = std::lower_bound(begin(), end(), t,
 		[](const PoseTimestamp &el, const ros::Time& tv)
 			-> bool {return el.timestamp < tv;}

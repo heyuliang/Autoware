@@ -44,7 +44,7 @@ string dumpVector(const Quaterniond &v)
 
 int main (int argc, char *argv[])
 {
-	MeidaiBagDataset dataset("/media/sujiwo/ssd/log_2016-12-26-13-21-10-filtered.bag");
+	MeidaiBagDataset dataset("/home/sujiwo/Data/log_2016-12-26-13-21-10-filtered.bag");
 	const Trajectory &gnssTraj = dataset.getGnssTrajectory();
 	auto velBag = dataset.getVelodyneBag();
 
