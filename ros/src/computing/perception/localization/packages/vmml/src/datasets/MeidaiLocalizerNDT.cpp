@@ -16,7 +16,8 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <velodyne_pointcloud/rawdata.h>
-#include <ndt.h>
+
+#include "NdtLocalizer.h"
 
 
 using namespace std;
@@ -31,6 +32,13 @@ const float
 	velodyneMaxRange = 130,
 	velodyneViewDirection = 0,
 	velodyneViewWidth = 2*M_PI;
+
+const NdtLocalizerInitialConfig NuInitialConfig = {
+	0,0,0, 0,0,0
+};
+
+const string paramFileTest = "/home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml";
+const string meidaiMapPcd = "/home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_ndmap.pcd";
 
 
 class VelodynePreprocessor
@@ -71,8 +79,10 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 	if (bagsrc.getTopic() != "/velodyne_packets")
 		throw runtime_error("Not Velodyne bag");
 
-	const string paramFileTest = "/home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml";
+	// Velodyne HDL-64 calibration file
 	VelodynePreprocessor VP(paramFileTest);
+
+	NdtLocalizer lidarLocalizer(NuInitialConfig);
 
 	bool initialized=false;
 	for (uint32_t ip=0; ip<bagsrc.size(); ++ip) {

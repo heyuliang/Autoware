@@ -111,6 +111,7 @@ add_library(
 		src/datasets/MeidaiBagDataset.cpp
 		src/datasets/MeidaiLocalizerGNSS.cpp
 		src/datasets/MeidaiLocalizerNDT.cpp
+		src/datasets/NdtLocalizer.cpp
 )
 
 # Dataset Browser
