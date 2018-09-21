@@ -23,6 +23,11 @@ namespace bfs = boost::filesystem;
 
 string MeidaiBagDataset::dSetName = "Nagoya University";
 
+const string
+	meidaiBagImageTopic = "/camera1/image_raw",
+	meidaiBagGnssTopic  = "/nmea_sentence",
+	meidaiBagVelodyne   = "/velodyne_packets";
+
 
 MeidaiBagDataset::MeidaiBagDataset(
 
@@ -35,7 +40,10 @@ MeidaiBagDataset::MeidaiBagDataset(
 		bagPath(path)
 {
 	bagfd = new rosbag::Bag(path);
-	cameraRawBag = new RandomAccessBag(*bagfd, "/camera1/image_raw");
+	cameraRawBag = RandomAccessBag::Ptr (new RandomAccessBag(*bagfd, meidaiBagImageTopic));
+	gnssBag = RandomAccessBag::Ptr (new RandomAccessBag(*bagfd, meidaiBagGnssTopic));
+	velodyneBag = RandomAccessBag::Ptr (new RandomAccessBag(*bagfd, meidaiBagVelodyne));
+
 	if (loadPositions==true)
 		loadCache();
 }
@@ -69,7 +77,6 @@ MeidaiBagDataset::loadPosition()
 
 MeidaiBagDataset::~MeidaiBagDataset()
 {
-	delete(cameraRawBag);
 	delete(bagfd);
 }
 
@@ -183,8 +190,7 @@ MeidaiBagDataset::doLoadCache(const string &path)
 void
 MeidaiBagDataset::createCache()
 {
-	RandomAccessBag ramGnssBag (*bagfd, "/nmea_sentence");
-	createTrajectoryFromGnssBag(ramGnssBag, gnssTrack);
+	createTrajectoryFromGnssBag(*gnssBag, gnssTrack);
 }
 
 

@@ -14,6 +14,7 @@
 #include <utility>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <memory>
 
 #include "access_private.hpp"
 
@@ -38,6 +39,8 @@ ACCESS_PRIVATE_FIELD(rosbag::MessageInstance, rosbag::IndexEntry const, index_en
 
 class RandomAccessBag: public rosbag::View {
 public:
+
+	typedef std::shared_ptr<RandomAccessBag> Ptr;
 
 	RandomAccessBag(
 		rosbag::Bag const &bag, const std::string &topic,

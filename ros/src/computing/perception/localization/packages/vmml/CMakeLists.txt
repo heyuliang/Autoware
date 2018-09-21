@@ -29,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 	
 	# Test offline NDT localization
 	ndt_tku
+	velodyne_pointcloud
 )
 
 find_package (Boost REQUIRED COMPONENTS serialization python graph filesystem)

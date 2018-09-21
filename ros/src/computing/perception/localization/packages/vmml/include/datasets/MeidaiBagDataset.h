@@ -198,11 +198,17 @@ public:
 
 	float getZoomRatio () const;
 
+	RandomAccessBag::Ptr getVelodyneBag()
+	{ return velodyneBag; }
 
 protected:
 	static std::string dSetName;
+
+	// Bag Handler
 	rosbag::Bag *bagfd;
-	RandomAccessBag *cameraRawBag;
+	RandomAccessBag::Ptr cameraRawBag;
+	RandomAccessBag::Ptr gnssBag;
+	RandomAccessBag::Ptr velodyneBag;
 
 	const boost::filesystem::path bagPath;
 
