@@ -5,12 +5,22 @@
  *      Author: sujiwo
  */
 
+#include <stdlib.h>
 #include <pcl/io/pcd_io.h>
 
 #include "src/datasets/NdtLocalizer.h"
 
+using namespace std;
 using pcl::PointXYZ;
 using namespace Eigen;
+
+
+inline double nrand(double n)
+{
+	double r;
+	r = n * sqrt(-2.0 * log((double)rand() / RAND_MAX)) * cos(2.0 * M_PI * rand() / RAND_MAX);
+	return r;
+}
 
 
 NdtLocalizer::NdtLocalizer(const NdtLocalizerInitialConfig &initialConfig) :
@@ -67,7 +77,15 @@ NdtLocalizer::loadMap (pcl::PointCloud<PointXYZ>::ConstPtr mapcloud)
 
 
 Pose
-NdtLocalizer::localize (sensor_msgs::PointCloud2::ConstPtr &scan)
+NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 {
+	vector<Point> ndtScanPoints (scan->size());
+	for (int i=0, j=0; i<scan->size(); i++) {
+		auto &p = scan->at(i);
+		ndtScanPoints.at(i).x = p.x + nrand(0.01);
+		ndtScanPoints.at(i).y = p.y + nrand(0.01);
+		ndtScanPoints.at(i).z = p.z + nrand(0.01);
 
+		j++;
+	}
 }

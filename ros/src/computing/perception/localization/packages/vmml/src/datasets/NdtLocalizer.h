@@ -48,7 +48,7 @@ public:
 
 	void putEstimation (const Pose &pEst);
 
-	Pose localize (sensor_msgs::PointCloud2::ConstPtr &scan);
+	Pose localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan);
 
 	virtual ~NdtLocalizer();
 

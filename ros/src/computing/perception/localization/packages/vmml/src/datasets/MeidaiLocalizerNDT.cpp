@@ -13,6 +13,7 @@
 #include <exception>
 
 #include <ros/ros.h>
+#include <pcl/point_types.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <velodyne_pointcloud/rawdata.h>
@@ -22,6 +23,8 @@
 
 using namespace std;
 using velodyne_rawdata::VPointCloud;
+using pcl::PointCloud;
+using pcl::PointXYZ;
 
 
 /*
@@ -67,6 +70,15 @@ public:
 
 	    return outPoints;
 	}
+
+	PointCloud<PointXYZ>::ConstPtr
+	VoxelGridFilter (VPointCloud::ConstPtr vcloud)
+	{
+		PointCloud<PointXYZ>::Ptr filteredGridCLoud;
+
+		return filteredGridCLoud;
+	}
+
 
 protected:
 	boost::shared_ptr<velodyne_rawdata::RawData> data_;
