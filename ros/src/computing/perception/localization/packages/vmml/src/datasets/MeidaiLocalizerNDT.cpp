@@ -16,12 +16,14 @@
 #include <pcl/point_types.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/filters/voxel_grid.h>
 #include <velodyne_pointcloud/rawdata.h>
 
 #include "NdtLocalizer.h"
 
 
 using namespace std;
+using velodyne_rawdata::VPoint;
 using velodyne_rawdata::VPointCloud;
 using pcl::PointCloud;
 using pcl::PointXYZ;
@@ -40,6 +42,7 @@ const NdtLocalizerInitialConfig NuInitialConfig = {
 	0,0,0, 0,0,0
 };
 
+// Velodyne HDL-64 calibration file
 const string paramFileTest = "/home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml";
 const string meidaiMapPcd = "/home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_ndmap.pcd";
 
@@ -56,25 +59,32 @@ public:
 		data_->setParameters(velodyneMinRange, velodyneMaxRange, velodyneViewDirection, velodyneViewWidth);
 	}
 
-	VPointCloud::ConstPtr
-	convert(velodyne_msgs::VelodyneScan::ConstPtr bagmsg)
+	PointCloud<PointXYZ>::ConstPtr
+	convertMessage(velodyne_msgs::VelodyneScan::ConstPtr bagmsg)
 	{
-	    VPointCloud::Ptr outPoints(new VPointCloud);
-	    outPoints->header.stamp = pcl_conversions::toPCL(bagmsg->header).stamp;
-	    outPoints->header.frame_id = bagmsg->header.frame_id;
-	    outPoints->height = 1;
+		VPointCloud::Ptr outPoints(new VPointCloud);
+		outPoints->header.stamp = pcl_conversions::toPCL(bagmsg->header).stamp;
+		outPoints->header.frame_id = bagmsg->header.frame_id;
+		outPoints->height = 1;
 
-	    for (int i=0; i<bagmsg->packets.size(); ++i) {
-	    	data_->unpack(bagmsg->packets[i], *outPoints, bagmsg->packets.size());
-	    }
+		for (int i=0; i<bagmsg->packets.size(); ++i) {
+			data_->unpack(bagmsg->packets[i], *outPoints, bagmsg->packets.size());
+		}
 
-	    return outPoints;
+		PointCloud<PointXYZ>::Ptr cloudTmp = convertToExternal(*outPoints);
+		return VoxelGridFilter(cloudTmp, 0.2, 3.0);
 	}
 
 	PointCloud<PointXYZ>::ConstPtr
-	VoxelGridFilter (VPointCloud::ConstPtr vcloud)
+	VoxelGridFilter (PointCloud<PointXYZ>::ConstPtr vcloud, double voxel_leaf_size, double measurement_range)
 	{
 		PointCloud<PointXYZ>::Ptr filteredGridCLoud;
+
+		assert(voxel_leaf_size>=0.1);
+		pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
+		voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+		voxel_grid_filter.setInputCloud(vcloud);
+		voxel_grid_filter.filter(*filteredGridCLoud);
 
 		return filteredGridCLoud;
 	}
@@ -82,6 +92,24 @@ public:
 
 protected:
 	boost::shared_ptr<velodyne_rawdata::RawData> data_;
+
+	template<class PointT>
+	static
+	PointCloud<PointXYZ>::Ptr
+	convertToExternal (const PointCloud<PointT> &cloudSrc)
+	{
+		const int w=cloudSrc.width, h=cloudSrc.height;
+		PointCloud<PointXYZ>::Ptr cloudExt (new PointCloud<PointXYZ>(w*h, 1));
+		for (int i=0; i<w; ++i) {
+			for (int j=0; j<h; ++j) {
+				cloudExt->at(i*w + j).x = cloudSrc.at(j, i).x;
+				cloudExt->at(i*w + j).y = cloudSrc.at(j, i).y;
+				cloudExt->at(i*w + j).z = cloudSrc.at(j, i).z;
+			}
+		}
+
+		return cloudExt;
+	}
 };
 
 
@@ -91,16 +119,14 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 	if (bagsrc.getTopic() != "/velodyne_packets")
 		throw runtime_error("Not Velodyne bag");
 
-	// Velodyne HDL-64 calibration file
 	VelodynePreprocessor VP(paramFileTest);
-
 	NdtLocalizer lidarLocalizer(NuInitialConfig);
 
 	bool initialized=false;
 	for (uint32_t ip=0; ip<bagsrc.size(); ++ip) {
 
 		auto cMsg = bagsrc.at<velodyne_msgs::VelodyneScan>(ip);
-		auto clx = VP.convert(cMsg);
+		auto clx = VP.convertMessage(cMsg);
 
 		if (!initialized) {
 			try {
