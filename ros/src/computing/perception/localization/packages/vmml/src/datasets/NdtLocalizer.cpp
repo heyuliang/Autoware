@@ -82,10 +82,14 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 	vector<Point> ndtScanPoints (scan->size());
 	for (int i=0, j=0; i<scan->size(); i++) {
 		auto &p = scan->at(i);
-		ndtScanPoints.at(i).x = p.x + nrand(0.01);
-		ndtScanPoints.at(i).y = p.y + nrand(0.01);
-		ndtScanPoints.at(i).z = p.z + nrand(0.01);
+		auto &pt = ndtScanPoints.at(i);
+		pt.x = p.x + nrand(0.01);
+		pt.y = p.y + nrand(0.01);
+		pt.z = p.z + nrand(0.01);
+		double dist = pt.x*pt.x + pt.y*pt.y + pt.z*pt.z;
+		if (dist < 3*3) {
 
+		}
 		j++;
 	}
 }
