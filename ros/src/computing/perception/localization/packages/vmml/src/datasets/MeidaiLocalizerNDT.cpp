@@ -78,7 +78,7 @@ public:
 	PointCloud<PointXYZ>::ConstPtr
 	VoxelGridFilter (PointCloud<PointXYZ>::ConstPtr vcloud, double voxel_leaf_size, double measurement_range)
 	{
-		PointCloud<PointXYZ>::Ptr filteredGridCLoud;
+		PointCloud<PointXYZ>::Ptr filteredGridCLoud(new PointCloud<PointXYZ>);
 
 		assert(voxel_leaf_size>=0.1);
 		pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
@@ -100,7 +100,14 @@ protected:
 	{
 		const int w=cloudSrc.width, h=cloudSrc.height;
 		PointCloud<PointXYZ>::Ptr cloudExt (new PointCloud<PointXYZ>(w*h, 1));
-		for (int i=0; i<w; ++i) {
+
+		if (h==1) for (int i=0; i<w; ++i) {
+			cloudExt->at(i).x = cloudSrc.at(i).x;
+			cloudExt->at(i).y = cloudSrc.at(i).y;
+			cloudExt->at(i).z = cloudSrc.at(i).z;
+		}
+
+		else for (int i=0; i<w; ++i) {
 			for (int j=0; j<h; ++j) {
 				cloudExt->at(i*w + j).x = cloudSrc.at(j, i).x;
 				cloudExt->at(i*w + j).y = cloudSrc.at(j, i).y;
@@ -123,8 +130,11 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 	NdtLocalizer lidarLocalizer(NuInitialConfig);
 
 	bool initialized=false;
+
+	// XXX: How to catch NDT's failure ?
 	for (uint32_t ip=0; ip<bagsrc.size(); ++ip) {
 
+		Pose cNdtPose;
 		auto cMsg = bagsrc.at<velodyne_msgs::VelodyneScan>(ip);
 		auto clx = VP.convertMessage(cMsg);
 
@@ -132,11 +142,22 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 			try {
 
 				auto cGnssPos = gnssTrack.at(cMsg->header.stamp);
+				lidarLocalizer.putEstimation(cGnssPos);
+				cNdtPose = lidarLocalizer.localize(clx);
+				initialized = true;
 
 			} catch (out_of_range &e) {
 				continue;
 			}
 		}
+
+		else {
+			cNdtPose = lidarLocalizer.localize(clx);
+		}
+
+		PoseTimestamp tpose (cNdtPose);
+		tpose.timestamp = cMsg->header.stamp;
+		resultTrack.push_back(tpose);
 	}
 
 	return;
