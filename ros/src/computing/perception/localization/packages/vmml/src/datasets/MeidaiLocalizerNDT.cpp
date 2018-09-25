@@ -157,6 +157,9 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 
 		PoseTimestamp tpose (cNdtPose);
 		tpose.timestamp = cMsg->header.stamp;
+		cerr << tpose.position().x() << " " <<
+				tpose.position().y() << " " <<
+				tpose.position().z() << endl;
 		resultTrack.push_back(tpose);
 	}
 

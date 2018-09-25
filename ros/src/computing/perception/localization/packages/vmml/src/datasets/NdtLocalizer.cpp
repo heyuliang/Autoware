@@ -141,7 +141,7 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 	npose.theta3 = prev_pose.theta3 + theta_offset;
 
 	int layer_select = LAYER_NUM - 1;
-	for (layer_select = 1; layer_select >= 1; layer_select -= 1) {
+	for (layer_select = 2; layer_select >= 1; layer_select -= 1) {
 		for (int j=0; j<100; j++) {
 			if (layer_select != 1 && j > 2) {
 				break;
