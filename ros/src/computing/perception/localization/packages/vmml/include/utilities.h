@@ -232,4 +232,12 @@ typedef TTransform Pose;
  */
 Eigen::VectorXd cdf (const cv::Mat &grayImage, const cv::Mat &mask=cv::Mat());
 
+
+/*
+ * Debugging vectors and quaternions by output to string
+ */
+std::string dumpVector(const Eigen::Vector3d &v);
+
+std::string dumpVector(const Eigen::Quaterniond &v);
+
 #endif /* UTILITIES_H_ */

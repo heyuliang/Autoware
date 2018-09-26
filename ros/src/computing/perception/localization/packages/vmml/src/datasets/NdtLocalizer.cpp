@@ -17,6 +17,9 @@ using pcl::PointXYZ;
 using namespace Eigen;
 
 
+extern NDMapPtr NDmap;
+
+
 void pose_mod(Posture *pose)
 {
 	while (pose->theta < -M_PI)
@@ -46,7 +49,9 @@ NdtLocalizer::NdtLocalizer(const NdtLocalizerInitialConfig &initialConfig) :
 
 	ndMap(initialize_NDmap())
 
-{}
+{
+	NDmap = ndMap;
+}
 
 
 void
@@ -71,10 +76,12 @@ void
 NdtLocalizer::putEstimation (const Pose &pEst)
 {
 	Vector3d rotations = quaternionToRPY(pEst.orientation());
-	prev_pose.x, prev_pose.y, prev_pose.z =
-		pEst.position().x(), pEst.position().y(), pEst.position().z();
-	prev_pose.theta, prev_pose.theta2, prev_pose.theta3 =
-		rotations.x(), rotations.y(), rotations.z();
+	prev_pose.x = pEst.position().x();
+	prev_pose.y = pEst.position().y();
+	prev_pose.z = pEst.position().z();
+	prev_pose.theta = rotations[0];
+	prev_pose.theta2 = rotations[1];
+	prev_pose.theta3 = rotations[2];
 	prev_pose2 = prev_pose;
 }
 
@@ -105,17 +112,17 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 
 	vector<Point> ndtScanPoints (scan->size());
 	int j = 0;
-	for (int i=0, j=0; i<scan->size(); i++) {
-		auto &p = scan->at(i);
-		auto &pt = ndtScanPoints.at(i);
-		pt.x = p.x + nrand(0.01);
-		pt.y = p.y + nrand(0.01);
-		pt.z = p.z + nrand(0.01);
-		double dist = pt.x*pt.x + pt.y*pt.y + pt.z*pt.z;
-		if (dist < 3*3) {
-
-		}
-		j++;
+	for (int i=0; i<scan->size(); i++) {
+		ndtScanPoints[j].x = scan->at(i).x + nrand(0.01);
+		ndtScanPoints[j].y = scan->at(i).y + nrand(0.01);
+		ndtScanPoints[j].z = scan->at(i).z + nrand(0.01);
+		double dist =
+			ndtScanPoints[j].x*ndtScanPoints[j].x +
+			ndtScanPoints[j].y*ndtScanPoints[j].y +
+			ndtScanPoints[j].z*ndtScanPoints[j].z;
+		if (dist < 3*3)
+			continue;
+		j+=1;
 		if (j > 130000)
 			break;
 	}
@@ -141,7 +148,7 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 	npose.theta3 = prev_pose.theta3 + theta_offset;
 
 	int layer_select = LAYER_NUM - 1;
-	for (layer_select = 2; layer_select >= 1; layer_select -= 1) {
+	for (layer_select = 1; layer_select >= 1; layer_select -= 1) {
 		for (int j=0; j<100; j++) {
 			if (layer_select != 1 && j > 2) {
 				break;
@@ -151,11 +158,11 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 			e = adjust3d(ndtScanPoints.data(), scan_points_num, &npose, layer_select);
 			pose_mod(&npose);
 
-			if ((bpose.x - npose.x) * (bpose.x - npose.x) + (bpose.y - npose.y) * (bpose.y - npose.y) +
-				(bpose.z - npose.z) * (bpose.z - npose.z) + 3 * (bpose.theta - npose.theta) * (bpose.theta - npose.theta) +
-				3 * (bpose.theta2 - npose.theta2) * (bpose.theta2 - npose.theta2) +
-				3 * (bpose.theta3 - npose.theta3) * (bpose.theta3 - npose.theta3) <
-				1e-5) {
+			double xdist = (bpose.x - npose.x) * (bpose.x - npose.x) + (bpose.y - npose.y) * (bpose.y - npose.y) +
+					(bpose.z - npose.z) * (bpose.z - npose.z) + 3 * (bpose.theta - npose.theta) * (bpose.theta - npose.theta) +
+					3 * (bpose.theta2 - npose.theta2) * (bpose.theta2 - npose.theta2) +
+					3 * (bpose.theta3 - npose.theta3) * (bpose.theta3 - npose.theta3);
+			if (xdist < 0.00001) {
 				break;
 			}
 		}
@@ -182,7 +189,7 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 			xrate = dx / (double)scan_points_num;
 			yrate = dy / (double)scan_points_num;
 
-			printf("antidist x %f y %f yaw %f\n", dx, dy, dtheta);
+//			printf("antidist x %f y %f yaw %f\n", dx, dy, dtheta);
 
 			dx = -dx;
 			dy = -dy;
@@ -210,6 +217,8 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 //	Eigen::Matrix4f global_t = tf_local_to_global * local_t;
 
 	Pose ndtCPose = Pose::from_XYZ_RPY(Eigen::Vector3d(npose.x, npose.y,npose.z), npose.theta, npose.theta2, npose.theta3);
+	prev_pose2 = prev_pose;
+	prev_pose = npose;
 
 	return ndtCPose;
 }

@@ -5,6 +5,7 @@
  *      Author: sujiwo
  */
 
+#include <sstream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -13,6 +14,9 @@
 
 using namespace std;
 using namespace Eigen;
+
+
+#define dPrecision 10
 
 
 Quaterniond fromRPY (double roll, double pitch, double yaw)
@@ -158,4 +162,24 @@ cdf (const cv::Mat &grayImage, const cv::Mat &mask)
 
 	rcdf = rcdf / cv::sum(hist)[0];
 	return rcdf;
+}
+
+
+string
+dumpVector(const Vector3d &v)
+{
+	stringstream s;
+	s.precision(dPrecision);
+	s << v.x() << " " << v.y() << " " << v.z();
+	return s.str();
+}
+
+
+string
+dumpVector(const Quaterniond &v)
+{
+	stringstream s;
+	s.precision(dPrecision);
+	s << v.x() << " " << v.y() << " " << v.z() << ' ' << v.w();
+	return s.str();
 }

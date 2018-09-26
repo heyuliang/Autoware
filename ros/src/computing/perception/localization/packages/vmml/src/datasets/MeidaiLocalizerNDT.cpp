@@ -17,8 +17,10 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/io/pcd_io.h>
 #include <velodyne_pointcloud/rawdata.h>
 
+#include "utilities.h"
 #include "NdtLocalizer.h"
 
 
@@ -128,22 +130,26 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 
 	VelodynePreprocessor VP(paramFileTest);
 	NdtLocalizer lidarLocalizer(NuInitialConfig);
+	lidarLocalizer.loadMap(meidaiMapPcd);
 
 	bool initialized=false;
+	auto time0 = bagsrc.at<velodyne_msgs::VelodyneScan>(0)->header.stamp;
 
 	// XXX: How to catch NDT's failure ?
 	for (uint32_t ip=0; ip<bagsrc.size(); ++ip) {
 
 		Pose cNdtPose;
 		auto cMsg = bagsrc.at<velodyne_msgs::VelodyneScan>(ip);
-		auto clx = VP.convertMessage(cMsg);
+		auto cscan = VP.convertMessage(cMsg);
 
 		if (!initialized) {
 			try {
 
 				auto cGnssPos = gnssTrack.at(cMsg->header.stamp);
+				Vector3d p = cGnssPos.position();
+				Quaterniond q = cGnssPos.orientation();
 				lidarLocalizer.putEstimation(cGnssPos);
-				cNdtPose = lidarLocalizer.localize(clx);
+				cNdtPose = lidarLocalizer.localize(cscan);
 				initialized = true;
 
 			} catch (out_of_range &e) {
@@ -152,12 +158,15 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 		}
 
 		else {
-			cNdtPose = lidarLocalizer.localize(clx);
+			cNdtPose = lidarLocalizer.localize(cscan);
 		}
 
 		PoseTimestamp tpose (cNdtPose);
 		tpose.timestamp = cMsg->header.stamp;
-		cerr << tpose.position().x() << " " <<
+		cerr << fixed;
+		auto td = tpose.timestamp - time0;
+		cerr << td.toSec() << ' '
+			 <<	tpose.position().x() << " " <<
 				tpose.position().y() << " " <<
 				tpose.position().z() << endl;
 		resultTrack.push_back(tpose);

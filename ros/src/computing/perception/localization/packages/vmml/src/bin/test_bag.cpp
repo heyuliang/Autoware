@@ -24,22 +24,6 @@ using Eigen::Vector3d;
 
 #define Precision 10
 
-string dumpVector(const Vector3d &v)
-{
-	stringstream s;
-	s.precision(Precision);
-	s << v.x() << " " << v.y() << " " << v.z();
-	return s.str();
-}
-
-
-string dumpVector(const Quaterniond &v)
-{
-	stringstream s;
-	s.precision(Precision);
-	s << v.x() << " " << v.y() << " " << v.z() << ' ' << v.w();
-	return s.str();
-}
 
 
 int main (int argc, char *argv[])

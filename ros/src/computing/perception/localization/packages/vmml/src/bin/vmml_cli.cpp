@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <sstream>
+#include <iomanip>
 #include <fstream>
 #include <histedit.h>
 #include <editline/readline.h>
@@ -91,26 +91,6 @@ int localize_seq_slam (SequenceSLAM *seqSl, OxfordImagePreprocessor &proc, const
 	imgList.push_back(image);
 
 	seqSl->find(imgList, 10);
-}
-
-
-#define Precision 10
-
-string dumpVector(const Vector3d &v)
-{
-	stringstream s;
-	s.precision(Precision);
-	s << v.x() << " " << v.y() << " " << v.z();
-	return s.str();
-}
-
-
-string dumpVector(const Quaterniond &v)
-{
-	stringstream s;
-	s.precision(Precision);
-	s << v.x() << " " << v.y() << " " << v.z() << ' ' << v.w();
-	return s.str();
 }
 
 
@@ -414,6 +394,7 @@ private:
 			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
 			const Trajectory &Traj = meidaiDs->getGnssTrajectory();
 			fstream dsTrFd (dumpDatasetTrajectoryPath, ios_base::out|ios_base::trunc);
+			dsTrFd << fixed << setprecision(6);
 
 			for (auto &ps: Traj) {
 				dsTrFd << ps.timeSecond() << " "

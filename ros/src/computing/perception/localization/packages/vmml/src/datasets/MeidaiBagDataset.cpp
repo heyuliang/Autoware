@@ -238,7 +238,8 @@ Trajectory::find_lower_bound(const ros::Time &t) const
 		[](const PoseTimestamp &el, const ros::Time& tv)
 			-> bool {return el.timestamp < tv;}
 	);
-	return it-begin();
+	uint32_t x = it-begin();
+	return x;
 }
 
 
