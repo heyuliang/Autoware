@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/common/common.h>
 
 #include "utilities.h"
 #include "NdtLocalizer.h"
@@ -55,17 +56,9 @@ inline double nrand(double n)
 }
 
 
-NdtLocalizer::NdtLocalizer(const NdtLocalizerInitialConfig &initialConfig)
-{
-	// map size
-	g_map_x = G_MAP_X;
-	g_map_y = G_MAP_Y;
-	g_map_z = G_MAP_Z;
-	g_map_cellsize = G_MAP_CELLSIZE;
-
-	ndMap = initialize_NDmap();
-	NDmap = ndMap;
-}
+NdtLocalizer::NdtLocalizer(const NdtLocalizerInitialConfig &initialConfig) :
+	ndMap(NULL)
+{}
 
 
 void
@@ -104,6 +97,19 @@ NdtLocalizer::putEstimation (const Pose &pEst)
 void
 NdtLocalizer::loadMap (pcl::PointCloud<PointXYZ>::ConstPtr mapcloud)
 {
+	// Find maximum and minimum values for each axis
+	PointXYZ m1, m2;
+	pcl::getMinMax3D(*mapcloud, m1, m2);
+
+	// map size
+	g_map_x = m2.x - m1.x;
+	g_map_y = m2.y - m1.y;
+	g_map_z = m2.z - m2.z;
+	g_map_cellsize = G_MAP_CELLSIZE;
+
+	ndMap = initialize_NDmap();
+	NDmap = ndMap;
+
 	for (auto pointIt=mapcloud->begin(); pointIt!=mapcloud->end(); ++pointIt) {
 		auto &pointSrc = *pointIt;
 		Point pnd = {
