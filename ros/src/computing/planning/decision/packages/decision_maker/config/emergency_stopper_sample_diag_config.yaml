@@ -20,3 +20,7 @@
     description: topic /current_velocity subscribe rate was low (Error)
     threshold: 5.0
     level: error
+  - num: 2
+    name:  node is ded
+    category: 3    
+    description: /decision_maker node is dead
