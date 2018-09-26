@@ -16,6 +16,16 @@ using namespace std;
 using pcl::PointXYZ;
 using namespace Eigen;
 
+/*
+ * number of cells in map.
+ * Essentially, they define sizes in each dimension of the map in metre.
+ */
+
+#define G_MAP_X 2000
+#define G_MAP_Y 2000
+#define G_MAP_Z 200
+#define G_MAP_CELLSIZE 1.0
+
 
 extern NDMapPtr NDmap;
 
@@ -45,11 +55,15 @@ inline double nrand(double n)
 }
 
 
-NdtLocalizer::NdtLocalizer(const NdtLocalizerInitialConfig &initialConfig) :
-
-	ndMap(initialize_NDmap())
-
+NdtLocalizer::NdtLocalizer(const NdtLocalizerInitialConfig &initialConfig)
 {
+	// map size
+	g_map_x = G_MAP_X;
+	g_map_y = G_MAP_Y;
+	g_map_z = G_MAP_Z;
+	g_map_cellsize = G_MAP_CELLSIZE;
+
+	ndMap = initialize_NDmap();
 	NDmap = ndMap;
 }
 
@@ -64,6 +78,7 @@ NdtLocalizer::loadMap (const std::string &filename)
 		pcl::PCDReader fReader;
 		fReader.read(filename, *mapInp);
 		loadMap(mapInp);
+		mapLoaded = true;
 	}
 }
 
