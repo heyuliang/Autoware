@@ -138,8 +138,9 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 	state.geo.set_plane(plane_number);
 
 	trajectory.clear();
+	uint32_t nMsg = bagsrc.size();
 
-	for (uint32_t ix=0; ix<bagsrc.size(); ix++) {
+	for (uint32_t ix=0; ix<nMsg; ix++) {
 		cout << ix << "/" << bagsrc.size() << "         \r";
 
 		auto currentMessage = bagsrc.at<nmea_msgs::Sentence>(ix);

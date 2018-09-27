@@ -221,8 +221,17 @@ public:
 			else if (command[0]=="map_info")
 				map_info_cmd();
 
+			else if (command[0]=="dataset_info")
+				dataset_info_cmd();
+
 			else if (command[0]=="mask")
 				mask_set_cmd(command[1]);
+
+			else if (command[0]=="velodyne" or command[0]=="pcdmap")
+				dataset_set_param(command);
+
+			else if (command[0]=="build")
+				dataset_build();
 		}
 	}
 
@@ -283,6 +292,13 @@ protected:
 
 private:
 
+	struct {
+		std::string velodyneCalibrationPath;
+		std::string pcdMapPath;
+		TTransform lidarToCamera = TTransform::Identity();
+	} ndtParameters;
+
+
 	void map_open_cmd(const string &mapPath)
 	{
 		try {
@@ -337,6 +353,22 @@ private:
 		debug("Point Cloud Map dumped to "+mapDumpPcl);
 	}
 
+
+	void dataset_build()
+	{
+		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+			if (ndtParameters.pcdMapPath.empty() or ndtParameters.velodyneCalibrationPath.empty()) {
+				debug ("Parameters must be set with commands `velodyne' and `pcdmap'");
+				return;
+			}
+
+			MeidaiBagDataset::Ptr nuDataset = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+			nuDataset->setLidarParameters(ndtParameters.velodyneCalibrationPath, ndtParameters.pcdMapPath, ndtParameters.lidarToCamera);
+			nuDataset->forceCreateCache();
+		}
+	}
+
+
 	void map_info_cmd()
 	{
 		if (mapSrc==NULL) {
@@ -346,6 +378,13 @@ private:
 		debug("# of keyframe(s): "+to_string(mapSrc->numOfKeyFrames()));
 		debug("# of map point(s): " +to_string(mapSrc->numOfMapPoints()));
 	}
+
+
+	void dataset_info_cmd()
+	{
+
+	}
+
 
 	const string dumpMapTrajectoryPath = "/tmp/dump_map_trajectory.csv";
 	void map_trajectory_dump()
@@ -428,6 +467,18 @@ private:
 			return;
 		}
 	}
+
+
+	void dataset_set_param(const stringTokens &command)
+	{
+		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+			if (command[0]=="velodyne")
+				ndtParameters.velodyneCalibrationPath = command[1];
+			else if (command[0]=="pcdmap")
+				ndtParameters.pcdMapPath = command[1];
+		}
+	}
+
 
 //	void map_find_cmd(const string &durationSecStr)
 //	{

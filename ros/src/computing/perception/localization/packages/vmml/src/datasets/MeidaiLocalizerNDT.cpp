@@ -44,10 +44,6 @@ const NdtLocalizerInitialConfig NuInitialConfig = {
 	0,0,0, 0,0,0
 };
 
-// Velodyne HDL-64 calibration file
-const string paramFileTest = "/home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml";
-const string meidaiMapPcd = "/home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_ndmap.pcd";
-
 
 class VelodynePreprocessor
 {
@@ -57,7 +53,10 @@ public:
 
 		 data_(new velodyne_rawdata::RawData())
 	{
-		data_->setupOffline(lidarCalibFile, velodyneMaxRange, velodyneMinRange);
+		if (data_->setupOffline(lidarCalibFile, velodyneMaxRange, velodyneMinRange)
+			== -1)
+			throw runtime_error("Unable to set velodyne converter");
+
 		data_->setParameters(velodyneMinRange, velodyneMaxRange, velodyneViewDirection, velodyneViewWidth);
 	}
 
@@ -74,6 +73,7 @@ public:
 		}
 
 		PointCloud<PointXYZ>::Ptr cloudTmp = convertToExternal(*outPoints);
+		// These are the best value I know of
 		return VoxelGridFilter(cloudTmp, 0.2, 3.0);
 	}
 
@@ -123,14 +123,14 @@ protected:
 
 
 void
-createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const Trajectory &gnssTrack)
+createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const Trajectory &gnssTrack, const string &velodyneParamFile, const string &pcdMapFile)
 {
 	if (bagsrc.getTopic() != "/velodyne_packets")
 		throw runtime_error("Not Velodyne bag");
 
-	VelodynePreprocessor VP(paramFileTest);
+	VelodynePreprocessor VP(velodyneParamFile);
 	NdtLocalizer lidarLocalizer(NuInitialConfig);
-	lidarLocalizer.loadMap(meidaiMapPcd);
+	lidarLocalizer.loadMap(pcdMapFile);
 
 	bool initialized=false;
 	auto time0 = bagsrc.at<velodyne_msgs::VelodyneScan>(0)->header.stamp;
@@ -154,6 +154,9 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 
 			} catch (out_of_range &e) {
 				continue;
+			} catch (exception &e) {
+				cerr << "Unknown error\n";
+				continue;
 			}
 		}
 
@@ -163,12 +166,12 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 
 		PoseTimestamp tpose (cNdtPose);
 		tpose.timestamp = cMsg->header.stamp;
-		cerr << fixed;
-		auto td = tpose.timestamp - time0;
-		cerr << tpose.timestamp.toSec() << ' '
-			 <<	tpose.position().x() << " " <<
-				tpose.position().y() << " " <<
-				tpose.position().z() << endl;
+//		cerr << fixed;
+//		auto td = tpose.timestamp - time0;
+//		cerr << tpose.timestamp.toSec() << ' '
+//			 <<	tpose.position().x() << " " <<
+//				tpose.position().y() << " " <<
+//				tpose.position().z() << endl;
 		resultTrack.push_back(tpose);
 	}
 

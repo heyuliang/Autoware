@@ -9,11 +9,11 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/filesystem.hpp>
 
-#include <datasets/MeidaiBagDataset.h>
 #include <exception>
 #include <algorithm>
 #include <string>
-
+#include <ros/ros.h>
+#include "datasets/MeidaiBagDataset.h"
 
 
 using namespace std;
@@ -159,12 +159,26 @@ MeidaiBagDataset::loadCache()
 
 
 void
+MeidaiBagDataset::setLidarParameters (
+	const std::string &pvelodyneCalibrationFile,
+	const std::string &pmeidaiPCDMapFile,
+	const TTransform &plidarToCameraTransform)
+{
+	lidarToCameraTransform = plidarToCameraTransform;
+	pcdMapFilePath = pmeidaiPCDMapFile;
+	velodyneCalibrationFilePath = pvelodyneCalibrationFile;
+}
+
+
+void
 MeidaiBagDataset::forceCreateCache ()
 {
 	bfs::path bagCachePath = bagPath;
 	bagCachePath += ".cache";
 
 	gnssTrack.clear();
+	ndtTrack.clear();
+	cameraTrack.clear();
 	createCache();
 	writeCache(bagCachePath.string());
 }
@@ -182,6 +196,7 @@ MeidaiBagDataset::doLoadCache(const string &path)
 
 	cacheIArc >> gnssTrack;
 	cacheIArc >> ndtTrack;
+	cacheIArc >> cameraTrack;
 
 	cacheFd.close();
 }
@@ -190,7 +205,18 @@ MeidaiBagDataset::doLoadCache(const string &path)
 void
 MeidaiBagDataset::createCache()
 {
+	cout << "Creating GNSS Trajectory\n";
 	createTrajectoryFromGnssBag(*gnssBag, gnssTrack);
+	cout << "Creating NDT Trajectory\n";
+	createTrajectoryFromNDT(*velodyneBag, ndtTrack, gnssTrack, velodyneCalibrationFilePath, pcdMapFilePath);
+
+	cout << "Creating Camera Trajectory\n";
+	for (int i=0; i<cameraRawBag->size(); i++) {
+		auto tm = cameraRawBag->timeAt(i);
+		PoseTimestamp poseCur = ndtTrack.interpolate(tm);
+		// XXX: Transform from lidar to camera
+		cameraTrack.push_back(poseCur);
+	}
 }
 
 
@@ -205,6 +231,7 @@ void MeidaiBagDataset::writeCache(const string &path)
 
 	cacheOArc << gnssTrack;
 	cacheOArc << ndtTrack;
+	cacheOArc << cameraTrack;
 
 	cacheFd.close();
 }
@@ -246,11 +273,8 @@ Trajectory::find_lower_bound(const ros::Time &t) const
 uint32_t
 Trajectory::find_lower_bound(const ptime &t) const
 {
-//	auto it = std::lower_bound(begin(), end(), t,
-//		[](const PoseTimestamp &el, const ptime& tv)
-//			-> bool {return el.timestamp < tv;}
-//	);
-//	return it-begin();
+	ros::Time tx = ros::Time::fromBoost(t);
+	return find_lower_bound(tx);
 }
 
 
@@ -265,6 +289,7 @@ PoseTimestamp
 Trajectory::at(const ptime &t) const
 {
 
+	return Parent::at(find_lower_bound(t));
 }
 
 

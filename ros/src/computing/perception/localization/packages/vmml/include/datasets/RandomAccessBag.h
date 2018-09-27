@@ -56,6 +56,11 @@ public:
 		return instantiate<T>(msgPtr.at(p));
 	}
 
+	ros::Time timeAt (const int i) const
+	{
+		return msgPtr.at(i).time;
+	}
+
 	template<typename T>
 	boost::shared_ptr<T>
 	atDurationSecond (const double S)

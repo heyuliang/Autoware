@@ -157,7 +157,7 @@ public:
 		double startTimeOffsetSecond=0,
 		double mappingDurationSecond=-1,
 		const std::string &calibrationPath=std::string(),
-		bool loadPositions=true
+		bool loadPositions=false
 	);
 
 	static MeidaiBagDataset::Ptr load (
@@ -165,7 +165,7 @@ public:
 		double startTimeOffsetSecond=0,
 		double mappingDurationSecond=-1,
 		const std::string &calibrationPath=std::string(),
-		bool loadPositions=true
+		bool loadPositions=false
 	);
 
 	void loadPosition();
@@ -191,7 +191,7 @@ public:
 	GenericDataItem::ConstPtr atDurationSecond (const double second) const;
 
 	bool hasPositioning() const
-	{ return gnssTrack.empty(); }
+	{ return !gnssTrack.empty(); }
 
 	void forceCreateCache ();
 
@@ -201,6 +201,12 @@ public:
 
 	RandomAccessBag::Ptr getVelodyneBag()
 	{ return velodyneBag; }
+
+	void setLidarParameters (
+		const std::string &pvelodyneCalibrationFile,
+		const std::string &pmeidaiPCDMapFile,
+		const TTransform &plidarToCameraTransform);
+
 
 protected:
 	static std::string dSetName;
@@ -221,13 +227,28 @@ private:
 
 	Trajectory gnssTrack;
 	Trajectory ndtTrack;
+	Trajectory cameraTrack;
+
 	float zoomRatio = 1.0;
 
 	friend class MeidaiDataItem;
+
+	// To be used when generating Lidar trajectory
+	std::string
+		velodyneCalibrationFilePath,
+		pcdMapFilePath;
+	TTransform lidarToCameraTransform;
 };
 
 
-void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajectory, int plane_number=7);
-void createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const Trajectory &gnssTrack);
+void createTrajectoryFromGnssBag (
+	RandomAccessBag &bagsrc,
+	Trajectory &trajectory,
+	int plane_number=7);
+
+void createTrajectoryFromNDT (
+	RandomAccessBag &bagsrc,
+	Trajectory &resultTrack, const Trajectory &gnssTrack,
+	const std::string &velodyneParamFile, const std::string &pcdMapFile);
 
 #endif /* _MEIDAIBAG_H_ */
