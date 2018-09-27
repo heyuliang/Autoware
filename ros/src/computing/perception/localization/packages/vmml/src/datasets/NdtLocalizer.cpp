@@ -104,7 +104,7 @@ NdtLocalizer::loadMap (pcl::PointCloud<PointXYZ>::ConstPtr mapcloud)
 	// map size
 	g_map_x = m2.x - m1.x;
 	g_map_y = m2.y - m1.y;
-	g_map_z = m2.z - m2.z;
+	g_map_z = m2.z - m1.z;
 	g_map_cellsize = G_MAP_CELLSIZE;
 
 	ndMap = initialize_NDmap();
