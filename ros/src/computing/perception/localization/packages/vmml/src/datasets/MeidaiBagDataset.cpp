@@ -211,8 +211,19 @@ MeidaiBagDataset::createCache()
 	createTrajectoryFromNDT(*velodyneBag, ndtTrack, gnssTrack, velodyneCalibrationFilePath, pcdMapFilePath);
 
 	cout << "Creating Camera Trajectory\n";
+	// XXX: It is possible that camera recording may have started earlier than lidar's
 	for (int i=0; i<cameraRawBag->size(); i++) {
 		auto tm = cameraRawBag->timeAt(i);
+
+		// in both cases; extrapolate
+		if (tm <= ndtTrack[0].timestamp) {
+			continue;
+		}
+
+		else if (tm >= ndtTrack.back().timestamp) {
+			continue;
+		}
+
 		PoseTimestamp poseCur = ndtTrack.interpolate(tm);
 		// XXX: Transform from lidar to camera
 		cameraTrack.push_back(poseCur);
@@ -296,11 +307,19 @@ Trajectory::at(const ptime &t) const
 PoseTimestamp
 Trajectory::interpolate (const ros::Time& t) const
 {
-	assert (t < (*end()).timestamp);
+	assert (front().timestamp<=t and t < back().timestamp);
 
 	uint32_t i0 = find_lower_bound(t),
 		i1 = i0+1;
 	return PoseTimestamp::interpolate(Parent::at(i0), Parent::at(i1), t);
+}
+
+
+PoseTimestamp
+Trajectory::extrapolate (const ros::Time& t) const
+{
+	assert (t < front().timestamp or t > back().timestamp);
+	// XXX: Unfinished
 }
 
 

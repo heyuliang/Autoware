@@ -96,6 +96,8 @@ public:
 	// Interpolate value
 	PoseTimestamp interpolate (const ros::Time&) const;
 
+	PoseTimestamp extrapolate (const ros::Time&) const;
+
 private:
 	uint32_t
 	find_lower_bound(const ros::Time&) const;
