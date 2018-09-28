@@ -220,11 +220,13 @@ MeidaiBagDataset::createCache()
 		if (tm < ndtTrack[0].timestamp or tm>=ndtTrack.back().timestamp) {
 			poseX = ndtTrack.extrapolate(tm);
 		}
+		else
+			poseX = ndtTrack.interpolate(tm);
+		// XXX: Check this value
+		Pose poseX1 = lidarToCameraTransform * static_cast<Pose>(poseX);
+		cameraTrack.push_back(PoseTimestamp(poseX1, tm));
 
-		poseX = ndtTrack.interpolate(tm);
-		// XXX: Transform from lidar to camera
-
-		cameraTrack.push_back(poseX);
+		cout << i+1 << " / " << cameraRawBag->size() << "  \r";
 	}
 }
 

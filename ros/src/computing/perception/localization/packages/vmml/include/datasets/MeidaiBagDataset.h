@@ -36,13 +36,13 @@ struct PoseTimestamp : public Pose
 		Pose()
 	{ timestamp = ros::Time(0); }
 
-	PoseTimestamp(const Pose &p)
+	PoseTimestamp(const Pose &p, const ros::Time &t=ros::Time(0))
 	{
 		m_matrix = p.matrix();
-		timestamp = ros::Time(0);
+		timestamp = t;
 	}
 
-	PoseTimestamp (const Eigen::Vector3d &p, const Quaterniond &q, const ros::Time &t)
+	PoseTimestamp (const Eigen::Vector3d &p, const Quaterniond &q, const ros::Time &t=ros::Time(0))
 	{
 		m_matrix = Pose::from_Pos_Quat(p, q).matrix();
 		timestamp = t;

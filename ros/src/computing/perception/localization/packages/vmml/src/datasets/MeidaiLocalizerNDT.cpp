@@ -136,7 +136,8 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 	auto time0 = bagsrc.at<velodyne_msgs::VelodyneScan>(0)->header.stamp;
 
 	// XXX: How to catch NDT's failure ?
-	for (uint32_t ip=0; ip<bagsrc.size(); ++ip) {
+	uint32_t N = bagsrc.size();
+	for (uint32_t ip=0; ip<N; ++ip) {
 
 		Pose cNdtPose;
 		auto cMsg = bagsrc.at<velodyne_msgs::VelodyneScan>(ip);
@@ -173,6 +174,7 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 //				tpose.position().y() << " " <<
 //				tpose.position().z() << endl;
 		resultTrack.push_back(tpose);
+		cout << ip+1 << " / " << N << "   \r";
 	}
 
 	return;
