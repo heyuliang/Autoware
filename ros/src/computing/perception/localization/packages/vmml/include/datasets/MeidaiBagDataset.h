@@ -42,6 +42,12 @@ struct PoseTimestamp : public Pose
 		timestamp = ros::Time(0);
 	}
 
+	PoseTimestamp (const Eigen::Vector3d &p, const Quaterniond &q, const ros::Time &t)
+	{
+		m_matrix = Pose::from_Pos_Quat(p, q).matrix();
+		timestamp = t;
+	}
+
 	double timeSecond () const
 	{ return timestamp.toSec(); }
 
@@ -93,7 +99,6 @@ public:
 
 	PoseTimestamp at(const ptime &t) const;
 
-	// Interpolate value
 	PoseTimestamp interpolate (const ros::Time&) const;
 
 	PoseTimestamp extrapolate (const ros::Time&) const;

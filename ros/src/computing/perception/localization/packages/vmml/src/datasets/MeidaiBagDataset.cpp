@@ -216,17 +216,15 @@ MeidaiBagDataset::createCache()
 		auto tm = cameraRawBag->timeAt(i);
 
 		// in both cases; extrapolate
-		if (tm <= ndtTrack[0].timestamp) {
-			continue;
+		PoseTimestamp poseX;
+		if (tm < ndtTrack[0].timestamp or tm>=ndtTrack.back().timestamp) {
+			poseX = ndtTrack.extrapolate(tm);
 		}
 
-		else if (tm >= ndtTrack.back().timestamp) {
-			continue;
-		}
-
-		PoseTimestamp poseCur = ndtTrack.interpolate(tm);
+		poseX = ndtTrack.interpolate(tm);
 		// XXX: Transform from lidar to camera
-		cameraTrack.push_back(poseCur);
+
+		cameraTrack.push_back(poseX);
 	}
 }
 
@@ -319,7 +317,38 @@ PoseTimestamp
 Trajectory::extrapolate (const ros::Time& t) const
 {
 	assert (t < front().timestamp or t > back().timestamp);
-	// XXX: Unfinished
+
+	double r;
+	Vector3d xpos;
+	Quaterniond xori;
+
+	if (t > back().timestamp) {
+		size_t sz = size();
+		const PoseTimestamp
+			&lastPose = back(),
+			&lastPose_1 = Parent::at(sz-2);
+
+		r = (t.toSec() - lastPose_1.timestamp.toSec()) /
+			(lastPose.timestamp.toSec() - lastPose_1.timestamp.toSec());
+
+		xpos = lastPose_1.position() + r*(lastPose.position() - lastPose_1.position());
+		// XXX: Not true
+		xori = lastPose.orientation();
+	}
+
+	else if (t < front().timestamp) {
+		const PoseTimestamp
+			&firstPose = front(),
+			&firstPose_1 = Parent::at(1);
+
+		r = (t.toSec() - firstPose_1.timestamp.toSec()) /
+			(firstPose.timestamp.toSec() - firstPose_1.timestamp.toSec());
+		xpos = firstPose_1.position() + r*(firstPose.position() - firstPose_1.position());
+		// ??
+		xori = firstPose.orientation();
+	}
+
+	return PoseTimestamp(xpos, xori, t);
 }
 
 

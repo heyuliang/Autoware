@@ -50,10 +50,10 @@ public:
 
 	template<typename T>
 	boost::shared_ptr<T>
-	at (int p)
+	at (int position)
 	{
-		assert(p>=0 and p<size());
-		return instantiate<T>(msgPtr.at(p));
+		assert(position>=0 and position<size());
+		return instantiate<T>(msgPtr.at(position));
 	}
 
 	ros::Time timeAt (const int i) const
