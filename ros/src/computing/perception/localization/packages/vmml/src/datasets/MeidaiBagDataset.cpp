@@ -151,10 +151,10 @@ MeidaiBagDataset::loadCache()
 		doLoadCache(bagCachePath.string());
 	}
 
-	else {
-		createCache();
-		writeCache(bagCachePath.string());
-	}
+//	else {
+//		createCache();
+//		writeCache(bagCachePath.string());
+//	}
 }
 
 
@@ -309,8 +309,8 @@ Trajectory::interpolate (const ros::Time& t) const
 {
 	assert (front().timestamp<=t and t < back().timestamp);
 
-	uint32_t i0 = find_lower_bound(t),
-		i1 = i0+1;
+	uint32_t i0 = find_lower_bound(t)-1;
+	uint32_t i1 = i0+1;
 	return PoseTimestamp::interpolate(Parent::at(i0), Parent::at(i1), t);
 }
 

@@ -164,7 +164,7 @@ public:
 		double startTimeOffsetSecond=0,
 		double mappingDurationSecond=-1,
 		const std::string &calibrationPath=std::string(),
-		bool loadPositions=false
+		bool loadPositions=true
 	);
 
 	static MeidaiBagDataset::Ptr load (
@@ -172,7 +172,7 @@ public:
 		double startTimeOffsetSecond=0,
 		double mappingDurationSecond=-1,
 		const std::string &calibrationPath=std::string(),
-		bool loadPositions=false
+		bool loadPositions=true
 	);
 
 	void loadPosition();
@@ -192,6 +192,12 @@ public:
 
 	const Trajectory& getGnssTrajectory() const
 	{ return gnssTrack; }
+
+	const Trajectory& getNdtTrajectory() const
+	{ return ndtTrack; }
+
+	const Trajectory& getCameraTrajectory() const
+	{ return cameraTrack; }
 
 	GenericDataItem::ConstPtr get(dataItemId i) const;
 

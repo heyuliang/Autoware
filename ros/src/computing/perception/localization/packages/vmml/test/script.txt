@@ -1,5 +1,12 @@
+# For Mapping using Oxford dataset
 dataset /media/sujiwo/ssd/oxford/map/2014-06-26-09-24-58 /home/sujiwo/Sources/robotcar-dataset-sdk/models/
 map /media/sujiwo/ssd/oxford/map/2014-06-26-09-24-58/vmml.map
 dataset /media/sujiwo/ssd/oxford/map/2014-06-23-15-36-04 /home/sujiwo/Sources/robotcar-dataset-sdk/models
 zoom 0.5
 detect 89.38
+
+# For testing Meidai Dataset
+dataset /home/sujiwo/Data/log_2016-12-26-13-21-10-filtered.bag
+velodyne /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml
+pcdmap /home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_ndmap.pcd
+build

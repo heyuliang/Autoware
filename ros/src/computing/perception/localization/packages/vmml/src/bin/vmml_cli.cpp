@@ -179,6 +179,9 @@ public:
 
 			stringTokens command = mLineEditor.getLine();
 
+			if (command[0][0]=='#')
+				continue;
+
 			if (command[0]=="quit")
 				doExit = true;
 
@@ -192,7 +195,7 @@ public:
 				map_dump_pcl();
 
 			else if (command[0]=="dataset_trajectory")
-				dataset_trajectory_dump();
+				dataset_trajectory_dump(command[1]);
 
 			else if (command[0]=="map_trajectory")
 				map_trajectory_dump();
@@ -282,7 +285,6 @@ protected:
 	SequenceSLAM *seqSlProv = NULL;
 	Localizer *localizer = NULL;
 
-//	OxfordDataset *localizTestDataSrc = NULL;
 	datasetType slDatasourceType;
 	GenericDataset::Ptr loadedDataset;
 
@@ -382,7 +384,20 @@ private:
 
 	void dataset_info_cmd()
 	{
+		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+			auto cameraTrack = meidaiDs->getCameraTrajectory();
 
+			debug("# of images:" + to_string(meidaiDs->size()));
+
+			if (cameraTrack.size() != 0) {
+				debug ("Dataset contains camera trajectory");
+			}
+
+			else {
+				debug ("Dataset does not contain camera trajectory; must be built");
+			}
+		}
 	}
 
 
@@ -405,7 +420,7 @@ private:
 	}
 
 	const string dumpDatasetTrajectoryPath = "/tmp/dump_dataset_trajectory";
-	void dataset_trajectory_dump()
+	void dataset_trajectory_dump(const string &type="camera")
 	{
 		if (slDatasourceType==OXFORD_DATASET_TYPE) {
 			OxfordDataset::Ptr oxfDataset = static_pointer_cast<OxfordDataset>(loadedDataset);
@@ -431,11 +446,23 @@ private:
 
 		else if (slDatasourceType==MEIDAI_DATASET_TYPE) {
 			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
-			const Trajectory &Traj = meidaiDs->getGnssTrajectory();
+
+			Trajectory nuTrack;
+			if (type=="gnss")
+				nuTrack = meidaiDs->getGnssTrajectory();
+			else if (type=="ndt")
+				nuTrack = meidaiDs->getNdtTrajectory();
+			else if (type=="camera")
+				nuTrack = meidaiDs->getCameraTrajectory();
+			else {
+				debug ("Unknown trajectory type for Meidai Dataset");
+				return;
+			}
+
 			fstream dsTrFd (dumpDatasetTrajectoryPath, ios_base::out|ios_base::trunc);
 			dsTrFd << fixed << setprecision(6);
 
-			for (auto &ps: Traj) {
+			for (auto &ps: nuTrack) {
 				dsTrFd << ps.timeSecond() << " "
 						<< dumpVector(ps.position()) << " "
 						<< dumpVector(ps.orientation())
@@ -451,11 +478,13 @@ private:
 	void dataset_open_cmd(const string &dsPath, const string &modelDir)
 	{
 		boost::filesystem::path datasetPath(dsPath);
+
 		if (boost::filesystem::is_directory(datasetPath)) {
 			loadedDataset = OxfordDataset::load(datasetPath.string(), modelDir);
 			slDatasourceType = OXFORD_DATASET_TYPE;
 			debug ("Oxford-type Dataset Loaded");
 		}
+
 		else if (datasetPath.extension()==".bag") {
 			loadedDataset = MeidaiBagDataset::load(datasetPath.string());
 			slDatasourceType = MEIDAI_DATASET_TYPE;
@@ -514,7 +543,7 @@ private:
 		debug("Dumped to " + dumpImagePath);
 	}
 
-	void debug(const string &s)
+	void debug(const string &s, double is_error=false)
 	{
 		cerr << s << endl;
 	}
