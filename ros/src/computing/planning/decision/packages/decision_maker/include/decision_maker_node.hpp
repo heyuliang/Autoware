@@ -45,6 +45,9 @@
 #include <decision_maker_param.hpp>
 #include <state_machine_lib/state_context.hpp>
 
+//headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 namespace decision_maker
 {
 using namespace vector_map;
@@ -114,6 +117,9 @@ struct AutowareStatus
 class DecisionMakerNode
 {
 private:
+  // diagnostic
+  diag_manager diag_manager_;
+
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 

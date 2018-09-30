@@ -3,6 +3,7 @@
 
 //headers in diag_lib
 #include <diag_msgs/diag.h>
+#include <diag_lib/diag_filter.h>
 
 //headers in ROS
 #include <ros/ros.h>
@@ -19,5 +20,6 @@ private:
     ros::NodeHandle _nh;
     ros::Subscriber _diag_sub;
     ros::Publisher _cmd_pub;
+    diag_filter _diag_filter;
 };
 #endif  //EMERGENCY_STOPPER_H_INCLUDED

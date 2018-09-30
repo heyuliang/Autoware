@@ -1,0 +1,26 @@
+/watchdog_node:
+  node_number: 0
+  errors:
+  - num: 0
+    name: required file does not exist
+    category: 7    
+    description: required file does not exist
+/decision_maker:
+  node_number: 0
+  errors:
+  - num: 0
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 2
+    name:  node is ded
+    category: 3    
+    description: /decision_maker node is dead

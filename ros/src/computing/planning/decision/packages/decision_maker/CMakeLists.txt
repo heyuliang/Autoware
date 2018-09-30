@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
         dynamic_reconfigure
         amathutils_lib
         state_machine_lib
+        diag_lib
         )
 
 catkin_package(
@@ -35,6 +36,7 @@ catkin_package(
         vector_map_msgs
         amathutils_lib
         state_machine_lib
+        diag_lib
 )
 include_directories(
         include
@@ -73,3 +75,9 @@ install(DIRECTORY launch
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/launch/
         PATTERN ".svn" EXCLUDE
         )
+
+# Install config files
+foreach(dir config)
+  install(DIRECTORY ${dir}/
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
+endforeach(dir)
