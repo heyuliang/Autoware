@@ -57,14 +57,19 @@ constexpr int SIMU_OBSTACLE_ID = 100001;
 
 OpenPlannerSimulatorPerception::OpenPlannerSimulatorPerception()
 {
+	m_bGoNextStep = false;
 	m_bSetSimulatedObj = false;
+	m_bStepByStep = false;
 	nh.getParam("/op_perception_simulator/simObjNumber" , m_DecParams.nSimuObjs);
 	nh.getParam("/op_perception_simulator/GuassianErrorFactor" , m_DecParams.errFactor);
 	nh.getParam("/op_perception_simulator/pointCloudPointsNumber" , m_DecParams.nPointsPerObj);
+	nh.getParam("/op_perception_simulator/enableStepByStepSignal" , m_bStepByStep);
+
 
 	pub_DetectedObjects = nh.advertise<autoware_msgs::CloudClusterArray>("cloud_clusters",1);
 
 	sub_simulated_obstacle_pose_rviz = nh.subscribe("/clicked_point", 1, &OpenPlannerSimulatorPerception::callbackGetRvizPoint,	this);
+	sub_StepSignal = nh.subscribe("/percept_simu_step_signal", 		1, &OpenPlannerSimulatorPerception::callbackGetStepForwardSignals, 		this);
 
 	for(int i=1; i <= m_DecParams.nSimuObjs; i++)
 	{
@@ -90,6 +95,13 @@ OpenPlannerSimulatorPerception::~OpenPlannerSimulatorPerception()
 {
 }
 
+void OpenPlannerSimulatorPerception::callbackGetStepForwardSignals(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	if(msg->twist.linear.x == 1)
+		m_bGoNextStep = true;
+	else
+		m_bGoNextStep = false;
+}
 
 void OpenPlannerSimulatorPerception::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg)
 {
@@ -164,7 +176,6 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	}
 }
 
-
 autoware_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObstacleCluster(const double& width, const double& length, const double& height, const int& nPoints, const geometry_msgs::Pose& centerPose)
 {
 	autoware_msgs::CloudCluster cluster;
@@ -228,37 +239,55 @@ autoware_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObs
 	return cluster;
 }
 
+void OpenPlannerSimulatorPerception::CleanOldData()
+{
+	//clean old data
+	for(unsigned int i = 0 ; i < m_keepTime.size(); i++)
+	{
+		if(m_keepTime.at(i).second <= 0)
+		{
+			m_keepTime.erase(m_keepTime.begin()+i);
+			m_ObjClustersArray.clusters.erase(m_ObjClustersArray.clusters.begin()+i);
+			i--;
+		}
+		else
+			m_keepTime.at(i).second -= 1;
+	}
+}
+
+void OpenPlannerSimulatorPerception::PublishResults()
+{
+	if(m_bSetSimulatedObj)
+	{
+		m_AllObjClustersArray = m_ObjClustersArray;
+		m_AllObjClustersArray.clusters.push_back(m_SimulatedCluter);
+		pub_DetectedObjects.publish(m_AllObjClustersArray);
+	}
+	else
+	{
+		pub_DetectedObjects.publish(m_ObjClustersArray);
+	}
+}
+
 void OpenPlannerSimulatorPerception::MainLoop()
 {
 
-	ros::Rate loop_rate(15);
+	ros::Rate loop_rate(20);
 
 	while (ros::ok())
 	{
 		ros::spinOnce();
 
-		//clean old data
-		for(unsigned int i = 0 ; i < m_keepTime.size(); i++)
+		if(m_bStepByStep && m_bGoNextStep)
 		{
-			if(m_keepTime.at(i).second <= 0)
-			{
-				m_keepTime.erase(m_keepTime.begin()+i);
-				m_ObjClustersArray.clusters.erase(m_ObjClustersArray.clusters.begin()+i);
-				i--;
-			}
-			else
-				m_keepTime.at(i).second -= 1;
+			m_bGoNextStep = false;
+			CleanOldData();
+			PublishResults();
 		}
-
-		if(m_bSetSimulatedObj)
+		else if(!m_bStepByStep)
 		{
-			m_AllObjClustersArray = m_ObjClustersArray;
-			m_AllObjClustersArray.clusters.push_back(m_SimulatedCluter);
-			pub_DetectedObjects.publish(m_AllObjClustersArray);
-		}
-		else
-		{
-			pub_DetectedObjects.publish(m_ObjClustersArray);
+			CleanOldData();
+			PublishResults();
 		}
 
 		loop_rate.sleep();

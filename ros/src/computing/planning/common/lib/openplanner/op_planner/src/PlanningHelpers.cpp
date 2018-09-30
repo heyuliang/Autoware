@@ -2766,6 +2766,26 @@ PlannerHNS::WayPoint PlanningHelpers::GetRealCenter(const PlannerHNS::WayPoint& 
 	return pose_center;
 }
 
+double PlanningHelpers::GetDistanceFromPoseToEnd(const PlannerHNS::WayPoint& pose, const std::vector<WayPoint>& path)
+{
+	PlannerHNS::RelativeInfo info;
+	PlanningHelpers::GetRelativeInfoLimited(path, pose, info);
+
+	if(info.bAfter)
+		return -info.from_back_distance;
+
+	 double d = 0;
+	 for(unsigned int i = info.iFront; i < path.size()-1; i++)
+	 {
+		 d += hypot(path.at(i+1).pos.y - path.at(i).pos.y, path.at(i+1).pos.x - path.at(i).pos.x);
+	 }
+
+	 if(info.bBefore)
+		 d += info.to_front_distance;
+
+	 return d;
+}
+
 double PlanningHelpers::frunge ( double x )
 {
   double fx;

@@ -51,6 +51,9 @@
 #include "SimpleTracker.h"
 #include "PolygonGenerator.h"
 
+#include <autoware_msgs/CanInfo.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -104,6 +107,8 @@ protected:
 	autoware_msgs::DetectedObjectArray m_OutPutResults;
 	bool bNewClusters;
 	PlannerHNS::WayPoint m_CurrentPos;
+	PlannerHNS::VehicleState m_VehicleStatus;
+	int m_VelocitySource;
 	bool bNewCurrentPos;
 	PerceptionParams m_Params;
 	SimpleTracker m_ObstacleTracking;
@@ -153,11 +158,17 @@ protected:
 	// define subscribers.
 	ros::Subscriber sub_cloud_clusters;
 	ros::Subscriber sub_current_pose ;
+	ros::Subscriber sub_current_velocity;
+	ros::Subscriber sub_robot_odom;
+	ros::Subscriber sub_can_info;
 
 
 	// Callback function for subscriber.
 	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
+	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
+	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 
 	//Helper Functions
 	void VisualizeLocalTracking();

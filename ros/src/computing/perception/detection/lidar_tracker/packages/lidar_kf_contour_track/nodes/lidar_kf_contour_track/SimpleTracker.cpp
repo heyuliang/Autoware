@@ -54,7 +54,7 @@ using namespace PlannerHNS;
 SimpleTracker::SimpleTracker()
 {
 	iTracksNumber = 1;
-	m_dt = 0.1;
+	m_dt = 0.05;
 	m_MAX_ASSOCIATION_DISTANCE = 2.0;
 	m_MAX_ASSOCIATION_SIZE_DIFF = 5.0;
 	m_MAX_ASSOCIATION_ANGLE_DIFF = 0.6;
@@ -205,7 +205,7 @@ void SimpleTracker::MatchWithDistanceOnly()
 
 		if(iClosest_obj != -1 && iClosest_track != -1 && dClosest < m_MAX_ASSOCIATION_DISTANCE)
 		{
-			std::cout << "MatchObj: " << m_TrackSimply.at(iClosest_track).obj.id << ", MinD: " << dClosest << ", SizeDiff: (" << size_diff <<  ")" << ", ObjI" << iClosest_obj <<", TrackI: " << iClosest_track << std::endl;
+			//std::cout << "MatchObj: " << m_TrackSimply.at(iClosest_track).obj.id << ", MinD: " << dClosest << ", SizeDiff: (" << size_diff <<  ")" << ", ObjI" << iClosest_obj <<", TrackI: " << iClosest_track << std::endl;
 			m_MatchList.push_back(std::make_pair(m_TrackSimply.at(iClosest_track).obj.center, m_DetectedObjects.at(iClosest_obj).center));
 			m_DetectedObjects.at(iClosest_obj).id = m_TrackSimply.at(iClosest_track).obj.id;
 			MergeObjectAndTrack(m_TrackSimply.at(iClosest_track), m_DetectedObjects.at(iClosest_obj));
@@ -514,7 +514,7 @@ void SimpleTracker::AssociateSimply()
 	MatchWithDistanceOnly();
 
 	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
-		m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+		m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj, m_bEnableStepByStep);
 
 	m_DetectedObjects.clear();
 	for(unsigned int i = 0; i< m_TrackSimply.size(); i++)
@@ -606,7 +606,7 @@ void SimpleTracker::AssociateDistanceOnlyAndTrack()
 
 	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
 	{
-		m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+		m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj, m_bEnableStepByStep);
 	}
 }
 
@@ -695,7 +695,7 @@ void SimpleTracker::AssociateAndTrack()
 	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
 	{
 		//if(m_TrackSimply.at(i).m_bUpdated)
-			m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+			m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj, m_bEnableStepByStep);
 //		else
 //		{
 ////			double dx = 0;

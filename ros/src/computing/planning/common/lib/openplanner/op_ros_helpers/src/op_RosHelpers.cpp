@@ -324,58 +324,52 @@ void RosHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<Plan
 	path_markers = path_markers_d;
 	for(unsigned int i = 0; i < paths.size(); i++)
 	{
-		double additional_z = 0;
-		double basic_color = 0.5;
+		double additional_z = 1.0;
 		double prop = 1.0;
 		bool bCurrent = false;
-//		if(paths.at(i).size()>0)
-//		{
-//
-//			prop = paths.at(i).at(0).collisionCost;
-//			if(prop < 0.5)
-//				continue;
-//
-//			if(prop > 0.5)
-//			{
-//				additional_z = prop;
-//				bCurrent = true;
-//			}
-//		}
+		if(paths.at(i).size()>0)
+		{
+			prop = paths.at(i).at(0).collisionCost;
+			if(prop > 0.5)
+			{
+				bCurrent = true;
+			}
+		}
 
 
-//		double r = 0, g = 0, b = 0;
-//		if(bCurrent == true)
-//		{
-//			r = basic_color+additional_z;
-//			g = basic_color+additional_z;
-//			b = basic_color+additional_z;
-//		}
+		double r = 0, g = 0, b = 0;
+		if(bCurrent == true)
+		{
+			g = 1.0;
+		}
+		else
+		{
+			r = 1.0;
+		}
 //		else if(i == 0)
 //		{
-//			r = basic_color+additional_z;
+//			r = 1.0;
 //		}
 //		else if(i == 1)
 //		{
-//			g = basic_color+additional_z;
+//			r = 1.0;
 //		}
 //		else if(i == 2)
 //		{
-//			b = basic_color+additional_z;
+//			r = 1.0;
 //		}
 //		else if(i == 3)
 //		{
-//			r = basic_color+additional_z;
-//			b = basic_color+additional_z;
+//			r = 1.0;
 //		}
 //		else
 //		{
-//			g = basic_color+additional_z;
-//			b = basic_color+additional_z;
+//			r = 1.0;
 //		}
-//
-//		visualization_msgs::Marker path_mkr = CreateGenMarker(0,0,0,0,r,g,b,0.1,i,"Predicted_Trajectories", visualization_msgs::Marker::LINE_STRIP);
 
-		visualization_msgs::Marker path_mkr = CreateGenMarker(0,0,0,0,1.0*prop,0.1*prop,0.1*prop,0.1,i,"Predicted_Trajectories", visualization_msgs::Marker::LINE_STRIP);
+		visualization_msgs::Marker path_mkr = CreateGenMarker(0,0,0,0,r,g,b,0.1,i,"Predicted_Trajectories", visualization_msgs::Marker::LINE_STRIP);
+
+		//visualization_msgs::Marker path_mkr = CreateGenMarker(0,0,0,0,1.0*prop,0.1*prop,0.1*prop,0.1,i,"Predicted_Trajectories", visualization_msgs::Marker::LINE_STRIP);
 
 
 		for(unsigned int p = 0; p < paths.at(i).size(); p++)
@@ -474,7 +468,7 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	roll_color.r = 1;
 	roll_color.g = 1;
 	roll_color.b = 1;
-	roll_color.a = 0.5;
+	roll_color.a = 0.25;
 
 	lane_waypoint_marker.color = roll_color;
 	lane_waypoint_marker.frame_locked = false;
@@ -506,37 +500,64 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	}
 }
 
-void RosHelpers::InitPredParticlesMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths)
+void RosHelpers::InitPredParticlesMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths, bool bOld )
 {
 	paths.markers.clear();
 	for(int i=0; i<nMarkers; i++)
 	{
-		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
-		mkr.scale.x = 0.3;
-		paths.markers.push_back(mkr);
+		if(bOld)
+		{
+			visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,0.05,i,"Particles", visualization_msgs::Marker::CUBE);
+			mkr.scale.x = 0.2;
+			paths.markers.push_back(mkr);
+		}
+		else
+		{
+			visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
+			mkr.scale.x = 0.3;
+			paths.markers.push_back(mkr);
+		}
 	}
 }
 
-void RosHelpers::ConvertParticles(std::vector<PlannerHNS::WayPoint>& points, visualization_msgs::MarkerArray& part_mkrs, visualization_msgs::MarkerArray& part_markers_d)
+void RosHelpers::ConvertParticles(std::vector<PlannerHNS::WayPoint>& points, visualization_msgs::MarkerArray& part_mkrs, visualization_msgs::MarkerArray& part_markers_d, bool bOld)
 {
 	part_mkrs = part_markers_d;
 	for(unsigned int i = 0; i < points.size(); i++)
 	{
 		visualization_msgs::Marker mkr;
-		if(points.at(i).bDir == PlannerHNS::STANDSTILL_DIR)
-			mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,0,0,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
-		else if(points.at(i).bDir == PlannerHNS::FORWARD_DIR)
-			mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,1,1,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
-		else if(points.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
-			mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,0,1,0,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
-		else if(points.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
-			mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,0,0,1,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
-		else if(points.at(i).bDir == PlannerHNS::BACKWARD_DIR)
-			mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,0,1,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
+		if(bOld)
+		{
+			if(points.at(i).bDir == PlannerHNS::STANDSTILL_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,0,0,0.25,i,"Particles", visualization_msgs::Marker::CUBE);
+			else if(points.at(i).bDir == PlannerHNS::FORWARD_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,1,1,0.25,i,"Particles", visualization_msgs::Marker::CUBE);
+			else if(points.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,0,1,0,0.25,i,"Particles", visualization_msgs::Marker::CUBE);
+			else if(points.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,0,0,1,0.25,i,"Particles", visualization_msgs::Marker::CUBE);
+			else if(points.at(i).bDir == PlannerHNS::BACKWARD_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,0,1,0.25,i,"Particles", visualization_msgs::Marker::CUBE);
+			else
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,1,0,0.25,i,"Particles", visualization_msgs::Marker::CUBE);
+		}
 		else
-			mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,1,0,0.05,i,"Particles", visualization_msgs::Marker::ARROW);
+		{
+			if(points.at(i).bDir == PlannerHNS::STANDSTILL_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,0,0,0.25,i,"Particles", visualization_msgs::Marker::ARROW);
+			else if(points.at(i).bDir == PlannerHNS::FORWARD_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,1,1,0.25,i,"Particles", visualization_msgs::Marker::ARROW);
+			else if(points.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,0,1,0,0.25,i,"Particles", visualization_msgs::Marker::ARROW);
+			else if(points.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,0,0,1,0.25,i,"Particles", visualization_msgs::Marker::ARROW);
+			else if(points.at(i).bDir == PlannerHNS::BACKWARD_DIR)
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,0,1,0.25,i,"Particles", visualization_msgs::Marker::ARROW);
+			else
+				mkr = CreateGenMarker(points.at(i).pos.x, points.at(i).pos.y,points.at(i).pos.z,points.at(i).pos.a,1,1,0,0.25,i,"Particles", visualization_msgs::Marker::ARROW);
+		}
 
-		mkr.scale.x = 0.3;
+		//mkr.scale.x = 0.3;
 		if(i < part_mkrs.markers.size())
 			part_mkrs.markers.at(i) = mkr;
 		else
@@ -1118,6 +1139,47 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 	str_out << GetBehaviorNameFromCode(beh.state);
 	if(avoidDirection == 1)
 		str_out << " >>";
+	behaviorMarker.text = str_out.str();
+}
+
+void RosHelpers::VisualizeIntentionState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BEH_STATE_TYPE& beh, visualization_msgs::Marker& behaviorMarker, std::string ns,double size_factor)
+{
+	behaviorMarker.header.frame_id = "map";
+	behaviorMarker.header.stamp = ros::Time();
+	behaviorMarker.ns = ns;
+	behaviorMarker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	behaviorMarker.scale.z = 1.0*size_factor;
+	behaviorMarker.scale.x = 1.0*size_factor;
+	behaviorMarker.scale.y = 1.0*size_factor;
+	behaviorMarker.color.a = 0.9;
+	behaviorMarker.frame_locked = false;
+
+	behaviorMarker.color.r = 1;
+	behaviorMarker.color.g = 0.5;
+	behaviorMarker.color.b = 0.1;
+
+
+	behaviorMarker.id = 0;
+
+	geometry_msgs::Point point;
+
+	point.x = currState.pos.x;
+	point.y = currState.pos.y;
+	point.z = currState.pos.z+3.0;
+
+	behaviorMarker.pose.position = point;
+
+	std::ostringstream str_out;
+
+	if(beh == BEH_STOPPING_STATE)
+		str_out << "Stopping";
+	else if(beh == BEH_FORWARD_STATE)
+		str_out << "Forward";
+	else if(beh == BEH_YIELDING_STATE)
+		str_out << "Yielding";
+	else
+		str_out << "Unknown!";
+
 	behaviorMarker.text = str_out.str();
 }
 

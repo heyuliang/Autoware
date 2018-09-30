@@ -37,6 +37,7 @@ namespace MotionPredictorNS
 
 MotionPrediction::MotionPrediction()
 {
+	m_t = 0;
 	bMap = false;
 	bNewCurrentPos = false;
 	bVehicleStatus = false;
@@ -59,6 +60,9 @@ MotionPrediction::MotionPrediction()
 	pub_PredictedTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("/predicted_trajectories_rviz", 1);
 	pub_CurbsRviz					= nh.advertise<visualization_msgs::MarkerArray>("/map_curbs_rviz", 1);
 	pub_ParticlesRviz = nh.advertise<visualization_msgs::MarkerArray>("prediction_particles", 1);
+	pub_GeneratedParticlesRviz = nh.advertise<visualization_msgs::MarkerArray>("generated_particles", 1);
+	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::MarkerArray>("prediction_behaviors", 1);
+	pub_TargetPointsRviz = nh.advertise<visualization_msgs::MarkerArray>("target_points_on_trajs", 1);
 
 	sub_StepSignal = nh.subscribe("/pred_step_signal", 		1, &MotionPrediction::callbackGetStepForwardSignals, 		this);
 	sub_tracked_objects	= nh.subscribe("/tracked_objects", 			1,		&MotionPrediction::callbackGetTrackedObjects, 		this);
@@ -76,7 +80,8 @@ MotionPrediction::MotionPrediction()
 	UtilityHNS::UtilityH::GetTickCount(m_VisualizationTimer);
 	PlannerHNS::RosHelpers::InitPredMarkers(100, m_PredictedTrajectoriesDummy);
 	PlannerHNS::RosHelpers::InitCurbsMarkers(100, m_CurbsDummy);
-	PlannerHNS::RosHelpers::InitPredParticlesMarkers(500, m_PredictedParticlesDummy);
+	PlannerHNS::RosHelpers::InitPredParticlesMarkers(1000, m_PredictedParticlesDummy);
+	PlannerHNS::RosHelpers::InitPredParticlesMarkers(2000, m_GeneratedParticlesDummy, true);
 
 	//Mapping Section
 	sub_lanes = nh.subscribe("/vector_map_info/lane", 1, &MotionPrediction::callbackGetVMLanes,  this);
@@ -99,6 +104,16 @@ MotionPrediction::MotionPrediction()
 
 MotionPrediction::~MotionPrediction()
 {
+	std::cout << " ^^^^^^ Start Logging Data Raws : " << m_LogData.size() << ", To Folder: " << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::PredictionFolderName << std::endl;
+	ostringstream car_name;
+	car_name << "Moving_stopping_";
+	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::PredictionFolderName,
+			car_name.str(),
+			"time, x, y, heading, velocity, acceleration, indicator, "
+			"n_part_forward_1, p_forward_1, w_forward_1, n_part_stopping_1, p_stopping_1, w_stopping_1, n_part_yielding_1, p_yielding_1, w_yielding_1, best_1,"
+			"n_part_forward_2, p_forward_2, w_forward_2, n_part_stopping_2, p_stopping_2, w_stopping_2, n_part_yielding_2, p_yielding_2, w_yielding_2, best_2,"
+			"n_part_forward_3, p_forward_3, w_forward_3, n_part_stopping_3, p_stopping_3, w_stopping_3, n_part_yielding_3, p_yielding_3, w_yielding_3, best_3,"
+			"n_part_forward_4, p_forward_4, w_forward_4, n_part_stopping_4, p_stopping_4, w_stopping_4, n_part_yielding_4, p_yielding_4, w_yielding_4, best_4," , m_LogData);
 }
 
 void MotionPrediction::UpdatePlanningParams(ros::NodeHandle& _nh)
@@ -181,7 +196,7 @@ void MotionPrediction::callbackGetStepForwardSignals(const geometry_msgs::TwistS
 
 void MotionPrediction::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-	m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
+	m_CurrentPos.pos = PlannerHNS::GPSPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
 	bNewCurrentPos = true;
 }
 
@@ -226,11 +241,6 @@ void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedOb
 			PlannerHNS::RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
 			m_TrackedObjects.push_back(obj);
 		}
-//		else
-//		{
-//			std::cout << " Ego Car avoid detecting itself from motion prediction node! ID: " << msg->objects.at(i).id << std::endl;
-//		}
-
 	}
 
 	if(bMap)
@@ -251,8 +261,8 @@ void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedOb
 		for(unsigned int i = 0 ; i <m_PredictBeh.m_ParticleInfo_II.size(); i++)
 		{
 			PlannerHNS::RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_PredictBeh.m_ParticleInfo_II.at(i)->obj, false, pred_obj);
-			if(m_PredictBeh.m_ParticleInfo_II.at(i)->best_beh_track)
-				pred_obj.behavior_state = m_PredictBeh.m_ParticleInfo_II.at(i)->best_beh_track->best_beh;
+			if(m_PredictBeh.m_ParticleInfo_II.at(i)->best_behavior_track)
+				pred_obj.behavior_state = m_PredictBeh.m_ParticleInfo_II.at(i)->best_behavior_track->best_beh_by_p;
 			m_PredictedResultsResults.objects.push_back(pred_obj);
 		}
 
@@ -270,6 +280,8 @@ void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedOb
 
 		m_PredictedResultsResults.header.stamp = ros::Time().now();
 		pub_predicted_objects_trajectories.publish(m_PredictedResultsResults);
+
+		LogDataRaw();
 	}
 }
 
@@ -312,6 +324,83 @@ void MotionPrediction::GenerateCurbsObstacles(std::vector<PlannerHNS::DetectedOb
 	}
 }
 
+void MotionPrediction::LogDataRaw()
+{
+	if(m_PredictBeh.m_ParticleInfo_II.size() == 0 )
+		return;
+
+	std::ostringstream dataLine;
+	PlannerHNS::DetectedObject* pObj = &m_PredictBeh.m_ParticleInfo_II.at(0)->obj;
+	dataLine << m_t << "," << pObj->center.pos.x << "," <<  pObj->center.pos.y << "," << pObj->center.pos.a << "," << pObj->center.v << "," << pObj->acceleration_desc
+			<< "," << pObj->indicator_state << ",";
+
+	if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 0)
+	{
+		PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(0);
+		dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
+		dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
+		dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+
+		if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 1)
+		{
+			PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(1);
+			dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
+			dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
+			dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+		}
+		else
+		{
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		}
+
+		if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 2)
+		{
+			PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(2);
+			dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
+			dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
+			dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+		}
+		else
+		{
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		}
+
+		if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 3)
+		{
+			PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(3);
+			dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
+			dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
+			dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+		}
+		else
+		{
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		}
+	}
+	else
+	{
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+	}
+
+	m_LogData.push_back(dataLine.str());
+
+	if(m_t==0)
+	{
+		UtilityHNS::UtilityH::GetTickCount(m_LogTime);
+	}
+	else
+	{
+		m_t += UtilityHNS::UtilityH::GetTimeDiffNow(m_LogTime);
+		UtilityHNS::UtilityH::GetTickCount(m_LogTime);
+	}
+}
+
 void MotionPrediction::VisualizePrediction()
 {
 //	m_all_pred_paths.clear();
@@ -327,83 +416,86 @@ void MotionPrediction::VisualizePrediction()
 	m_all_pred_paths.clear();
 	m_particles_points.clear();
 	visualization_msgs::MarkerArray behavior_rviz_arr;
-	int number_of_particles = 0;
+
+
+	m_TargetPointsOnTrajectories.markers.clear();
+
 	for(unsigned int i=0; i< m_PredictBeh.m_ParticleInfo_II.size(); i++)
 	{
 		m_all_pred_paths.insert(m_all_pred_paths.begin(), m_PredictBeh.m_ParticleInfo_II.at(i)->obj.predTrajectories.begin(), m_PredictBeh.m_ParticleInfo_II.at(i)->obj.predTrajectories.end());
 
 		for(unsigned int t=0; t < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.size(); t++)
 		{
+			PlannerHNS::WayPoint tt_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->followPoint;
+			visualization_msgs::Marker targetPoint = PlannerHNS::RosHelpers::CreateGenMarker(tt_wp.pos.x,tt_wp.pos.y,tt_wp.pos.z,0,0,0.0,1,0.5,t,"target_trajectory_point", visualization_msgs::Marker::SPHERE);
+			m_TargetPointsOnTrajectories.markers.push_back(targetPoint);
+
 			PlannerHNS::WayPoint p_wp;
-			for(unsigned int j=0; j < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_StopPart.size(); j++)
+			for(unsigned int j=0; j < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_CurrParts.size(); j++)
 			{
-				p_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_StopPart.at(j).pose;
-				p_wp.bDir = PlannerHNS::STANDSTILL_DIR;
-				m_particles_points.push_back(p_wp);
-				number_of_particles++;
-			}
-
-			for(unsigned int j=0; j < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_YieldPart.size(); j++)
-			{
-				p_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_YieldPart.at(j).pose;
-				p_wp.bDir = PlannerHNS::BACKWARD_DIR;
-				m_particles_points.push_back(p_wp);
-				number_of_particles++;
-			}
-
-			if(m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->beh == PlannerHNS::BEH_FORWARD_STATE)
-			{
-				for(unsigned int j=0; j < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_ForwardPart.size(); j++)
-				{
-					p_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_ForwardPart.at(j).pose;
+				PlannerHNS::Particle* pPart = &m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_CurrParts.at(j);
+				p_wp = pPart->pose;
+				if(pPart->beh == PlannerHNS::BEH_STOPPING_STATE)
+					p_wp.bDir = PlannerHNS::STANDSTILL_DIR;
+				else if(pPart->beh == PlannerHNS::BEH_YIELDING_STATE)
+					p_wp.bDir = PlannerHNS::BACKWARD_DIR;
+				else if(pPart->beh == PlannerHNS::BEH_FORWARD_STATE)
 					p_wp.bDir = PlannerHNS::FORWARD_DIR;
-					m_particles_points.push_back(p_wp);
-					number_of_particles++;
-				}
-			}
-
-			if(m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->beh == PlannerHNS::BEH_BRANCH_LEFT_STATE)
-			{
-				//std::cout << "Left Particles : " << m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_LeftPart.size() << std::endl;
-				for(unsigned int j=0; j < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_LeftPart.size(); j++)
-				{
-					p_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_LeftPart.at(j).pose;
+				else if(pPart->beh == PlannerHNS::BEH_BRANCH_LEFT_STATE)
 					p_wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
-					m_particles_points.push_back(p_wp);
-					number_of_particles++;
-				}
-			}
-
-			if(m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->beh == PlannerHNS::BEH_BRANCH_RIGHT_STATE)
-			{
-				for(unsigned int j=0; j < m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_RightPart.size(); j++)
-				{
-					p_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_TrajectoryTracker.at(t)->m_RightPart.at(j).pose;
+				else if(pPart->beh == PlannerHNS::BEH_BRANCH_RIGHT_STATE)
 					p_wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
-					m_particles_points.push_back(p_wp);
-					number_of_particles++;
-				}
+
+				m_particles_points.push_back(p_wp);
 			}
 		}
 
-
-//		visualization_msgs::Marker behavior_rviz;
-//		std::ostringstream ns_beh;
-//		ns_beh << "pred_beh_state_" << i;
-//		RosHelpers::VisualizeBehaviorState(m_PredictBeh.m_ParticleInfo_II.at(i).obj.center, m_PredictBeh.m_ParticleInfo_II.at(i).m_beh, false , 0, behavior_rviz, ns_beh.str(), 3);
-//		behavior_rviz_arr.markers.push_back(behavior_rviz);
-
+		if(m_PredictBeh.m_ParticleInfo_II.at(i) != nullptr && m_PredictBeh.m_ParticleInfo_II.at(i)->best_behavior_track != nullptr)
+		{
+			visualization_msgs::Marker behavior_rviz;
+			std::ostringstream ns_beh;
+			ns_beh << "pred_beh_state_" << i;
+			PlannerHNS::RosHelpers::VisualizeIntentionState(m_PredictBeh.m_ParticleInfo_II.at(i)->obj.center, m_PredictBeh.m_ParticleInfo_II.at(i)->best_behavior_track->best_beh_by_p, behavior_rviz, ns_beh.str(), 3);
+			behavior_rviz_arr.markers.push_back(behavior_rviz);
+		}
 	}
+	pub_BehaviorStateRviz.publish(behavior_rviz_arr);
 
-//	pub_PredBehaviorStateRviz.publish(behavior_rviz_arr);
 
 	PlannerHNS::RosHelpers::ConvertParticles(m_particles_points,m_PredictedParticlesActual, m_PredictedParticlesDummy);
-	//std::cout << "Original Particles: " << number_of_particles <<  ", Total Particles Num: " << m_PredictedParticlesActual.markers.size() << std::endl;
 	pub_ParticlesRviz.publish(m_PredictedParticlesActual);
 
 	//std::cout << "Start Tracking of Trajectories : " <<  m_all_pred_paths.size() << endl;
 	PlannerHNS::RosHelpers::ConvertPredictedTrqajectoryMarkers(m_all_pred_paths, m_PredictedTrajectoriesActual, m_PredictedTrajectoriesDummy);
 	pub_PredictedTrajectoriesRviz.publish(m_PredictedTrajectoriesActual);
+
+	m_generated_particles_points.clear();
+	for(unsigned int i=0; i< m_PredictBeh.m_ParticleInfo_II.size(); i++)
+	{
+		PlannerHNS::WayPoint p_wp;
+		for(unsigned int t=0; t < m_PredictBeh.m_ParticleInfo_II.at(i)->m_AllGeneratedParticles.size(); t++)
+		{
+			p_wp = m_PredictBeh.m_ParticleInfo_II.at(i)->m_AllGeneratedParticles.at(t).pose;
+			if(m_PredictBeh.m_ParticleInfo_II.at(i)->m_AllGeneratedParticles.at(t).beh == PlannerHNS::BEH_STOPPING_STATE)
+			{
+				p_wp.bDir = PlannerHNS::STANDSTILL_DIR;
+			}
+			else if(m_PredictBeh.m_ParticleInfo_II.at(i)->m_AllGeneratedParticles.at(t).beh == PlannerHNS::BEH_FORWARD_STATE)
+			{
+				p_wp.bDir = PlannerHNS::FORWARD_DIR;
+			}
+			else if(m_PredictBeh.m_ParticleInfo_II.at(i)->m_AllGeneratedParticles.at(t).beh == PlannerHNS::BEH_YIELDING_STATE)
+			{
+				p_wp.bDir = PlannerHNS::BACKWARD_DIR;
+			}
+			m_generated_particles_points.push_back(p_wp);
+		}
+	}
+	PlannerHNS::RosHelpers::ConvertParticles(m_generated_particles_points,m_GeneratedParticlesActual, m_GeneratedParticlesDummy, true);
+	pub_GeneratedParticlesRviz.publish(m_GeneratedParticlesActual);
+
+
+	pub_TargetPointsRviz.publish(m_TargetPointsOnTrajectories);
 
 	UtilityHNS::UtilityH::GetTickCount(m_VisualizationTimer);
 }
@@ -429,7 +521,7 @@ void MotionPrediction::MainLoop()
 		}
 		else if (m_MapType == PlannerHNS::MAP_AUTOWARE && !bMap)
 		{
-			std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;;
+			std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 			if(m_MapRaw.GetVersion()==2)
 			{
@@ -438,7 +530,7 @@ void MotionPrediction::MainLoop()
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
 						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
-						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_PlanningParams.enableLaneChange, true);
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_PlanningParams.enableLaneChange, m_bEnableCurbObstacles);
 
 				if(m_Map.roadSegments.size() > 0)
 				{
@@ -452,7 +544,7 @@ void MotionPrediction::MainLoop()
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
-						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true);
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true, m_PlanningParams.enableLaneChange, m_bEnableCurbObstacles);
 
 				if(m_Map.roadSegments.size() > 0)
 				{

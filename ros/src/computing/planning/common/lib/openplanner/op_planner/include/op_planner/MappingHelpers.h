@@ -82,9 +82,6 @@ public:
 
 
 	static Lane* GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0, const bool bDirectionBased = true);
-	static std::vector<Lane*> GetClosestLanesListFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 2.0, const bool bDirectionBased = true);
-	static Lane* GetClosestLaneFromMapDirectionBased(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
-	static std::vector<Lane*> GetClosestMultipleLanesFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
 	static WayPoint* GetClosestWaypointFromMap(const WayPoint& pos, RoadNetwork& map, const bool bDirectionBased = true);
 	static std::vector<Lane*> GetClosestLanesFast(const WayPoint& pos, RoadNetwork& map, const double& distance = 10.0);
 

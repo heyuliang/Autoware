@@ -371,6 +371,10 @@ BehaviorStateMachine* ForwardStateII::GetNextState()
 			&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
 		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
 
+	else if(pCParams->bFinalLocalTrajectory
+			&& (pCParams->distanceToGoal - pCParams->minStoppingDistance) < 1.0 )
+		return FindBehaviorState(STOPPING_STATE);
+
 	else
 		return FindBehaviorState(this->m_Behavior);
 }
@@ -511,8 +515,22 @@ BehaviorStateMachine* TrafficLightWaitStateII::GetNextState()
 //		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
 
 	else
-		return FindBehaviorState(this->m_Behavior); // return and reset
+		return FindBehaviorState(this->m_Behavior);
 
+}
+
+BehaviorStateMachine* StopStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID != pCParams->prevGoalID)
+		return FindBehaviorState(GOAL_STATE);
+
+	else if((pCParams->distanceToGoal - pCParams->minStoppingDistance) > 1.0)
+		return FindBehaviorState(FORWARD_STATE);
+
+	else
+		return FindBehaviorState(this->m_Behavior);
 }
 
 } /* namespace PlannerHNS */

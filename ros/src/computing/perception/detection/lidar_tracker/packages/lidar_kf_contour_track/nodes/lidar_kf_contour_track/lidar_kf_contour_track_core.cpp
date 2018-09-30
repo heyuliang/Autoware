@@ -53,7 +53,7 @@ ContourTracker::ContourTracker()
 	ReadNodeParams();
 	ReadCommonParams();
 
-	m_ObstacleTracking.m_dt = 0.1;
+	m_ObstacleTracking.m_dt = 0.06;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
 	m_ObstacleTracking.m_Horizon = m_Params.DetectionRadius;
 	m_ObstacleTracking.m_bEnableStepByStep = m_Params.bEnableStepByStep;
@@ -61,6 +61,13 @@ ContourTracker::ContourTracker()
 
 	sub_cloud_clusters 		= nh.subscribe("/cloud_clusters", 1, &ContourTracker::callbackGetCloudClusters, this);
 	sub_current_pose 		= nh.subscribe("/current_pose",   1, &ContourTracker::callbackGetCurrentPose, 	this);
+
+	if(m_VelocitySource == 0)
+		sub_robot_odom = nh.subscribe("/odom", 1, &ContourTracker::callbackGetRobotOdom, this);
+	else if(m_VelocitySource == 1)
+		sub_current_velocity = nh.subscribe("/current_velocity", 1, &ContourTracker::callbackGetVehicleStatus, this);
+	else if(m_VelocitySource == 2)
+		sub_can_info = nh.subscribe("/can_info", 1, &ContourTracker::callbackGetCanInfo, this);
 
 	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("tracked_objects", 1);
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1);
@@ -160,6 +167,9 @@ void ContourTracker::ReadCommonParams()
 		m_MapType = PlannerHNS::MAP_KML_FILE;
 
 	_nh.getParam("/op_common_params/mapFileName" , m_MapPath);
+
+	if(!_nh.getParam("/op_common_params/velocitySource", m_VelocitySource))
+		m_VelocitySource = 1;
 }
 
 void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg)
@@ -214,6 +224,7 @@ void ContourTracker::ImportCloudClusters(const autoware_msgs::CloudClusterArrayC
 		obj.center.pos.y = msg->clusters.at(i).centroid_point.point.y;
 		obj.center.pos.z = msg->clusters.at(i).centroid_point.point.z;
 		obj.center.pos.a = msg->clusters.at(i).estimated_angle;
+		obj.center.v = msg->clusters.at(i).score;
 
 		obj.distance_to_center = hypot(obj.center.pos.y-m_CurrentPos.pos.y, obj.center.pos.x-m_CurrentPos.pos.x);
 
@@ -318,10 +329,33 @@ bool ContourTracker::IsCar(const PlannerHNS::DetectedObject& obj, const PlannerH
 
 void ContourTracker::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z,
+  m_CurrentPos.pos = PlannerHNS::GPSPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z,
       tf::getYaw(msg->pose.orientation));
 
   bNewCurrentPos = true;
+}
+
+void ContourTracker::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	m_VehicleStatus.speed = msg->twist.linear.x;
+	m_CurrentPos.v = m_VehicleStatus.speed;
+	if(fabs(msg->twist.linear.x) > 0.25)
+		m_VehicleStatus.steer = atan(2.7 * msg->twist.angular.z/msg->twist.linear.x);
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
+}
+
+void ContourTracker::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+{
+	m_VehicleStatus.speed = msg->speed/3.6;
+	m_VehicleStatus.steer = msg->angle * 0.4 / 1.0;
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
+}
+
+void ContourTracker::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
+{
+	m_VehicleStatus.speed = msg->twist.twist.linear.x;
+	m_VehicleStatus.steer += atan(2.7 * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
 }
 
 void ContourTracker::VisualizeLocalTracking()
@@ -562,7 +596,7 @@ void ContourTracker::MainLoop()
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
 						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
-						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, true);
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, false);
 
 				if(m_Map.roadSegments.size() > 0)
 				{
@@ -576,7 +610,7 @@ void ContourTracker::MainLoop()
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
-						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, true);
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, false);
 
 				if(m_Map.roadSegments.size() > 0)
 				{

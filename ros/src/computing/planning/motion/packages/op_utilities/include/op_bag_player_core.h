@@ -78,7 +78,7 @@ public:
 
     bool m_bStepForward;
     bool m_bPredStepForward;
-    bool m_bGenerateSignal;
+    bool m_bPerceptionStep;
 
     ros::Publisher pub_SimuStepSignal;
     ros::Publisher pub_SimuGenSignal;

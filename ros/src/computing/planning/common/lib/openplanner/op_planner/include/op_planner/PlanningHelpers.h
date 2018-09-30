@@ -180,6 +180,8 @@ public:
 
 	static PlannerHNS::WayPoint GetRealCenter(const PlannerHNS::WayPoint& currState, const double& wheel_base);
 
+	static double GetDistanceFromPoseToEnd(const PlannerHNS::WayPoint& pose, const std::vector<WayPoint>& path);
+
 	static void TestQuadraticSpline(const std::vector<WayPoint>& center_line, std::vector<WayPoint>& path);
 
 	static double frunge ( double x );

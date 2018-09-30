@@ -55,7 +55,7 @@ TestingUI::TestingUI()
 	m_bBagOpen = false;
 	m_bStepForward = false;
 	m_bPredStepForward = false;
-	m_bGenerateSignal = false;
+	m_bPerceptionStep = false;
 
 	m_VehicleTargetStateAccelerator = 0;
 	m_VehicleTargetStateBrake = 0;
@@ -81,6 +81,17 @@ void TestingUI::DrawSimu()
 		if(m_TestMode == SIMULATION_MODE)
 		{
 			SimulationModeMainLoop();
+
+			glPushMatrix();
+			glColor3f(1,1,1);
+			DrawingHelpers::DrawString(-7, 5, GLUT_BITMAP_HELVETICA_18, (char*)"Simulation Mode - Sends signal to:");
+			DrawingHelpers::DrawString(-7, 4, GLUT_BITMAP_HELVETICA_18, (char*)"   - op_car_simulator");
+			DrawingHelpers::DrawString(-7, 3, GLUT_BITMAP_HELVETICA_18, (char*)"   - op_perception_simulator");
+			DrawingHelpers::DrawString(-7, 2, GLUT_BITMAP_HELVETICA_18, (char*)"   - lidar_kf_contour_track");
+			DrawingHelpers::DrawString(-7, 1, GLUT_BITMAP_HELVETICA_18, (char*)"   - op_motion_predictor");
+			glColor3f(0,1,0);
+			DrawingHelpers::DrawString(-7, 0, GLUT_BITMAP_HELVETICA_18, (char*)"Send Signal  -> (s)");
+			glPopMatrix();
 		}
 		else if (m_TestMode == ROSBAG_MODE)
 		{
@@ -101,9 +112,15 @@ void TestingUI::DrawSimu()
 			str_out_image <<"* Image: " << _sec << " (" << iFrame << "/" << nFrames << ")";
 
 			glPushMatrix();
-			DrawingHelpers::DrawString(-3, 2, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out_pose.str().c_str());
-			DrawingHelpers::DrawString(-3, 1, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out_cloud.str().c_str());
-			DrawingHelpers::DrawString(-3, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out_image.str().c_str());
+			glColor3f(0,1,0);
+			DrawingHelpers::DrawString(-7, 4, GLUT_BITMAP_HELVETICA_12, (char*)"Play/Pause  -> (Space)");
+			DrawingHelpers::DrawString(-7, 3, GLUT_BITMAP_HELVETICA_12, (char*)"Next Frame -> (Up Arrow)");
+			DrawingHelpers::DrawString(-7, 2, GLUT_BITMAP_HELVETICA_12, (char*)"Previous Frame -> (Down Arrow)");
+			glColor3f(1,1,1);
+			DrawingHelpers::DrawString(-7, 5, GLUT_BITMAP_HELVETICA_18, (char*)"Rosbag playing mode");
+			DrawingHelpers::DrawString(-7, -1, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out_pose.str().c_str());
+			DrawingHelpers::DrawString(-7, -2, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out_cloud.str().c_str());
+			DrawingHelpers::DrawString(-7, -3, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out_image.str().c_str());
 			glPopMatrix();
 		}
 
@@ -122,6 +139,18 @@ void TestingUI::SimulationModeMainLoop()
 		s_signal.twist.linear.x = 1;
 		pub_PredStepSignal.publish(s_signal);
 		m_bPredStepForward = false;
+
+	}
+
+	if(m_bPerceptionStep)
+	{
+		geometry_msgs::TwistStamped g_signal;
+		g_signal.header.frame_id = "velodyne";
+		g_signal.header.stamp = ros::Time();
+		g_signal.twist.linear.x = 1;
+		pub_SimuGenSignal.publish(g_signal);
+		m_bPerceptionStep = false;
+		m_bPredStepForward = true;
 	}
 
 	if(m_bStepForward)
@@ -132,17 +161,7 @@ void TestingUI::SimulationModeMainLoop()
 		s_signal.twist.linear.x = 1;
 		pub_SimuStepSignal.publish(s_signal);
 		m_bStepForward = false;
-		m_bPredStepForward = true;
-	}
-
-	if(m_bGenerateSignal)
-	{
-		geometry_msgs::TwistStamped g_signal;
-		g_signal.header.frame_id = "velodyne";
-		g_signal.header.stamp = ros::Time();
-		g_signal.twist.linear.x = 1;
-		pub_SimuGenSignal.publish(g_signal);
-		m_bGenerateSignal = false;
+		m_bPerceptionStep = true;
 	}
 }
 
@@ -295,7 +314,7 @@ void TestingUI::InitNode(const BagReaderParams& params, const int& mode)
 	{
 		pub_SimuStepSignal 		= nh.advertise<geometry_msgs::TwistStamped>("simu_step_signal", 1);
 		pub_PredStepSignal 		= nh.advertise<geometry_msgs::TwistStamped>("pred_step_signal", 1);
-		pub_SimuGenSignal		= nh.advertise<geometry_msgs::TwistStamped>("simu_generate_signal", 1);
+		pub_SimuGenSignal		= nh.advertise<geometry_msgs::TwistStamped>("percept_simu_step_signal", 1);
 	}
 }
 
@@ -309,12 +328,8 @@ void TestingUI::OnKeyboardPress(const int& sKey, const unsigned char& key)
 		{
 		case 's':
 		{
-			m_bStepForward = true;
-		}
-		break;
-		case 'g':
-		{
-			m_bGenerateSignal = true;
+			if(!m_bStepForward && !m_bPredStepForward && !m_bPerceptionStep)
+				m_bStepForward = true;
 		}
 		break;
 		default:

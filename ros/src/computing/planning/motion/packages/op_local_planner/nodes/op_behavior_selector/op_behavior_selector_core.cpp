@@ -63,6 +63,7 @@ BehaviorGen::BehaviorGen()
 	pub_SimuBoxPose	  = nh.advertise<geometry_msgs::PoseArray>("sim_box_pose_ego", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::MarkerArray>("behavior_state", 1);
 	pub_SelectedPathRviz = nh.advertise<visualization_msgs::MarkerArray>("local_selected_trajectory_rviz", 1);
+	pub_TargetSpeedRviz = nh.advertise<std_msgs::Float32>("op_target_velocity_rviz", 1);
 
 	sub_current_pose = nh.subscribe("/current_pose", 10,	&BehaviorGen::callbackGetCurrentPose, this);
 
@@ -199,7 +200,7 @@ void BehaviorGen::callbackGetCommandCMD(const autoware_msgs::ControlCommandConst
 
 void BehaviorGen::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-	m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
+	m_CurrentPos.pos = PlannerHNS::GPSPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
 	bNewCurrentPos = true;
 }
 
@@ -251,7 +252,7 @@ void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayCon
 				pLane = PlannerHNS::MappingHelpers::GetLaneById(m_temp_path.at(j).laneId, m_Map);
 				if(!pLane)
 				{
-					pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMapDirectionBased(m_temp_path.at(j), m_Map, 1);
+					pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(m_temp_path.at(j), m_Map, 1, true);
 
 					if(!pLane && !pPrevValid)
 					{
@@ -433,6 +434,10 @@ void BehaviorGen::VisualizeLocalPlanner()
 	markerArray.markers.push_back(behavior_rviz);
 
 	pub_BehaviorStateRviz.publish(markerArray);
+
+	std_msgs::Float32 target_speed;
+	target_speed.data = m_CurrentBehavior.maxVelocity * 3.6;
+	pub_TargetSpeedRviz.publish(target_speed);
 
 	//To Test Synchronization Problem
 //	visualization_msgs::MarkerArray selected_path;

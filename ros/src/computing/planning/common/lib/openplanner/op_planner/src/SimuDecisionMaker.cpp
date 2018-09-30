@@ -172,7 +172,7 @@ void SimuDecisionMaker::FirstLocalizeMe(const WayPoint& initCarPos)
 	 bool bNewTrajectory = false;
 	 PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
 
-	 if(!preCalcPrams || m_TotalPath.size()==0) return bNewTrajectory;
+	 if(!preCalcPrams || m_TotalPath.size() == 0 || preCalcPrams->bFinalLocalTrajectory) return bNewTrajectory;
 
 	int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndexFast(m_Path, state);
 	int index_limit = 0;
@@ -229,7 +229,7 @@ void SimuDecisionMaker::FirstLocalizeMe(const WayPoint& initCarPos)
 
 	if(m_TotalPath.size()==0) return beh;
 
-	UpdateCurrentLane(m_MaxLaneSearchDistance);
+	UpdateCurrentLane(m_params.maxLaneSearchDistance);
 
 	PlannerHNS::TrajectoryCost tc = m_TrajectoryCostsCalculator.DoOneStepStatic(m_RollOuts, m_TotalPath.at(m_iCurrentTotalPathId), state,	m_params, m_CarInfo, vehicleState, objects);
 

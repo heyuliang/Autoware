@@ -65,6 +65,11 @@ int main(int argc, char **argv)
 	int test_mode = 0;
 	nh.getParam("/op_bag_player/testing_mode", test_mode);
 
+	if(bag_params.fileName.size() < 4)
+		test_mode = 0;
+	else
+		test_mode = 1;
+
 	DrawObjBase* pSimulator =  0;
 	pSimulator = new TestingUI();
 	((TestingUI*)pSimulator)->InitNode(bag_params, test_mode);

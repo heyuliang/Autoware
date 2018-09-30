@@ -51,6 +51,7 @@
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 #include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/TwistStamped.h>
 
 #define OBJECT_KEEP_TIME 1
 #define POINT_CLOUD_ADDTIONAL_ERR_NUM 25
@@ -80,7 +81,8 @@ protected:
 	ros::NodeHandle nh;
 	timespec m_Timer;
 	DetectionCommandParams m_DecParams;
-
+	bool m_bGoNextStep;
+	bool m_bStepByStep;
 	autoware_msgs::CloudCluster m_SimulatedCluter;
 
 	autoware_msgs::CloudClusterArray m_ObjClustersArray;
@@ -93,16 +95,20 @@ protected:
 	// define subscribers.
 	std::vector<ros::Subscriber> sub_objs;
 	ros::Subscriber sub_simulated_obstacle_pose_rviz;
+	ros::Subscriber sub_StepSignal;
 
 
 	// Callback function for subscriber.
 	void callbackGetSimuData(const geometry_msgs::PoseArray &msg);
 	void callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg);
+	void callbackGetStepForwardSignals(const geometry_msgs::TwistStampedConstPtr& msg);
 
 public:
 	OpenPlannerSimulatorPerception();
 	virtual ~OpenPlannerSimulatorPerception();
 	autoware_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::Pose& centerPose);
+	void CleanOldData();
+	void PublishResults();
 
 	void MainLoop();
 };

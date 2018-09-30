@@ -198,7 +198,7 @@ void GlobalPlanner::callbackGetStartPose(const geometry_msgs::PoseWithCovariance
 
 void GlobalPlanner::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-	m_CurrentPose = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
+	m_CurrentPose.pos = PlannerHNS::GPSPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
 }
 
 void GlobalPlanner::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
@@ -290,7 +290,7 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 	total_color.r = 0;
 	total_color.g = 0.7;
 	total_color.b = 1.0;
-	total_color.a = 0.9;
+	total_color.a = 0.6;
 	PlannerHNS::RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
 	PlannerHNS::RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
 	PlannerHNS::RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);

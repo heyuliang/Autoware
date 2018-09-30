@@ -42,7 +42,9 @@
 namespace CarSimulatorNS
 {
 
-#define REPLANNING_DISTANCE 7.5
+constexpr double REPLANNING_DISTANCE  = 1.0;
+constexpr double ADDITIONAL_BREAK_DISTANCE  = 1.0;
+constexpr double STOP_STOP_TIME  = 5.0;
 
 OpenPlannerCarSimulator::OpenPlannerCarSimulator()
 {
@@ -253,8 +255,9 @@ void OpenPlannerCarSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO
 	_nh.getParam("mapFileName" 		, m_SimParams.KmlMapPath);
 
 	//m_SimParams.KmlMapPath = "/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/";
-	m_PlanningParams.additionalBrakingDistance = 5;
-	m_PlanningParams.stopSignStopTime = 10;
+	m_PlanningParams.additionalBrakingDistance = ADDITIONAL_BREAK_DISTANCE;
+	m_PlanningParams.goalDiscoveryDistance = REPLANNING_DISTANCE;
+	m_PlanningParams.stopSignStopTime = STOP_STOP_TIME;
 
 
 	m_ControlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.01); // for 3 m/s
@@ -772,9 +775,9 @@ void OpenPlannerCarSimulator::PublishSpecialTF(const PlannerHNS::WayPoint& pose)
 	vel_trans.header.stamp = ros::Time::now();
 	vel_trans.header.frame_id = m_BaseLinkFrameID;
 	vel_trans.child_frame_id = m_VelodyneFrameID;
-	vel_trans.transform.translation.x = 0;
+	vel_trans.transform.translation.x = -2;
 	vel_trans.transform.translation.y = 0;
-	vel_trans.transform.translation.z = 0;
+	vel_trans.transform.translation.z = 1.5;
 	vel_trans.transform.rotation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, 0);
 
 	// send the transform
@@ -847,35 +850,37 @@ void OpenPlannerCarSimulator::MainLoop()
 		if(m_bMap && bInitPos && bGoalPos)
 		{
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
+
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
 			//Global Planning Step
 			if(m_GlobalPaths.size() > 0 && m_GlobalPaths.at(0).size() > 3)
 			{
-				PlannerHNS::RelativeInfo info;
-				bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GlobalPaths, m_LocalPlanner->state, 0.75, info);
-				if(ret == true && info.iGlobalPath >= 0 &&  info.iGlobalPath < (int)m_GlobalPaths.size() && info.iFront > 0 && info.iFront < (int)m_GlobalPaths.at(info.iGlobalPath).size())
-				{
-					PlannerHNS::WayPoint wp_end = m_GlobalPaths.at(info.iGlobalPath).at(m_GlobalPaths.at(info.iGlobalPath).size()-1);
-					PlannerHNS::WayPoint wp_first = m_GlobalPaths.at(info.iGlobalPath).at(info.iFront);
-					double remaining_distance =   hypot(wp_end.pos.y - wp_first.pos.y, wp_end.pos.x - wp_first.pos.x) + info.to_front_distance;
-
-					if(remaining_distance <= REPLANNING_DISTANCE)
-					{
-						cout << "Remaining Distance : " << remaining_distance << endl;
-
-						bMakeNewPlan = true;
-						if(m_SimParams.bLooper)
-						{
-							delete m_LocalPlanner;
-							m_LocalPlanner = 0;
-							m_LocalPlanner = new  PlannerHNS::SimuDecisionMaker();
-							m_LocalPlanner->Init(m_ControlParams, m_PlanningParams, m_CarInfo);
-							m_LocalPlanner->m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
-							InitializeSimuCar(m_SimParams.startPose);
-						}
-					}
-				}
+//				PlannerHNS::RelativeInfo info;
+//				bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GlobalPaths, m_LocalPlanner->state, 0.75, info);
+//				if(ret == true && info.iGlobalPath >= 0 &&  info.iGlobalPath < (int)m_GlobalPaths.size() && info.iFront > 0 && info.iFront < (int)m_GlobalPaths.at(info.iGlobalPath).size())
+//				{
+//					PlannerHNS::WayPoint wp_end = m_GlobalPaths.at(info.iGlobalPath).at(m_GlobalPaths.at(info.iGlobalPath).size()-1);
+//					PlannerHNS::WayPoint wp_first = m_GlobalPaths.at(info.iGlobalPath).at(info.iFront);
+//					double remaining_distance =   hypot(wp_end.pos.y - wp_first.pos.y, wp_end.pos.x - wp_first.pos.x) + info.to_front_distance;
+//					cout << "Remaining Distance : " << remaining_distance << endl;
+//
+//					if(remaining_distance <= REPLANNING_DISTANCE)
+//					{
+//						cout << "Remaining Distance : " << remaining_distance << endl;
+//
+//						bMakeNewPlan = true;
+//						if(m_SimParams.bLooper)
+//						{
+//							delete m_LocalPlanner;
+//							m_LocalPlanner = 0;
+//							m_LocalPlanner = new  PlannerHNS::SimuDecisionMaker();
+//							m_LocalPlanner->Init(m_ControlParams, m_PlanningParams, m_CarInfo);
+//							m_LocalPlanner->m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
+//							InitializeSimuCar(m_SimParams.startPose);
+//						}
+//					}
+//				}
 			}
 			else
 				bMakeNewPlan = true;
@@ -894,7 +899,7 @@ void OpenPlannerCarSimulator::MainLoop()
 					PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_PlanningParams.pathDensity);
 					PlannerHNS::PlanningHelpers::SmoothPath(generatedTotalPaths.at(i), 0.4, 0.25);
 					PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(generatedTotalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
-					generatedTotalPaths.at(i).at(generatedTotalPaths.at(i).size()-1).v = 0;
+					//generatedTotalPaths.at(i).at(generatedTotalPaths.at(i).size()-1).v = 0;
 				}
 
 				m_GlobalPaths = generatedTotalPaths;
@@ -915,18 +920,20 @@ void OpenPlannerCarSimulator::MainLoop()
 				m_CurrBehavior = m_LocalPlanner->DoOneStep(dt, currStatus, 1, m_CurrTrafficLight, m_PredictedObjects, false);
 
 				/**
+				 * Control, Path Following
+				 */
+				if(!bUseWheelController)
+					desiredStatus = m_PredControl.DoOneStep(dt, m_CurrBehavior, m_LocalPlanner->m_Path, m_LocalPlanner->state, currStatus, m_CurrBehavior.bNewPlan);
+
+				desiredStatus.speed = m_CurrBehavior.maxVelocity;
+
+				/**
 				 * Localization, Odometry Simulation and Update
 				 */
 				if(!bUseWheelController)
 					currStatus = m_LocalPlanner->LocalizeStep(dt, desiredStatus);
 				else
 					currStatus = m_LocalPlanner->LocalizeStep(dt, m_JoyDesiredStatus);
-
-				/**
-				 * Control, Path Following
-				 */
-				if(!bUseWheelController)
-					desiredStatus = m_PredControl.DoOneStep(dt, m_CurrBehavior, m_LocalPlanner->m_Path, m_LocalPlanner->state, currStatus, m_CurrBehavior.bNewPlan);
 
 			}
 			else
@@ -941,16 +948,18 @@ void OpenPlannerCarSimulator::MainLoop()
 					m_CurrBehavior = m_LocalPlanner->DoOneStep(dt, currStatus, 1, m_CurrTrafficLight, m_PredictedObjects, false);
 
 					/**
-					 * Localization, Odometry Simulation and Update
-					 */
-					currStatus = m_LocalPlanner->LocalizeStep(dt, desiredStatus);
-
-					/**
 					 * Control, Path Following
 					 */
 					desiredStatus = m_PredControl.DoOneStep(dt, m_CurrBehavior, m_LocalPlanner->m_Path, m_LocalPlanner->state, currStatus, m_CurrBehavior.bNewPlan);
+					desiredStatus.speed = m_CurrBehavior.maxVelocity;
+
+					/**
+					 * Localization, Odometry Simulation and Update
+					 */
+					currStatus = m_LocalPlanner->LocalizeStep(dt, desiredStatus);
 				}
 			}
+
 			displayFollowingInfo(m_LocalPlanner->m_TrajectoryCostsCalculator.m_SafetyBorder.points, m_LocalPlanner->state);
 			visualizePath(m_LocalPlanner->m_Path);
 			visualizeBehaviors();

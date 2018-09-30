@@ -146,7 +146,7 @@ int TrajectoryFollower::SteerControllerUpdate(const PlannerHNS::VehicleState& Cu
 	if(m_Path.size()==0) return -1;
 	int ret = -1;
 	//AdjustPID(CurrStatus.velocity, 18.0, m_Params.Gain);
-	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE || CurrBehavior.state  == FOLLOW_STATE)
+	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE || CurrBehavior.state  == FOLLOW_STATE || CurrBehavior.state  == STOPPING_STATE)
 		ret = SteerControllerPart(m_CurrPos, m_DesPos, m_LateralError, desiredSteerAngle);
 
 	if(ret < 0)

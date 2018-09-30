@@ -3308,6 +3308,15 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name : enableStepByStepSignal
+      desc : Send Data only when signal send from utility program 
+      label: Enable Step By Step
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+        
   - name  : op_signs_simulator
     vars  :
     - name : first_signs_list_ids
