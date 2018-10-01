@@ -28,6 +28,7 @@
 #include "Viewer.h"
 #include "datasets/OxfordDataset.h"
 #include "datasets/MeidaiBagDataset.h"
+#include "utilities.h"
 
 
 using namespace std;
@@ -146,6 +147,10 @@ InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
 
 	return f;
 }
+
+
+ptime getCurrentTime ()
+{ return boost::posix_time::microsec_clock::local_time(); }
 
 
 class LocalizerApp
@@ -364,9 +369,13 @@ private:
 				return;
 			}
 
+			ptime tbuild1 = getCurrentTime();
 			MeidaiBagDataset::Ptr nuDataset = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
 			nuDataset->setLidarParameters(ndtParameters.velodyneCalibrationPath, ndtParameters.pcdMapPath, ndtParameters.lidarToCamera);
 			nuDataset->forceCreateCache();
+			ptime tbuild2 = getCurrentTime();
+			tduration td = tbuild2 - tbuild1;
+			debug ("Cache build finished in " + to_string(double(td.total_microseconds()) / 1e6) + " seconds");
 		}
 	}
 
@@ -486,9 +495,13 @@ private:
 		}
 
 		else if (datasetPath.extension()==".bag") {
+			ptime t_open_1 = getCurrentTime();
 			loadedDataset = MeidaiBagDataset::load(datasetPath.string());
 			slDatasourceType = MEIDAI_DATASET_TYPE;
 			debug ("Nagoya University Dataset Loaded");
+			ptime t_open_2 = getCurrentTime();
+			tduration td = t_open_2 - t_open_1;
+			debug ("Time to open: " + to_string(double(td.total_microseconds()) / 1e6) + " seconds");
 		}
 
 		else {
