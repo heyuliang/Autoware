@@ -7,6 +7,7 @@
 
 #include "PCDFileDisplay.h"
 
+
 PCDFileDisplay::PCDFileDisplay() :
 	rviz::PointCloudDisplay()
 {
@@ -16,6 +17,8 @@ PCDFileDisplay::PCDFileDisplay() :
 
 PCDFileDisplay::~PCDFileDisplay()
 {
-	rviz::PointCloudDisplay::~PointCloudDisplay();
 }
 
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(PCDFileDisplay, rviz::Display)

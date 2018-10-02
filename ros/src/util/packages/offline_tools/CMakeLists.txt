@@ -9,6 +9,11 @@ find_package(PCL REQUIRED)
 
 catkin_package()
 
+include_directories(${catkin_INCLUDE_DIRS})
+link_directories(${catkin_LIBRARY_DIRS})
+
+set(CMAKE_AUTOMOC ON)
+
 add_library(
 	rviz_offline_display
 		rviz_plugins/PCDFileDisplay.cpp
@@ -16,7 +21,8 @@ add_library(
 
 target_link_libraries(
 	rviz_offline_display
-		${QT_LIBRARIES}
+		Qt5::Core
+		Qt5::Widgets
 		${catkin_LIBRARIES}
 )
 
