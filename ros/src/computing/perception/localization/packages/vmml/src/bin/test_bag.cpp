@@ -32,12 +32,9 @@ const string meidaiMapPcd = "/home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_nd
 
 int main (int argc, char *argv[])
 {
-	MeidaiBagDataset dataset("/home/sujiwo/Data/log_2016-12-26-13-21-10-filtered.bag");
-	const Trajectory &gnssTraj = dataset.getGnssTrajectory();
-	auto velBag = dataset.getVelodyneBag();
-
-	Trajectory ndtTrack;
-	createTrajectoryFromNDT(*velBag, ndtTrack, gnssTraj, paramFileTest, meidaiMapPcd);
+	MeidaiBagDataset dataset("/media/sujiwo/ssd/log_2016-12-26-13-21-10-beginning.bag");
+	dataset.setLidarParameters(paramFileTest, meidaiMapPcd, Pose::Identity());
+	dataset.forceCreateCache();
 
 //	dataset.forceCreateCache();
 

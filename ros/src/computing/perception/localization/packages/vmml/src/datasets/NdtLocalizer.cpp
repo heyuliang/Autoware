@@ -100,6 +100,8 @@ NdtLocalizer::loadMap (pcl::PointCloud<PointXYZ>::ConstPtr mapcloud)
 	// Find maximum and minimum values for each axis
 	PointXYZ m1, m2;
 	pcl::getMinMax3D(*mapcloud, m1, m2);
+	pointMin = Vector3d(m1.x, m1.y, m1.z);
+	pointMax = Vector3d(m2.x, m2.y, m2.z);
 
 	// map size
 	g_map_x = m2.x - m1.x;
@@ -242,4 +244,32 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 	prev_pose = npose;
 
 	return ndtCPose;
+}
+
+
+bool
+NdtLocalizer::isPointInsideMap (const Vector3d &pt) const
+{
+	assert (mapLoaded==true);
+
+	if (pt.x() > pointMax.x() or pt.y() > pointMax.y() or pt.z() > pointMax.z())
+		return false;
+	if (pt.x() < pointMin.x() or pt.y() < pointMin.y() or pt.z() < pointMin.z())
+		return false;
+
+	return true;
+}
+
+
+bool
+NdtLocalizer::isPointInsideMap (const pcl::PointXYZ &pt) const
+{
+	assert (mapLoaded==true);
+
+	if (pt.x > pointMax.x() or pt.y > pointMax.y() or pt.z > pointMax.z())
+		return false;
+	if (pt.x < pointMin.x() or pt.y < pointMin.y() or pt.z < pointMin.z())
+		return false;
+
+	return true;
 }

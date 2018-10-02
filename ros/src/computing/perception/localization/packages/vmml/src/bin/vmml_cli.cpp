@@ -377,6 +377,10 @@ private:
 			tduration td = tbuild2 - tbuild1;
 			debug ("Cache build finished in " + to_string(double(td.total_microseconds()) / 1e6) + " seconds");
 		}
+
+		else {
+			debug("Oxford datasets need not to be built");
+		}
 	}
 
 
@@ -468,7 +472,8 @@ private:
 				return;
 			}
 
-			fstream dsTrFd (dumpDatasetTrajectoryPath, ios_base::out|ios_base::trunc);
+			string fullDumpPathName = dumpDatasetTrajectoryPath + '-' + type + ".csv";
+			fstream dsTrFd (fullDumpPathName, ios_base::out|ios_base::trunc);
 			dsTrFd << fixed << setprecision(6);
 
 			for (auto &ps: nuTrack) {
@@ -479,7 +484,7 @@ private:
 			}
 
 			dsTrFd.close();
-			debug("Dataset trajectory dumped to "+dumpDatasetTrajectoryPath);
+			debug("Dataset trajectory dumped to "+fullDumpPathName);
 			return;
 		}
 	}

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include <nmea_msgs/Sentence.h>
 #include <gnss/geo_pos_conv.hpp>
@@ -22,6 +23,9 @@ const Vector3d
 
 
 class wrong_nmea_sentence : public exception
+{};
+
+class invalid_gnss_position : public exception
 {};
 
 
@@ -46,12 +50,14 @@ pose:
     w: -0.258149856645
 */
 
+const double positionInvalid = std::numeric_limits<double>::max();
+
 
 struct GnssLocalizerState
 {
 	double roll_=0, pitch_=0, yaw_=0;
 	double orientation_time_=0, position_time_=0;
-	double latitude=0, longitude=0, height=0;
+	double latitude=positionInvalid, longitude=positionInvalid, height=positionInvalid;
 	ros::Time current_time_=ros::Time(0), orientation_stamp_=ros::Time(0);
 	geo_pos_conv geo, last_geo;
 };
@@ -119,6 +125,9 @@ void convertNMEASentenceToState (nmea_msgs::SentencePtr &msg, GnssLocalizerState
 
 PoseTimestamp createFromState(const GnssLocalizerState &state)
 {
+	if (state.latitude==positionInvalid or state.longitude==positionInvalid)
+		throw invalid_gnss_position();
+
 	TQuaternion q(state.roll_, state.pitch_, state.yaw_);
 	Vector3d p(state.geo.y(), state.geo.x(), state.geo.z());
 	p = p + GNSS_Translation_Offset;
@@ -149,7 +158,9 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 		try {
 			convertNMEASentenceToState(currentMessage, state);
 		} catch (const wrong_nmea_sentence &e)
-		{ continue; }
+		{
+			continue;
+		}
 
 		if (fabs(state.orientation_stamp_.toSec() - currentMessage->header.stamp.toSec()) > orientationTimeout) {
 			double dt = sqrt(pow(state.geo.x() - state.last_geo.x(), 2) + pow(state.geo.y() - state.last_geo.y(), 2));
@@ -159,7 +170,14 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 				state.yaw_ = atan2(state.geo.x() - state.last_geo.x(), state.geo.y() - state.last_geo.y());
 				state.roll_ = 0;
 				state.pitch_ = 0;
-				PoseTimestamp px = createFromState(state);
+
+				PoseTimestamp px;
+				try {
+					px = createFromState(state);
+				} catch (invalid_gnss_position &e) {
+					continue;
+				}
+
 				px.timestamp = current_time;
 				trajectory.push_back(px);
 				state.last_geo = state.geo;
@@ -169,7 +187,14 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 
 		double e = 1e-2;
 		if (fabs(state.orientation_time_ - state.position_time_) < e) {
-			PoseTimestamp px = createFromState(state);
+
+			PoseTimestamp px;
+			try {
+				px = createFromState(state);
+			} catch (invalid_gnss_position &e) {
+				continue;
+			}
+
 			px.timestamp = current_time;
 			trajectory.push_back(px);
 			continue;

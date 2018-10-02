@@ -131,6 +131,7 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 	VelodynePreprocessor VP(velodyneParamFile);
 	NdtLocalizer lidarLocalizer(NuInitialConfig);
 	lidarLocalizer.loadMap(pcdMapFile);
+	resultTrack.clear();
 
 	bool initialized=false;
 	auto time0 = bagsrc.at<velodyne_msgs::VelodyneScan>(0)->header.stamp;
@@ -142,39 +143,38 @@ createTrajectoryFromNDT (RandomAccessBag &bagsrc, Trajectory &resultTrack, const
 		Pose cNdtPose;
 		auto cMsg = bagsrc.at<velodyne_msgs::VelodyneScan>(ip);
 		auto cscan = VP.convertMessage(cMsg);
+		cout << ip+1 << " / " << N << "   \r";
 
-		if (!initialized) {
-			try {
+		try {
 
+			if (!initialized) {
 				auto cGnssPos = gnssTrack.at(cMsg->header.stamp);
+				if (lidarLocalizer.isPointInsideMap(cGnssPos.position())==false)
+					throw out_of_range("Initialization point lies outside map");
+
 				Vector3d p = cGnssPos.position();
 				Quaterniond q = cGnssPos.orientation();
 				lidarLocalizer.putEstimation(cGnssPos);
 				cNdtPose = lidarLocalizer.localize(cscan);
 				initialized = true;
 
-			} catch (out_of_range &e) {
-				continue;
-			} catch (exception &e) {
-				cerr << "Unknown error\n";
-				continue;
 			}
-		}
 
-		else {
-			cNdtPose = lidarLocalizer.localize(cscan);
-		}
+			else {
+				cNdtPose = lidarLocalizer.localize(cscan);
+				if (lidarLocalizer.isPointInsideMap(cNdtPose.position())==false)
+					throw out_of_range("Continuation point lies outside map; resetting");
+			}
 
-		PoseTimestamp tpose (cNdtPose);
-		tpose.timestamp = cMsg->header.stamp;
-//		cerr << fixed;
-//		auto td = tpose.timestamp - time0;
-//		cerr << tpose.timestamp.toSec() << ' '
-//			 <<	tpose.position().x() << " " <<
-//				tpose.position().y() << " " <<
-//				tpose.position().z() << endl;
-		resultTrack.push_back(tpose);
-		cout << ip+1 << " / " << N << "   \r";
+			PoseTimestamp tpose (cNdtPose);
+			tpose.timestamp = cMsg->header.stamp;
+			resultTrack.push_back(tpose);
+
+		} catch (out_of_range &e) {
+			cerr << "Error: " << e.what() << endl;
+			resultTrack.clear();
+			initialized = false;
+		}
 	}
 
 	return;

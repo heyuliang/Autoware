@@ -52,6 +52,15 @@ public:
 
 	virtual ~NdtLocalizer();
 
+	Eigen::Vector3d getMinPoint() const
+	{ return pointMin; }
+
+	Eigen::Vector3d getMaxPoint() const
+	{ return pointMax; }
+
+	bool isPointInsideMap (const Eigen::Vector3d &pt) const;
+	bool isPointInsideMap (const pcl::PointXYZ &pt) const;
+
 protected:
 
 	NDMapPtr ndMap;
@@ -61,6 +70,10 @@ protected:
 	bool mapLoaded = false;
 
 	Posture prev_pose, prev_pose2;
+
+	Eigen::Vector3d
+		pointMin=Eigen::Vector3d::Zero(),
+		pointMax=Eigen::Vector3d::Zero();
 };
 
 #endif /* _NDTLOCALIZER_H_ */
