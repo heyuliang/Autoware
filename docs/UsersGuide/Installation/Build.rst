@@ -2,8 +2,9 @@ Build
 =====
 
 There are three choices to build Autoware.
-Using Autoware Docker is strongly recommended for the environments
-where Docker Image is provided.
+Using Autoware Docker, which provides built Autoware, is strongly recommended.
+In case that you do not want to or can not use Docker, please follow the
+instruction provided by :doc:`Build/SourceBuild` or :doc:`Build/CrossBuild`.
 
 .. toctree::
    :maxdepth: 1
