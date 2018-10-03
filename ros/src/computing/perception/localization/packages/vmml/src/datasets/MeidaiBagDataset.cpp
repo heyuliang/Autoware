@@ -40,9 +40,7 @@ MeidaiBagDataset::MeidaiBagDataset(
 		bagPath(path)
 {
 	bagfd = new rosbag::Bag(path);
-	cameraRawBag = RandomAccessBag::Ptr (new RandomAccessBag(*bagfd, meidaiBagImageTopic));
-	gnssBag = RandomAccessBag::Ptr (new RandomAccessBag(*bagfd, meidaiBagGnssTopic));
-	velodyneBag = RandomAccessBag::Ptr (new RandomAccessBag(*bagfd, meidaiBagVelodyne));
+	prepareBag();
 
 	if (loadPositions==true)
 		loadCache();
@@ -84,10 +82,7 @@ MeidaiBagDataset::subset(const ros::Time &startTime, const ros::Duration &length
 	ros::Time tlast = startTime + lengthInSecond;
 	rsubset->subsetBeginTime = startTime;
 	rsubset->subsetEndTime = tlast;
-
-	rsubset->cameraRawBag = RandomAccessBag::Ptr(new RandomAccessBag(*rsubset->bagfd, meidaiBagImageTopic, startTime, tlast));
-	rsubset->gnssBag = RandomAccessBag::Ptr(new RandomAccessBag(*rsubset->bagfd, meidaiBagGnssTopic, startTime, tlast));
-	rsubset->velodyneBag = RandomAccessBag::Ptr(new RandomAccessBag(*rsubset->bagfd, meidaiBagVelodyne, startTime, tlast));
+	rsubset->prepareBag(startTime, tlast);
 
 	// Load positions, if they are complete in this time range
 	if (cameraTrack.empty())
@@ -100,6 +95,15 @@ MeidaiBagDataset::subset(const ros::Time &startTime, const ros::Duration &length
 
 finish:
 	return MeidaiBagDataset::Ptr(rsubset);
+}
+
+
+void
+MeidaiBagDataset::prepareBag (const ros::Time &beginTime, const ros::Time &stopTime)
+{
+	cameraRawBag = RandomAccessBag::Ptr(new RandomAccessBag(*bagfd, meidaiBagImageTopic, beginTime, stopTime));
+	gnssBag = RandomAccessBag::Ptr(new RandomAccessBag(*bagfd, meidaiBagGnssTopic, beginTime, stopTime));
+	velodyneBag = RandomAccessBag::Ptr(new RandomAccessBag(*bagfd, meidaiBagVelodyne, beginTime, stopTime));
 }
 
 
@@ -197,11 +201,6 @@ MeidaiBagDataset::loadCache()
 	if (isCacheValid) {
 		doLoadCache(bagCachePath.string());
 	}
-
-//	else {
-//		createCache();
-//		writeCache(bagCachePath.string());
-//	}
 }
 
 
@@ -253,6 +252,10 @@ MeidaiBagDataset::doLoadCache(const string &path)
 	subsetBeginTime = ros::Time::fromBoost(tx);
 	cacheIArc >> tx;
 	subsetEndTime = ros::Time::fromBoost(tx);
+
+	if (isSubset_) {
+		prepareBag(subsetBeginTime, subsetEndTime);
+	}
 
 	cacheIArc >> gnssTrack;
 	cacheIArc >> ndtTrack;

@@ -9,4 +9,4 @@ detect 89.38
 dataset /media/sujiwo/ssd/log_2016-12-26-13-21-10.bag
 velodyne /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml
 pcdmap /home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_ndmap.pcd
-build
+build 317.22 486.53

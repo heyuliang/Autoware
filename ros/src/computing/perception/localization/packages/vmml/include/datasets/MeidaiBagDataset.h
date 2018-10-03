@@ -273,6 +273,8 @@ private:
 	TTransform lidarToCameraTransform;
 
 	MeidaiBagDataset(const MeidaiBagDataset &cp);
+
+	void prepareBag (const ros::Time &beginTime=ros::TIME_MIN, const ros::Time &stopTime=ros::TIME_MAX);
 };
 
 
