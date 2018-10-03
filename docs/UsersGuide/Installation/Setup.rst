@@ -17,4 +17,4 @@ Please follow README.md in each package to install the models if you need these 
     Autoware itself is licensed under BSD 3-Clause "New" or "Revised" License.
     However, pre-trained models of DNN that the users of Autoware use are expected to
     be licensed under another license. For example, KITTI is licensed under CC BY-NC-SA,
-    which do now allow commercial uses. **Please follow each license of the models you use.**
+    which do not allow commercial uses. **Please follow each license of the models you use.**
