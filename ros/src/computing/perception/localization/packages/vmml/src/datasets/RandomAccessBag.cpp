@@ -17,13 +17,13 @@
  */
 RandomAccessBag::RandomAccessBag
 	(rosbag::Bag const &bag, const std::string &topic,
-	double startTimeOffsetSecond, double mappingDurationSecond):
+	const ros::Time &startTime, const ros::Time &stopTime):
 
 	rosbag::View::View(),
 	bagstore(const_cast<rosbag::Bag&>(bag))
 
 {
-	addQuery(bag, rosbag::TopicQuery(topic));
+	addQuery(bag, rosbag::TopicQuery(topic), startTime, stopTime);
 
 	conn = getConnections()[0];
 	createCache();
@@ -65,3 +65,12 @@ RandomAccessBag::getPositionAtDurationSecond (const double S) const
 	);
 	return it - msgPtr.begin();
 }
+
+
+//ros::Duration
+//RandomAccessBag::length() const
+//{
+//	return msgPtr.back().time - msgPtr.at(0).time;
+//}
+
+

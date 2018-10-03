@@ -239,7 +239,7 @@ public:
 				dataset_set_param(command);
 
 			else if (command[0]=="build")
-				dataset_build();
+				dataset_build(command);
 		}
 	}
 
@@ -361,7 +361,7 @@ private:
 	}
 
 
-	void dataset_build()
+	void dataset_build(stringTokens &cmd)
 	{
 		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
 			if (ndtParameters.pcdMapPath.empty() or ndtParameters.velodyneCalibrationPath.empty()) {
@@ -370,10 +370,27 @@ private:
 			}
 
 			ptime tbuild1 = getCurrentTime();
-			MeidaiBagDataset::Ptr nuDataset = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+
+			MeidaiBagDataset::Ptr nuDataset;
+			bool resetSubset;
+
+			if (cmd.size()==1) {
+				nuDataset = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+				resetSubset = true;
+			}
+			else {
+				double startPos = stod(cmd[1]),
+					stopPos = stod(cmd[2]);
+				debug ("Building from "+to_string(startPos) + " to " + to_string(stopPos));
+				MeidaiBagDataset::Ptr nTmp = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+				nuDataset = nTmp->subset(startPos, stopPos);
+				resetSubset = false;
+			}
+
 			nuDataset->setLidarParameters(ndtParameters.velodyneCalibrationPath, ndtParameters.pcdMapPath, ndtParameters.lidarToCamera);
-			nuDataset->forceCreateCache();
+			nuDataset->forceCreateCache(resetSubset);
 			ptime tbuild2 = getCurrentTime();
+
 			tduration td = tbuild2 - tbuild1;
 			debug ("Cache build finished in " + to_string(double(td.total_microseconds()) / 1e6) + " seconds");
 		}
@@ -405,6 +422,11 @@ private:
 
 			if (cameraTrack.size() != 0) {
 				debug ("Dataset contains camera trajectory");
+				if (meidaiDs->isSubset()) {
+					ptime startt, stopt;
+					meidaiDs->getSubsetRange(startt, stopt);
+					debug ("Dataset is a subset");
+				}
 			}
 
 			else {

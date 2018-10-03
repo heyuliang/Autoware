@@ -68,6 +68,53 @@ MeidaiBagDataset::load (
 }
 
 
+MeidaiBagDataset::MeidaiBagDataset
+(const MeidaiBagDataset &cp):
+	bagPath(cp.bagPath),
+	bagfd(cp.bagfd)
+{}
+
+
+MeidaiBagDataset::Ptr
+MeidaiBagDataset::subset(const ros::Time &startTime, const ros::Duration &lengthInSecond) const
+{
+	MeidaiBagDataset *rsubset = new MeidaiBagDataset( *this );
+	rsubset->isSubset_ = true;
+
+	ros::Time tlast = startTime + lengthInSecond;
+	rsubset->subsetBeginTime = startTime;
+	rsubset->subsetEndTime = tlast;
+
+	rsubset->cameraRawBag = RandomAccessBag::Ptr(new RandomAccessBag(*rsubset->bagfd, meidaiBagImageTopic, startTime, tlast));
+	rsubset->gnssBag = RandomAccessBag::Ptr(new RandomAccessBag(*rsubset->bagfd, meidaiBagGnssTopic, startTime, tlast));
+	rsubset->velodyneBag = RandomAccessBag::Ptr(new RandomAccessBag(*rsubset->bagfd, meidaiBagVelodyne, startTime, tlast));
+
+	// Load positions, if they are complete in this time range
+	if (cameraTrack.empty())
+		goto finish;
+
+	if (cameraTrack.front().timestamp > startTime or cameraTrack.back().timestamp < tlast)
+		goto finish;
+
+	rsubset->cameraTrack = cameraTrack.subset(startTime, tlast);
+
+finish:
+	return MeidaiBagDataset::Ptr(rsubset);
+}
+
+
+MeidaiBagDataset::Ptr
+MeidaiBagDataset::subset(const double startTimeOffsetSecond, const double endOffsetFromBeginning) const
+{
+	assert (endOffsetFromBeginning >= startTimeOffsetSecond);
+	ros::Duration
+		d0(startTimeOffsetSecond),
+		d1(endOffsetFromBeginning-startTimeOffsetSecond);
+	return subset(cameraRawBag->timeAt(0) + d0, d1);
+}
+
+
+
 void
 MeidaiBagDataset::loadPosition()
 {
@@ -171,10 +218,16 @@ MeidaiBagDataset::setLidarParameters (
 
 
 void
-MeidaiBagDataset::forceCreateCache ()
+MeidaiBagDataset::forceCreateCache (bool resetSubset)
 {
 	bfs::path bagCachePath = bagPath;
 	bagCachePath += ".cache";
+
+	if (resetSubset==true) {
+		isSubset_ = false;
+		subsetBeginTime = ros::TIME_MIN;
+		subsetEndTime = ros::TIME_MIN;
+	}
 
 	gnssTrack.clear();
 	ndtTrack.clear();
@@ -193,6 +246,13 @@ MeidaiBagDataset::doLoadCache(const string &path)
 		throw runtime_error(string("Unable to open cache file: ") + path);
 
 	boost::archive::binary_iarchive cacheIArc (cacheFd);
+
+	cacheIArc >> isSubset_;
+	ptime tx;
+	cacheIArc >> tx;
+	subsetBeginTime = ros::Time::fromBoost(tx);
+	cacheIArc >> tx;
+	subsetEndTime = ros::Time::fromBoost(tx);
 
 	cacheIArc >> gnssTrack;
 	cacheIArc >> ndtTrack;
@@ -239,6 +299,12 @@ void MeidaiBagDataset::writeCache(const string &path)
 		throw runtime_error(string("Unable to open cache file: ") + path);
 
 	boost::archive::binary_oarchive cacheOArc (cacheFd);
+
+	cacheOArc << isSubset_;
+	ptime tx = subsetBeginTime.toBoost();
+	cacheOArc << tx;
+	tx = subsetEndTime.toBoost();
+	cacheOArc << tx;
 
 	cacheOArc << gnssTrack;
 	cacheOArc << ndtTrack;
@@ -351,6 +417,22 @@ Trajectory::extrapolate (const ros::Time& t) const
 	}
 
 	return PoseTimestamp(xpos, xori, t);
+}
+
+
+Trajectory
+Trajectory::subset(const ros::Time &start, const ros::Time &stop) const
+{
+	assert(start>=front().timestamp and stop<=back().timestamp);
+
+	Trajectory ssub;
+	for (auto it=begin(); it!=end(); ++it) {
+		auto &p = *it;
+		if (start<=p.timestamp and p.timestamp<=stop)
+			ssub.push_back(p);
+	}
+
+	return ssub;
 }
 
 

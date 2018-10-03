@@ -160,16 +160,15 @@ target_link_libraries(vmml_cli
 	${catkin_LIBRARIES}
 )
 
-
-add_executable(test_instance
-	src/bin/temporaries/test_instance.cpp
+add_executable(test_bag2
+	src/bin/test_bag2.cpp
 )
 
-target_link_libraries(test_instance
-	vmml
-	${REQUIRED_LIBS}
-	${LIBEDIT_LIBRARIES}
-	${catkin_LIBRARIES}
+target_link_libraries(
+	test_bag2
+		vmml
+		${REQUIRED_LIBS}
+		${catkin_LIBRARIES}
 )
 
 

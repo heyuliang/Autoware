@@ -53,4 +53,11 @@ GenericDataset::dump(const std::string &filename)
 }
 
 
+double
+GenericDataset::length() const
+{
+	ptime t0 = get(0)->getTimestamp();
+	ptime tlast = get(size()-1)->getTimestamp();
 
+	return double((tlast - t0).total_microseconds()) / 1e6;
+}

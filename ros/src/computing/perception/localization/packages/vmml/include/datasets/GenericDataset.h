@@ -91,6 +91,11 @@ public:
 
 	virtual float getZoomRatio () const = 0;
 
+	/*
+	 * Duration of the dataset in seconds
+	 */
+	virtual double length() const;
+
 protected:
 	static std::string dSetName;
 };

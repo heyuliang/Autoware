@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <array>
 #include <stdexcept>
 #include <rosbag/bag.h>
 #include <sensor_msgs/Image.h>
@@ -20,6 +21,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
 
 #include "utilities.h"
 #include "datasets/GenericDataset.h"
@@ -65,9 +67,8 @@ struct PoseTimestamp : public Pose
 		ar << boost::serialization::base_object<Pose>(*this);
 
 		// Ros timestamp
-		const decltype(timestamp.sec) tbuf[2] =
-			{ timestamp.sec, timestamp.nsec };
-		ar << tbuf;
+		ptime tx = timestamp.toBoost();
+		ar << tx;
 	}
 
 	template<class Archive>
@@ -77,9 +78,9 @@ struct PoseTimestamp : public Pose
 		ar >> boost::serialization::base_object<Pose>(*this);
 
 		// Ros timestamp
-		decltype(timestamp.sec) tbuf[2];
-		ar >> tbuf;
-		timestamp.sec = tbuf[0], timestamp.nsec = tbuf[1];
+		ptime tx;
+		ar >> tx;
+		timestamp = ros::Time::fromBoost(tx);
 	}
 
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -102,6 +103,8 @@ public:
 	PoseTimestamp interpolate (const ros::Time&) const;
 
 	PoseTimestamp extrapolate (const ros::Time&) const;
+
+	Trajectory subset(const ros::Time &start, const ros::Time &stop) const;
 
 private:
 	uint32_t
@@ -167,6 +170,12 @@ public:
 		bool loadPositions=true
 	);
 
+	MeidaiBagDataset::Ptr
+	subset(const ros::Time &startTime, const ros::Duration &lengthInSecond) const;
+
+	MeidaiBagDataset::Ptr
+	subset(const double startTimeOffsetSecond, const double endOffsetFromBeginning) const;
+
 	static MeidaiBagDataset::Ptr load (
 		const std::string &filePath,
 		double startTimeOffsetSecond=0,
@@ -206,7 +215,7 @@ public:
 	bool hasPositioning() const
 	{ return !gnssTrack.empty(); }
 
-	void forceCreateCache ();
+	void forceCreateCache (bool resetSubset=false);
 
 	void setZoomRatio (float r);
 
@@ -220,6 +229,12 @@ public:
 		const std::string &pmeidaiPCDMapFile,
 		const TTransform &plidarToCameraTransform);
 
+	bool isSubset() const
+	{ return isSubset_; }
+
+	inline void getSubsetRange (ptime &beg_, ptime &end_) const
+	{ beg_ = subsetBeginTime.toBoost(); end_ = subsetEndTime.toBoost(); }
+
 
 protected:
 	static std::string dSetName;
@@ -231,6 +246,11 @@ protected:
 	RandomAccessBag::Ptr velodyneBag;
 
 	const boost::filesystem::path bagPath;
+
+	bool isSubset_ = false;
+
+	ros::Time subsetBeginTime = ros::TIME_MIN,
+		subsetEndTime = ros::TIME_MIN;
 
 private:
 	void loadCache ();
@@ -251,6 +271,8 @@ private:
 		velodyneCalibrationFilePath,
 		pcdMapFilePath;
 	TTransform lidarToCameraTransform;
+
+	MeidaiBagDataset(const MeidaiBagDataset &cp);
 };
 
 

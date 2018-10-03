@@ -44,7 +44,8 @@ public:
 
 	RandomAccessBag(
 		rosbag::Bag const &bag, const std::string &topic,
-		double startTimeOffsetSecond=0, double mappingDurationSecond=-1);
+		const ros::Time &startTime = ros::TIME_MIN,
+		const ros::Time &endTime = ros::TIME_MAX);
 
 	~RandomAccessBag();
 
@@ -55,6 +56,8 @@ public:
 		assert(position>=0 and position<size());
 		return instantiate<T>(msgPtr.at(position));
 	}
+
+	RandomAccessBag subset(const ros::Time &start, ros::Duration &d) const;
 
 	ros::Time timeAt (const int i) const
 	{
@@ -75,6 +78,18 @@ public:
 	{ return static_cast<size_t>(size_cache_); }
 
 	uint32_t getPositionAtDurationSecond (const double S) const;
+
+	/*
+	 * Duration of this view in ros::Duration
+	 */
+	 ros::Duration length() const
+	 { return stopTime()-startTime(); }
+
+	 ros::Time startTime() const
+	 { return msgPtr.front().time; }
+
+	 ros::Time stopTime() const
+	 { return msgPtr.back().time; }
 
 protected:
 	void createCache();
