@@ -22,6 +22,11 @@ public:
 	PCDFileDisplay();
 	virtual ~PCDFileDisplay();
 
+	void update( float wall_dt, float ros_dt )
+	{}
+
+	void reset();
+
 protected:
 	virtual void onInitialize();
 

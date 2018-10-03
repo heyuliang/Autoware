@@ -20,5 +20,25 @@ PCDFileDisplay::~PCDFileDisplay()
 }
 
 
+void
+PCDFileDisplay::onInitialize()
+{
+	point_cloud_common_->initialize(context_, scene_node_);
+}
+
+
+void
+PCDFileDisplay::reset()
+{}
+
+
+//void
+//PCDFileDisplay::update( float wall_dt, float ros_dt )
+//{}
+
+
+
+
+
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(PCDFileDisplay, rviz::Display)
