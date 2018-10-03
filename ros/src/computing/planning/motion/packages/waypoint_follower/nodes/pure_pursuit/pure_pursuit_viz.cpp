@@ -206,6 +206,31 @@ visualization_msgs::Marker displaySearchRadius(geometry_msgs::Point current_pose
   marker.frame_locked = true;
   return marker;
 }
+
+visualization_msgs::Marker displayControlPoints(const std::vector<autoware_msgs::waypoint>& control_points)
+{
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = MAP_FRAME;
+  marker.header.stamp = ros::Time();
+  marker.ns = "/control_points_marker";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::POINTS;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.x = 0.3;
+  marker.scale.y = 0.3;
+  marker.scale.z = 0.3;
+  marker.color.a = 1.0;
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 1.0;
+  marker.points.resize(control_points.size());
+  for (int i = 0; i < control_points.size(); i++)
+  {
+    marker.points[i] = control_points[i].pose.pose.position;
+  }
+  marker.frame_locked = true;
+  return marker;
+}
 /*
 // debug tool for interpolateNextTarget
 void displayLinePoint(double a, double b, double c, geometry_msgs::Point target, geometry_msgs::Point target2,

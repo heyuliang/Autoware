@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2018, TierIV, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -28,42 +28,32 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef PURE_PURSUIT_VIZ_H
-#define PURE_PURSUIT_VIZ_H
-
-// ROS includes
-#include <ros/ros.h>
+#ifndef __CONTROL_POINTS_GENERATOR_H__
+#define __CONTROL_POINTS_GENERATOR_H__
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
-
+#include <ros/ros.h>
+#include <std_msgs/Float32.h>
+#include <tf/transform_datatypes.h>
 #include <visualization_msgs/Marker.h>
-
-// C++ includes
-#include <memory>
-
-// User defined includes
+#include "autoware_msgs/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
 namespace waypoint_follower
 {
-// display the next waypoint by markers.
-visualization_msgs::Marker displayNextWaypoint(geometry_msgs::Point position);
-// display the next target by markers.
-visualization_msgs::Marker displayNextTarget(geometry_msgs::Point target);
+class ControlPointsGenerator
+{
+public:
+  ControlPointsGenerator();
+  ~ControlPointsGenerator();
+  void setConfig(const autoware_msgs::ConfigWaypointFollower& config);
+  void setCurrentVelocity(const double& velocity);
+  autoware_msgs::lane calcControlPoints(const autoware_msgs::lane& lane);
 
-double calcRadius(geometry_msgs::Point target, geometry_msgs::Pose current_pose);
-
-// generate the locus of pure pursuit
-std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target,
-                                                           geometry_msgs::Pose current_pose);
-// display the locus of pure pursuit by markers.
-visualization_msgs::Marker displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circle_array);
-
-// display the search radius by markers.
-visualization_msgs::Marker displaySearchRadius(geometry_msgs::Point current_pose, double search_radius);
-
-visualization_msgs::Marker displayControlPoints(const std::vector<autoware_msgs::waypoint>& control_points);
+private:
+  autoware_msgs::ConfigWaypointFollower config_;
+  double current_velocity_;
+};
 }
-
-#endif  // PURE_PURSUIT_VIZ_H
+#endif

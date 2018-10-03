@@ -48,6 +48,7 @@ PurePursuitNode::PurePursuitNode()
   , const_velocity_(5.0)
   , lookahead_distance_ratio_(2.0)
   , minimum_lookahead_distance_(6.0)
+  , virtual_tracking_mode_(false)
 {
   initForROS();
 
@@ -84,6 +85,7 @@ void PurePursuitNode::initForROS()
   pub15_ = nh_.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
   pub16_ = nh_.advertise<std_msgs::Float32>("angular_gravity", 0);
   pub17_ = nh_.advertise<std_msgs::Float32>("deviation_of_current_position", 0);
+  pub18_ = nh_.advertise<visualization_msgs::Marker>("control_points_mark", 0);
   // pub7_ = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 }
 
@@ -118,6 +120,7 @@ void PurePursuitNode::run()
     std_msgs::Float32 angular_gravity_msg;
     angular_gravity_msg.data = computeAngularGravity(computeCommandVelocity(), kappa);
     pub16_.publish(angular_gravity_msg);
+    pub18_.publish(displayControlPoints(pp_.getCurrentWaypoints()));
 
     publishDeviationCurrentPosition(pp_.getCurrentPose().position, pp_.getCurrentWaypoints());
 
@@ -199,6 +202,8 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   const_velocity_ = config->velocity;
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
+  virtual_tracking_mode_ = config->virtual_tracking_mode;
+  points_generator_.setConfig(*config);
   is_config_set_ = true;
 }
 
@@ -232,6 +237,7 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 {
   current_linear_velocity_ = msg->twist.linear.x;
   pp_.setCurrentVelocity(current_linear_velocity_);
+  points_generator_.setCurrentVelocity(current_linear_velocity_);
   is_velocity_set_ = true;
 }
 
@@ -241,8 +247,15 @@ void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &m
     command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
   else
     command_linear_velocity_ = 0;
-
-  pp_.setCurrentWaypoints(msg->waypoints);
+  if (virtual_tracking_mode_)
+  {
+    const autoware_msgs::lane control_points(points_generator_.calcControlPoints(*msg));
+    pp_.setCurrentWaypoints(control_points.waypoints);
+  }
+  else
+  {
+    pp_.setCurrentWaypoints(msg->waypoints);
+  }
   is_waypoint_set_ = true;
 }
 

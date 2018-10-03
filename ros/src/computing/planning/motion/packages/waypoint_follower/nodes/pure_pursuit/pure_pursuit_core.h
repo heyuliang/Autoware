@@ -44,6 +44,7 @@
 #include "autoware_msgs/lane.h"
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
+#include "control_points_generator.h"
 
 namespace waypoint_follower
 {
@@ -78,7 +79,7 @@ private:
   PurePursuit pp_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
+  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_, pub18_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
@@ -89,6 +90,7 @@ private:
   // variables
   bool is_linear_interpolation_, publishes_for_steering_robot_;
   bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
+  bool virtual_tracking_mode_;
   double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;
 
@@ -97,6 +99,7 @@ private:
   double const_velocity_;            // km/h
   double lookahead_distance_ratio_;
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
+  ControlPointsGenerator points_generator_;
 
   // callbacks
   void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);

@@ -1607,6 +1607,14 @@ params :
       - Waypoint desc sample
       - Dialog desc sample
       v     : 1
+    - name    : virtual_tracking_mode
+      desc    : tracking mode with virtual control points
+      label   : 'virtual tracking mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : velocity
       desc  : velocity desc sample
       label : Velocity
