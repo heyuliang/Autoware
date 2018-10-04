@@ -4,7 +4,7 @@ Installation
 Spec Recommendation
 -------------------
 
-* Generic x86
+* Generic x86_64
     * Intel Core i7 (preferred), Core i5, Atom
     * 16GB to 32GB of main memory
     * More than 30GB of SSD
