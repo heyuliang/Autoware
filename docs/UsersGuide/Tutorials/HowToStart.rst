@@ -10,3 +10,7 @@ GUI named Runtime Manager is launched by the following commands with two termina
     $ ./run
 
 If everything goes well, you can find the windows shown in the following figure.
+
+.. todo::
+
+    Insert a figure.
