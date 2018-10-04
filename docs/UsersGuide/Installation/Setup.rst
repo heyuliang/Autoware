@@ -10,6 +10,10 @@ The nodes in Autoware are:
 * `YOLO <https://github.com/CPFL/Autoware/blob/master/ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/README.md>`_ 
 * `SSD <https://github.com/CPFL/Autoware/blob/master/ros/src/computing/perception/detection/vision_detector/packages/vision_ssd_detect/README.md>`_ 
 
+.. todo::
+
+    Delete link to GitHub and Import README.md in vision_darknet_detect and vision_ssd_detect.
+
 Please follow README.md in each package to install the models if you need these nodes.
 
 .. warning::
