@@ -9,8 +9,12 @@ find_package(PCL REQUIRED)
 
 catkin_package()
 
-include_directories(${catkin_INCLUDE_DIRS})
-link_directories(${catkin_LIBRARY_DIRS})
+include_directories(
+	${catkin_INCLUDE_DIRS}
+	${PCL_INCLUDE_DIRS})
+
+link_directories(
+	${catkin_LIBRARY_DIRS})
 
 set(CMAKE_AUTOMOC ON)
 
@@ -24,5 +28,6 @@ target_link_libraries(
 		Qt5::Core
 		Qt5::Widgets
 		${catkin_LIBRARIES}
+		${PCL_LIBRARIES}
 )
 
