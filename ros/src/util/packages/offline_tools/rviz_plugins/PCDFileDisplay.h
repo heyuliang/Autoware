@@ -42,6 +42,7 @@ private
 	Q_SLOTS:
 	void changeFile();
 	void updateStyle();
+	void updateBillboardSize();
 
 
 private:

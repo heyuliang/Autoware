@@ -25,6 +25,8 @@ PCDFileDisplay::PCDFileDisplay() :
 		this,
 		SLOT( changeFile() ));
 
+	cloud_render_ = boost::shared_ptr<rviz::PointCloud>(new rviz::PointCloud());
+
 	style_property_ = new rviz::EnumProperty( "Style", "Flat Squares",
 									  "Rendering mode to use, in order of computational complexity.",
 									  this, SLOT( updateStyle() ), this );
@@ -57,16 +59,6 @@ PCDFileDisplay::onInitialize()
 {}
 
 
-//void
-//PCDFileDisplay::reset()
-//{}
-
-
-//void
-//PCDFileDisplay::update( float wall_dt, float ros_dt )
-//{}
-
-
 void
 PCDFileDisplay::changeFile()
 {
@@ -79,6 +71,7 @@ void
 PCDFileDisplay::updateStyle()
 {
 	rviz::PointCloud::RenderMode mode = (rviz::PointCloud::RenderMode) style_property_->getOptionInt();
+	cloud_render_->setRenderMode(mode);
 }
 
 
@@ -86,6 +79,7 @@ void
 PCDFileDisplay::updateDisplay(const std::string &loadThisFile)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_open_ = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
+	cloud_render_->clear();
 
 	pcl::PCDReader fileReader;
 	try {
@@ -93,6 +87,8 @@ PCDFileDisplay::updateDisplay(const std::string &loadThisFile)
 
 		// Do something with this pointcloud
 		rviz::PointCloud::RenderMode renderMode = (rviz::PointCloud::RenderMode) style_property_->getOptionInt();
+
+		// XXX: Add color transformer
 
 		pointList.clear();
 		pointList.resize(cloud_open_->width * cloud_open_->height);
@@ -105,7 +101,6 @@ PCDFileDisplay::updateDisplay(const std::string &loadThisFile)
 			++i;
 		}
 
-		cloud_render_ = boost::shared_ptr<rviz::PointCloud>(new rviz::PointCloud());
 		cloud_render_->setRenderMode(renderMode);
 		cloud_render_->addPoints(pointList.data(), pointList.size());
 		scene_node_->attachObject(cloud_render_.get());
@@ -113,6 +108,21 @@ PCDFileDisplay::updateDisplay(const std::string &loadThisFile)
 	} catch (exception &e) {
 		// put error in rviz status
 	}
+}
+
+
+void PCDFileDisplay::updateBillboardSize ()
+{
+	rviz::PointCloud::RenderMode mode = (rviz::PointCloud::RenderMode) style_property_->getOptionInt();
+	float size;
+	if( mode == rviz::PointCloud::RM_POINTS ) {
+		size = point_pixel_size_property_->getFloat();
+	} else {
+		size = point_world_size_property_->getFloat();
+	}
+	cloud_render_->setDimensions(size, size, size);
+
+//	context_->queueRender();
 }
 
 

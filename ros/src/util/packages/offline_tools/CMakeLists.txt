@@ -21,6 +21,7 @@ set(CMAKE_AUTOMOC ON)
 add_library(
 	rviz_offline_display
 		rviz_plugins/PCDFileDisplay.cpp
+		rviz_plugins/CSVTrajectory.cpp
 )
 
 target_link_libraries(
