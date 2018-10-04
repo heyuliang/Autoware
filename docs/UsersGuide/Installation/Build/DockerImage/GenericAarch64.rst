@@ -1,4 +1,7 @@
 Generic aarch64
 ===============
 
-.. include:: InstallDocker.rst
+.. include:: DockerSetup.rst
+
+Autoware Docker Setup
+---------------------

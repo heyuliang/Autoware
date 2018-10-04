@@ -1,4 +1,10 @@
 Generic x86_64
 ==============
 
-.. include:: InstallDocker.rst
+.. include:: DockerSetup.rst
+
+NVIDIA Docker Setup
+-------------------
+
+Autoware Docker Setup
+---------------------
