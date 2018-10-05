@@ -15,10 +15,22 @@
 #include <vector>
 #include <set>
 #include <exception>
+#include <sstream>
 
 
 typedef std::vector<std::vector<std::string>>
 	StringTableRecords;
+
+
+inline double cstod(const std::string &s)
+{
+	std::istringstream iss(s);
+	// force using standard locale
+	iss.imbue(std::locale("C"));
+	double d;
+	iss >> d;
+	return d;
+}
 
 
 class StringTable
@@ -43,12 +55,21 @@ public:
 	const std::string &get(int r, int c) const
 	{ return recs.at(r).at(c); }
 
+	double getd(int r, int c) const
+	{ return cstod(get(r, c)); }
+
 	const std::string &get(int r, const std::string &s) const
 	{
 		return recs.at(r).at(header.at(s));
 	}
 
 	const size_t size() const
+	{ return recs.size(); }
+
+	size_t columns() const
+	{ return recs.at(0).size(); }
+
+	size_t rows() const
 	{ return recs.size(); }
 
 	void setHeader(const std::vector<std::string> &hdr)

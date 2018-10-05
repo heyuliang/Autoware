@@ -5,8 +5,8 @@
  *      Author: sujiwo
  */
 
-#ifndef OFFLINE_TOOLS_RVIZ_PLUGINS_FILEPROPERTY_H_
-#define OFFLINE_TOOLS_RVIZ_PLUGINS_FILEPROPERTY_H_
+#ifndef _RVIZ_PLUGINS_FILEPROPERTY_H_
+#define _RVIZ_PLUGINS_FILEPROPERTY_H_
 
 #include <QWidget>
 #include <rviz/properties/property.h>
@@ -31,4 +31,4 @@ private:
 
 };
 
-#endif /* OFFLINE_TOOLS_RVIZ_PLUGINS_FILEPROPERTY_H_ */
+#endif /* _RVIZ_PLUGINS_FILEPROPERTY_H_ */

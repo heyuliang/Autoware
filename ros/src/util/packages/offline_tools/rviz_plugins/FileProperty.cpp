@@ -5,9 +5,14 @@
  *      Author: sujiwo
  */
 
+#include <iostream>
+#include <sstream>
 #include <QFileDialog>
 #include <rviz/properties/line_edit_with_button.h>
 #include "FileProperty.h"
+
+
+using namespace std;
 
 
 FileProperty::FileProperty(
@@ -24,9 +29,17 @@ FileProperty::FileProperty(
 QWidget*
 FileProperty::createEditor( QWidget* parent, const QStyleOptionViewItem& option )
 {
-	rviz::LineEditWithButton *wEdit = new rviz::LineEditWithButton(this);
+	cout << "Test\n";
+	rviz::LineEditWithButton *wEdit = new rviz::LineEditWithButton(parent);
 	wEdit->setFrame(false);
 	QPushButton *b = wEdit->button();
 //	connect(b, SIGNAL())
 	return wEdit;
+}
+
+
+void
+FileProperty::onButtonClick()
+{
+
 }
