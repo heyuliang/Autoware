@@ -13,6 +13,8 @@
 #include <rviz/default_plugin/path_display.h>
 #include <rviz/display.h>
 
+#include "FileProperty.h"
+
 
 class CSVTrajectory : public rviz::PathDisplay
 {
@@ -29,7 +31,7 @@ private
 protected:
 //	virtual void onInitialize();
 
-	rviz::StringProperty* csvFilePath;
+	FileProperty* csvFilePath;
 };
 
 #endif /* _CSVTRAJECTORY_H_ */

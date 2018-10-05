@@ -22,6 +22,7 @@ add_library(
 	rviz_offline_display
 		rviz_plugins/PCDFileDisplay.cpp
 		rviz_plugins/CSVTrajectory.cpp
+		rviz_plugins/FileProperty.cpp
 )
 
 target_link_libraries(

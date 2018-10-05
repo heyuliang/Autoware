@@ -9,7 +9,7 @@
 
 CSVTrajectory::CSVTrajectory()
 {
-	csvFilePath = new rviz::StringProperty(
+	csvFilePath = new FileProperty(
 			"CSVFilePath",
 			QString(),
 			"CSV File to load",
