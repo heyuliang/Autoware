@@ -87,23 +87,6 @@ CSVTrajectory::updateDisplay (const std::string &filename)
 	}
 
 	queueRender();
-//	poseTable_ = nav_msgs::PathPtr (new nav_msgs::Path);
-//	poseTable_->header.stamp = ros::Time(0);
-//
-//	for (int r=0; r<csvTableInp.rows(); ++r) {
-//
-//		geometry_msgs::PoseStamped pose;
-//		pose.header.stamp = ros::Time(csvTableInp.getd(r, 0));
-//		pose.pose.position.x = csvTableInp.getd(r, 1);
-//		pose.pose.position.y = csvTableInp.getd(r, 2);
-//		pose.pose.position.z = csvTableInp.getd(r, 3);
-//		pose.pose.orientation.x = csvTableInp.getd(r, 4);
-//		pose.pose.orientation.y = csvTableInp.getd(r, 5);
-//		pose.pose.orientation.z = csvTableInp.getd(r, 6);
-//		pose.pose.orientation.w = csvTableInp.getd(r, 7);
-//
-//		poseTable_->poses.push_back(pose);
-//	}
 }
 
 

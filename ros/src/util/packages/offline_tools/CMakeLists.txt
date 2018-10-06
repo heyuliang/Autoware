@@ -3,7 +3,9 @@ project(offline_tools)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS rviz)
+find_package(catkin REQUIRED COMPONENTS 
+	rviz
+	pcl_ros)
 find_package(Qt5 REQUIRED Core Widgets)
 find_package(PCL REQUIRED)
 
