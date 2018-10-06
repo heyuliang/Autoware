@@ -302,7 +302,11 @@ private:
 	struct {
 		std::string velodyneCalibrationPath;
 		std::string pcdMapPath;
-		TTransform lidarToCamera = TTransform::Identity();
+
+		// XXX: Find a way to specify these values from external input
+		TTransform lidarToCamera = TTransform::from_XYZ_RPY(
+			Vector3d(0.9, 0.3, -0.6),
+			-1.520777, -0.015, -1.5488);
 	} ndtParameters;
 
 

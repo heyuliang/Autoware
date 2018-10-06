@@ -227,7 +227,7 @@ public:
 	void setLidarParameters (
 		const std::string &pvelodyneCalibrationFile,
 		const std::string &pmeidaiPCDMapFile,
-		const TTransform &plidarToCameraTransform);
+		const TTransform &plidarToCameraTransform=TTransform::Identity());
 
 	bool isSubset() const
 	{ return isSubset_; }

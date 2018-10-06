@@ -286,7 +286,7 @@ MeidaiBagDataset::createCache()
 		else
 			poseX = ndtTrack.interpolate(tm);
 		// XXX: Check this value
-		Pose poseX1 = lidarToCameraTransform * static_cast<Pose>(poseX);
+		Pose poseX1 = lidarToCameraTransform.inverse() * static_cast<Pose>(poseX);
 		cameraTrack.push_back(PoseTimestamp(poseX1, tm));
 
 		cout << i+1 << " / " << cameraRawBag->size() << "  \r";
