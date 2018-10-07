@@ -50,6 +50,8 @@ struct PoseTimestamp : public Pose
 		timestamp = t;
 	}
 
+	PoseTimestamp operator* (const Pose &t);
+
 	double timeSecond () const
 	{ return timestamp.toSec(); }
 
@@ -189,6 +191,8 @@ public:
 	virtual ~MeidaiBagDataset();
 
 	size_t size() const;
+
+	size_t sizeAll() const;
 
 	CameraPinholeParams getCameraParameter() const;
 

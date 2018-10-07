@@ -139,6 +139,14 @@ MeidaiBagDataset::size() const
 }
 
 
+size_t
+MeidaiBagDataset::sizeAll() const
+{
+	RandomAccessBag bg(*bagfd, meidaiBagImageTopic);
+	return bg.size();
+}
+
+
 CameraPinholeParams
 MeidaiBagDataset::getCameraParameter()
 const
@@ -286,8 +294,8 @@ MeidaiBagDataset::createCache()
 		else
 			poseX = ndtTrack.interpolate(tm);
 		// XXX: Check this value
-		Pose poseX1 = static_cast<Pose>(poseX) * lidarToCameraTransform;
-		cameraTrack.push_back(PoseTimestamp(poseX1, tm));
+		PoseTimestamp poseX1 = poseX * lidarToCameraTransform;
+		cameraTrack.push_back(poseX1);
 
 		cout << i+1 << " / " << cameraRawBag->size() << "  \r";
 	}
@@ -484,4 +492,12 @@ ptime
 MeidaiDataItem::getTimestamp() const
 {
 	return bImageMsg->header.stamp.toBoost();
+}
+
+
+PoseTimestamp
+PoseTimestamp::operator* (const Pose &t)
+{
+	Pose P = static_cast<Pose&>(*this) * t;
+	return PoseTimestamp(P, this->timestamp);
 }

@@ -35,6 +35,27 @@ using namespace std;
 namespace fs = boost::filesystem;
 
 
+struct {
+	std::string velodyneCalibrationPath;
+	std::string pcdMapPath;
+
+	// XXX: Find a way to specify these values from external input
+	TTransform lidarToCamera = TTransform::from_XYZ_RPY(
+		Vector3d(0.9, 0.3, -0.6),
+		-1.520777, -0.015, -1.5488);
+} meidaiNdtParameters;
+
+
+CameraPinholeParams meidaiCamera1Params(
+	1150.96938467,	// fx
+	1150.96938467,	// fy
+	988.511326762,	// cx
+	692.803953253,	// cy
+	1920,			// width
+	1440			// height
+);
+
+
 typedef vector<string> stringTokens;
 
 
@@ -299,16 +320,6 @@ protected:
 
 private:
 
-	struct {
-		std::string velodyneCalibrationPath;
-		std::string pcdMapPath;
-
-		// XXX: Find a way to specify these values from external input
-		TTransform lidarToCamera = TTransform::from_XYZ_RPY(
-			Vector3d(0.9, 0.3, -0.6),
-			-1.520777, -0.015, -1.5488);
-	} ndtParameters;
-
 
 	void map_open_cmd(const string &mapPath)
 	{
@@ -368,7 +379,7 @@ private:
 	void dataset_build(stringTokens &cmd)
 	{
 		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
-			if (ndtParameters.pcdMapPath.empty() or ndtParameters.velodyneCalibrationPath.empty()) {
+			if (meidaiNdtParameters.pcdMapPath.empty() or meidaiNdtParameters.velodyneCalibrationPath.empty()) {
 				debug ("Parameters must be set with commands `velodyne' and `pcdmap'");
 				return;
 			}
@@ -391,7 +402,7 @@ private:
 				resetSubset = false;
 			}
 
-			nuDataset->setLidarParameters(ndtParameters.velodyneCalibrationPath, ndtParameters.pcdMapPath, ndtParameters.lidarToCamera);
+			nuDataset->setLidarParameters(meidaiNdtParameters.velodyneCalibrationPath, meidaiNdtParameters.pcdMapPath, meidaiNdtParameters.lidarToCamera);
 			nuDataset->forceCreateCache(resetSubset);
 			ptime tbuild2 = getCurrentTime();
 
@@ -546,9 +557,9 @@ private:
 	{
 		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
 			if (command[0]=="velodyne")
-				ndtParameters.velodyneCalibrationPath = command[1];
+				meidaiNdtParameters.velodyneCalibrationPath = command[1];
 			else if (command[0]=="pcdmap")
-				ndtParameters.pcdMapPath = command[1];
+				meidaiNdtParameters.pcdMapPath = command[1];
 		}
 	}
 
@@ -612,6 +623,25 @@ private:
 		}
 		return mapResName;
 	}
+
+
+	void map_create_meidai ()
+	{
+		MeidaiBagDataset::Ptr meidaiBag = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+
+		size_t sizeAll = meidaiBag->sizeAll();
+		size_t size = meidaiBag->size();
+		if (sizeAll != size) {
+			debug (string("Mapping ") + to_string(size) + string(" out of ") + to_string(sizeAll));
+		}
+
+		MapBuilder2 builder;
+		CameraPinholeParams camera = meidaiCamera1Params * meidaiBag->getZoomRatio();
+		builder.addCameraParam(camera);
+
+		// XXX: Not finished yet
+	}
+
 
 	void map_create_cmd (const stringTokens &cmd)
 	{

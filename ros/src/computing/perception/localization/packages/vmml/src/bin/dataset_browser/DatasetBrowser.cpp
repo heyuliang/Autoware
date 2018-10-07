@@ -52,6 +52,8 @@ void
 DatasetBrowser::on_saveImageButton_clicked(bool checked)
 {
 	QString fname = QFileDialog::getSaveFileName(this, tr("Save Image"));
+	if (fname.length()==0)
+		return;
 	cv::Mat image = openDs->get(timelineSlider->value())->getImage();
 	cv::imwrite(fname.toStdString(), image);
 }

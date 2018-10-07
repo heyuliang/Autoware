@@ -48,6 +48,15 @@ struct CameraPinholeParams {
 	int width, height;
 	// XXX: Distortion parameters
 
+	CameraPinholeParams(
+		double _fx, double _fy,
+		double _cx, double _cy,
+		int _w, int _h):
+		fx(_fx), fy(_fy),
+		cx(_cx), cy(_cy),
+		width(_w), height(_h)
+	{}
+
 	Eigen::Matrix<double,3,4> toMatrix() const;
 
 	CameraPinholeParams():
