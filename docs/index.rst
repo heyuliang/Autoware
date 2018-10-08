@@ -17,7 +17,7 @@ Users Guide
 ===========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    UsersGuide/Installation
    UsersGuide/Tutorials
