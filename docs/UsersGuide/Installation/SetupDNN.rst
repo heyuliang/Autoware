@@ -1,5 +1,5 @@
-Install DNN model on COCO dataset
-=================================
+Setup DNN-based nodes
+=====================
 
 DNN-based nodes require their pretrained models.
 The nodes in Autoware are:
