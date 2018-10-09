@@ -68,7 +68,10 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 {
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
+  auto_mission_reload_ = msg.auto_mission_reload;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
+  dist_threshold_ = msg.dist_threshold;
+  angle_threshold_ = msg.angle_threshold;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event)
@@ -183,7 +186,7 @@ inline double getDistance(double ax, double ay, double bx, double by)
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
-  intersects.clear();
+  // intersects.clear();
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
   bool existInsideLanes = false;
@@ -277,7 +280,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
             wp.twist.twist.linear.x =
                 (wp.twist.twist.linear.x + lane.waypoints.at(wp_idx + 1).twist.twist.linear.x) / 2;
 
-            ROS_INFO("Inserting stopline_interpolation_wp: #%d(%f, %f, %f)\n", wp_idx + 1, interpolation_point.x,
+            ROS_INFO("Inserting stopline_interpolation_wp: #%zu(%f, %f, %f)\n", wp_idx + 1, interpolation_point.x,
                      interpolation_point.y, interpolation_point.z);
 
             lane.waypoints.insert(lane.waypoints.begin() + wp_idx + 1, wp);
@@ -292,8 +295,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 // MISSION COMPLETE FLAG
 #define NUM_OF_SET_MISSION_COMPLETE_FLAG 3
     size_t wp_idx = lane.waypoints.size();
-    int counter = 0;
-    for (int counter = 0;
+    unsigned counter = 0;
+    for (counter = 0;
          counter <= (wp_idx <= NUM_OF_SET_MISSION_COMPLETE_FLAG ? wp_idx : NUM_OF_SET_MISSION_COMPLETE_FLAG); counter++)
     {
       lane.waypoints.at(--wp_idx).wpstate.event_state = autoware_msgs::WaypointState::TYPE_EVENT_GOAL;
@@ -303,7 +306,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 
 bool DecisionMakerNode::drivingMissionCheck()
 {
-  std::string current_state = ctx->getStateText();
+  // std::string current_state = ctx->getStateText();
 
   publishOperatorHelpMessage("Received new mission, checking now...");
   setEventFlag("received_back_state_waypoint", false);
@@ -335,6 +338,7 @@ bool DecisionMakerNode::drivingMissionCheck()
   // reindexing and calculate new closest_waypoint distance
   gid = 0;
   double min_dist = 100;
+  geometry_msgs::Pose nearest_wp_pose;
   for (auto& lane : current_status_.based_lane_array.lanes)
   {
     int lid = 0;
@@ -345,12 +349,18 @@ bool DecisionMakerNode::drivingMissionCheck()
       wp.gid = gid++;
       wp.lid = lid++;
       double dst = amathutils::find_distance(current_status_.pose.position, wp.pose.pose.position);
-      min_dist = min_dist > dst ? dst : min_dist;
+      if(min_dist > dst)
+      {
+        min_dist = dst;
+        nearest_wp_pose = wp.pose.pose;
+      }
     }
   }
 
-  const double dist_threshold = 1.0;// [m]
-  if(min_dist > dist_threshold )
+  double angle_diff_degree = fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180/M_PI;
+  //const double dist_threshold = 1.0;// [m]
+  //const double angle_threshold = 15;// [deg]
+  if (min_dist > dist_threshold_ || angle_diff_degree > angle_threshold_)
   {
     return false;
   }
@@ -512,6 +522,8 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 
 void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(0);
+  diag_manager_.DIAG_RATE_CHECK(1);
   current_status_.velocity = amathutils::mps2kmph(msg.twist.linear.x);
 }
 }

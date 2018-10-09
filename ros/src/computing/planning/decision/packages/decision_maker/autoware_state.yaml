@@ -100,6 +100,34 @@ autoware_states:
     StateName: LaneArea
     Transition:
       -
+        Key: on_cruise
+        Target: Cruise
+      -
+        Key: on_bus_stop
+        Target: BusStop
+    Parent: Drive
+  -
+    StateName: BusStop
+    Transition:
+      -
+        Key: on_pull_over
+        Target: PullOver
+      -
+        Key: on_pull_out
+        Target: PullOut
+    Parent: LaneArea
+  -
+    StateName: PullOver
+    Transition: []
+    Parent: BusStop
+  -
+    StateName: PullOut
+    Transition: []
+    Parent: BusStop
+  -
+    StateName: Cruise
+    Transition:
+      -
         Key: on_left_turn
         Target: LeftTurn
       -
@@ -111,7 +139,7 @@ autoware_states:
       -
         Key: on_back
         Target: Back
-    Parent: Drive
+    Parent: LaneArea
   -
     StateName: LeftTurn
     Transition:
@@ -124,7 +152,7 @@ autoware_states:
       -
         Key: wait
         Target: L_Wait
-    Parent: LaneArea
+    Parent: Cruise
   -
     StateName: L_Stop
     Transition:
@@ -174,7 +202,7 @@ autoware_states:
       -
         Key: wait
         Target: R_Wait
-    Parent: LaneArea
+    Parent: Cruise
   -
     StateName: R_Stop
     Transition:
@@ -224,7 +252,7 @@ autoware_states:
       -
         Key: wait
         Target: Wait
-    Parent: LaneArea
+    Parent: Cruise
   -
     StateName: Stop
     Transition:
@@ -267,7 +295,7 @@ autoware_states:
       -
         Key: wait
         Target: B_Wait
-    Parent: LaneArea
+    Parent: Cruise
   -
     StateName: B_Stop
     Transition:

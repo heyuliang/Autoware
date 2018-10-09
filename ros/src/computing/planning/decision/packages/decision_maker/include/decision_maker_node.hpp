@@ -45,6 +45,9 @@
 #include <decision_maker_param.hpp>
 #include <state_machine_lib/state_context.hpp>
 
+//headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 namespace decision_maker
 {
 using namespace vector_map;
@@ -114,6 +117,9 @@ struct AutowareStatus
 class DecisionMakerNode
 {
 private:
+  // diagnostic
+  diag_manager diag_manager_;
+
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
@@ -167,8 +173,10 @@ private:
 
   // Param
   bool enableDisplayMarker;
-
+  bool auto_mission_reload_;
   uint32_t param_num_of_steer_behind_;
+  double dist_threshold_;
+  double angle_threshold_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -231,6 +239,7 @@ private:
   double getPoseAngle(const geometry_msgs::Pose& p);
 
   uint8_t getSteeringStateFromWaypoint(void);
+  uint8_t getEventStateFromWaypoint(void);
   std::pair<uint8_t, int> getStopSignStateFromWaypoint(void);
 
   // current decision maker is support only lane area
@@ -249,6 +258,7 @@ private:
    * state callback
    **/
 
+  /*** state vehicle ***/
   // entry callback
   void entryInitState(cstring_t& state_name, int status);
   void entrySensorInitState(cstring_t& state_name, int status);
@@ -257,12 +267,7 @@ private:
   void entryPlanningInitState(cstring_t& state_name, int status);
   void entryVehicleInitState(cstring_t& state_name, int status);
   void entryVehicleReadyState(cstring_t& state_name, int status);
-  void entryWaitMissionOrderState(cstring_t& state_name, int status);
-  void entryMissionCheckState(cstring_t& state_name, int status);
-  void entryDriveReadyState(cstring_t& state_name, int status);
-  void entryDriveState(cstring_t& state_name, int status);
-  void entryTurnState(cstring_t& state_name, int status);
-
+  void entryVehicleEmergencyState(cstring_t& state_name, int status);
   // update callback
   void updateInitState(cstring_t& state_name, int status);
   void updateSensorInitState(cstring_t& state_name, int status);
@@ -271,27 +276,62 @@ private:
   void updatePlanningInitState(cstring_t& state_name, int status);
   void updateVehicleInitState(cstring_t& state_name, int status);
   void updateVehicleReadyState(cstring_t& state_name, int status);
-  void updateWaitMissionOrderState(cstring_t& state_name, int status);
+  void updateVehicleEmergencyState(cstring_t& state_name, int status);
+  // exit callback
+
+  /*** state mission ***/
+  // entry callback
+  void entryWaitVehicleReadyState(cstring_t& state_name, int status);
+  void entryWaitOrderState(cstring_t& state_name, int status);
+  void entryMissionCheckState(cstring_t& state_name, int status);
+  void entryDriveReadyState(cstring_t& state_name, int status);
+  void entryDrivingState(cstring_t& state_name, int status);
+  // update callback
+  void updateWaitVehicleReadyState(cstring_t& state_name, int status);
+  void updateWaitOrderState(cstring_t& state_name, int status);
   void updateMissionCheckState(cstring_t& state_name, int status);
   void updateDriveReadyState(cstring_t& state_name, int status);
+  void updateDrivingState(cstring_t& state_name, int status);
+  void updateDrivingMissionChangeState(cstring_t& state_name, int status);
+  void updateMissionChangeSucceededState(cstring_t& state_name, int status);
+  void updateMissionChangeFailedState(cstring_t& state_name, int status);
+  void updateMissionCompleteState(cstring_t& state_name, int status);
+  void updateMissionAbortedState(cstring_t& state_name, int status);
+  // exit callback
+  void exitWaitOrderState(cstring_t& state_name, int status);
+  void exitDrivingState(cstring_t& state_name, int status);
+  // void exitWaitMissionOrderState(cstring_t& state_name, int status);
 
+  /*** state drive ***/
+  // entry callback
+  void entryDriveState(cstring_t& state_name, int status);
+  void entryTurnState(cstring_t& state_name, int status);
+  // update callback
+  void updateWaitEngageState(cstring_t& state_name, int status);
   void updateDriveState(cstring_t& state_name, int status);
   void updateLaneAreaState(cstring_t& state_name, int status);
   void updateFreeAreaState(cstring_t& state_name, int status);
+  void updateCruiseState(cstring_t& state_name, int status);
+  void updateBusStopState(cstring_t& state_name, int status);
+  void updateParkingState(cstring_t& state_name, int status);
+  void updateDriveEmergencyState(cstring_t& state_name, int status);
   void updateLeftTurnState(cstring_t& state_name, int status);
   void updateRightTurnState(cstring_t& state_name, int status);
   void updateStraightState(cstring_t& state_name, int status);
   void updateBackState(cstring_t& state_name, int status);
+  void updateLeftLaneChangeState(cstring_t& state_name, int status);
+  void updateRightLaneChangeState(cstring_t& state_name, int status);
+  void updatePullOverState(cstring_t& state_name, int status);
+  void updatePullOutState(cstring_t& state_name, int status);
   void updateStoplineState(cstring_t& state_name, int status);
   void updateGoState(cstring_t& state_name, int status);
   void updateWaitState(cstring_t& state_name, int status);
   void updateStopState(cstring_t& state_name, int status);
-
-  void updateMissionCompleteState(cstring_t& state_name, int status);
-  void updateMissionAbortedState(cstring_t& state_name, int status);
-
+  void updateCheckLeftLaneState(cstring_t& state_name, int status);
+  void updateCheckRightLaneState(cstring_t& state_name, int status);
+  void updateChangeToLeftState(cstring_t& state_name, int status);
+  void updateChangeToRightState(cstring_t& state_name, int status);
   // exit callback
-  void exitWaitMissionOrderState(cstring_t& state_name, int status);
   void exitStopState(cstring_t& state_name, int status);
 
   // callback by topic subscribing
@@ -324,16 +364,27 @@ private:
   }
 
 public:
-  state_machine::StateContext* ctx;
+  state_machine::StateContext* ctx_vehicle;
+  state_machine::StateContext* ctx_mission;
+  state_machine::StateContext* ctx_drive;
   VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char** argv)
-    : private_nh_("~"), enableDisplayMarker(false), param_num_of_steer_behind_(30)
+    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), param_num_of_steer_behind_(30)
   {
     std::string file_name;
+    std::string file_name_mission;
+    std::string file_name_drive;
+    std::string file_name_vehicle;
     private_nh_.getParam("state_file_name", file_name);
+    private_nh_.getParam("state_vehicle_file_name", file_name_vehicle);
+    private_nh_.getParam("state_mission_file_name", file_name_mission);
+    private_nh_.getParam("state_drive_file_name", file_name_drive);
 
-    ctx = new state_machine::StateContext(file_name);
+    // ctx = new state_machine::StateContext(file_name);
+    ctx_vehicle = new state_machine::StateContext(file_name_vehicle);
+    ctx_mission = new state_machine::StateContext(file_name_mission);
+    ctx_drive = new state_machine::StateContext(file_name_drive);
     init();
     setupStateCallback();
 

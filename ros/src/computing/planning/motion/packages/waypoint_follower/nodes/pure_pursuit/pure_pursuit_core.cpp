@@ -86,6 +86,7 @@ void PurePursuitNode::initForROS()
   pub15_ = nh_.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
   pub16_ = nh_.advertise<std_msgs::Float32>("angular_gravity", 0);
   pub17_ = nh_.advertise<std_msgs::Float32>("deviation_of_current_position", 0);
+  virtual_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>(ros::this_node::getName() + "/virtual_current_pose",0);
   // pub7_ = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 }
 
@@ -204,6 +205,7 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
   is_config_set_ = true;
+  delay_ = config->delay;
 }
 
 void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
@@ -224,19 +226,54 @@ void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point
   msg.data = getDistanceBetweenLineAndPoint(point, a, b, c);
 
   pub17_.publish(msg);
+  return;
 }
 
 void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  pp_.setCurrentPose(msg);
+  geometry_msgs::PoseStamped current_pose = *msg;
+  if(current_angular_velocity_ != 0)
+  {
+    double r = current_linear_velocity_ / current_angular_velocity_;
+    double theta = current_angular_velocity_ * delay_;
+    tf::Quaternion current_quat(current_pose.pose.orientation.x,current_pose.pose.orientation.y,current_pose.pose.orientation.z,current_pose.pose.orientation.w);
+    double current_roll, current_pitch, current_yaw;
+    tf::Matrix3x3(current_quat).getRPY(current_roll, current_pitch, current_yaw);
+    double dx = 2 * r * std::sin(0.5 * theta) * std::sin(theta + current_yaw);
+    double dy = 2 * r * std::sin(0.5 * theta) * std::cos(theta + current_yaw);
+    current_pose.pose.position.x = current_pose.pose.position.x + dx;
+    current_pose.pose.position.y = current_pose.pose.position.y + dy;
+    tf::Quaternion virtual_quat = tf::createQuaternionFromRPY(current_roll, current_pitch, current_yaw + theta);
+    geometry_msgs::Quaternion quat;
+    quaternionTFToMsg(virtual_quat,quat);
+    current_pose.pose.orientation = quat;
+    pp_.setCurrentPose(current_pose);
+  }
+  else
+  {
+    double l = current_linear_velocity_ * delay_;
+    tf::Quaternion current_quat(current_pose.pose.orientation.x,current_pose.pose.orientation.y,current_pose.pose.orientation.z,current_pose.pose.orientation.w);
+    double current_roll, current_pitch, current_yaw;
+    tf::Matrix3x3(current_quat).getRPY(current_roll, current_pitch, current_yaw);
+    double dx = l * std::sin(current_yaw);
+    double dy = l * std::cos(current_yaw);
+    current_pose.pose.position.x = msg->pose.position.x + dx;
+    current_pose.pose.position.y = msg->pose.position.y + dy;
+    current_pose.pose.orientation = current_pose.pose.orientation;
+    pp_.setCurrentPose(current_pose);
+  }
+  virtual_pose_pub_.publish(current_pose);
   is_pose_set_ = true;
+  return;
 }
 
 void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
 {
   current_linear_velocity_ = msg->twist.linear.x;
+  current_angular_velocity_ = msg->twist.angular.z;
   pp_.setCurrentVelocity(current_linear_velocity_);
   is_velocity_set_ = true;
+  return;
 }
 
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg)
@@ -246,6 +283,7 @@ void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &m
   connectVirtualLastWaypoints(&expanded_lane);
   pp_.setCurrentWaypoints(expanded_lane.waypoints);
   is_waypoint_set_ = true;
+  return;
 }
 
 void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)

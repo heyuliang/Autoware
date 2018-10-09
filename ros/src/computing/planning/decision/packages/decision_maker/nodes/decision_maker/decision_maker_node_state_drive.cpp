@@ -2,10 +2,15 @@
 
 namespace decision_maker
 {
+void DecisionMakerNode::updateWaitEngageState(cstring_t& state_name, int status)
+{
+
+}
+
 void DecisionMakerNode::entryDriveState(cstring_t& state_name, int status)
 {
   setEventFlag("received_based_lane_waypoint", false);
-  publishOperatorHelpMessage("Engaged");
+  // publishOperatorHelpMessage("Engaged");
 }
 void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
 {
@@ -63,13 +68,41 @@ uint8_t DecisionMakerNode::getSteeringStateFromWaypoint(void)
     return 0;
   }
 
-  for (auto idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
   {
     distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
 
     state = current_status_.finalwaypoints.waypoints.at(idx).wpstate.steering_state;
 
     if (state && (state != autoware_msgs::WaypointState::STR_STRAIGHT || distance >= distance_to_target))
+    {
+      break;
+    }
+    prev_pose = current_status_.finalwaypoints.waypoints.at(idx).pose.pose;
+  }
+  return state;
+}
+uint8_t DecisionMakerNode::getEventStateFromWaypoint(void)
+{
+  static const double distance_to_target = param_num_of_steer_behind_;
+  static const size_t ignore_idx = 0;
+
+  double distance = 0.0;
+  geometry_msgs::Pose prev_pose = current_status_.pose;
+  uint8_t state = 0;
+
+  if (ignore_idx > current_status_.finalwaypoints.waypoints.size())
+  {
+    return 0;
+  }
+
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  {
+    distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
+
+    state = current_status_.finalwaypoints.waypoints.at(idx).wpstate.event_state;
+
+    if (state && distance >= distance_to_target)
     {
       break;
     }
@@ -105,12 +138,12 @@ std::pair<uint8_t, int> DecisionMakerNode::getStopSignStateFromWaypoint(void)
 
   // reset previous stop
   if (current_status_.finalwaypoints.waypoints.at(1).gid > current_status_.prev_stopped_wpidx ||
-      current_status_.prev_stopped_wpidx - current_status_.finalwaypoints.waypoints.at(1).gid > reset_count)
+      (unsigned int)(current_status_.prev_stopped_wpidx - current_status_.finalwaypoints.waypoints.at(1).gid) > reset_count)
   {
     current_status_.prev_stopped_wpidx = -1;
   }
 
-  for (auto idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
   {
     distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
     state = current_status_.finalwaypoints.waypoints.at(idx).wpstate.stop_state;
@@ -142,6 +175,19 @@ void DecisionMakerNode::updateLaneAreaState(cstring_t& state_name, int status)
     return;
   }
 
+  switch (getEventStateFromWaypoint())
+  {
+    case autoware_msgs::WaypointState::TYPE_EVENT_BUS_STOP:
+      tryNextState("on_bus_stop");
+      break;
+    default:
+      tryNextState("on_cruise");
+      break;
+  }
+}
+
+void DecisionMakerNode::updateCruiseState(cstring_t& state_name, int status)
+{
   if (isEventFlagTrue("received_back_state_waypoint"))
   {
     tryNextState("on_back");
@@ -166,6 +212,20 @@ void DecisionMakerNode::updateLaneAreaState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateFreeAreaState(cstring_t& state_name, int status)
 {
+}
+
+void DecisionMakerNode::updateBusStopState(cstring_t& state_name, int status)
+{
+}
+
+void DecisionMakerNode::updatePullOverState(cstring_t& state_name, int status)
+{
+  publishLampCmd(E_Lamp::LAMP_LEFT);
+}
+
+void DecisionMakerNode::updatePullOutState(cstring_t& state_name, int status)
+{
+  publishLampCmd(E_Lamp::LAMP_RIGHT);
 }
 
 void DecisionMakerNode::entryTurnState(cstring_t& state_name, int status)
@@ -195,9 +255,44 @@ void DecisionMakerNode::updateRightTurnState(cstring_t& state_name, int status)
   publishLampCmd(E_Lamp::LAMP_RIGHT);
 }
 
+void DecisionMakerNode::updateLeftLaneChangeState(cstring_t& state_name, int status)
+{
+  publishLampCmd(E_Lamp::LAMP_LEFT);
+}
+
+void DecisionMakerNode::updateRightLaneChangeState(cstring_t& state_name, int status)
+{
+  publishLampCmd(E_Lamp::LAMP_RIGHT);
+}
+
+void DecisionMakerNode::updateCheckLeftLaneState(cstring_t& state_name, int status)
+{
+
+}
+
+void DecisionMakerNode::updateCheckRightLaneState(cstring_t& state_name, int status)
+{
+
+}
+
+void DecisionMakerNode::updateChangeToLeftState(cstring_t& state_name, int status)
+{
+
+}
+
+void DecisionMakerNode::updateChangeToRightState(cstring_t& state_name, int status)
+{
+
+}
+
 void DecisionMakerNode::updateBackState(cstring_t& state_name, int status)
 {
   publishLampCmd(E_Lamp::LAMP_CLEAR);
+}
+
+void DecisionMakerNode::updateParkingState(cstring_t& state_name, int status)
+{
+  publishLampCmd(E_Lamp::LAMP_HAZARD);
 }
 
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
@@ -262,4 +357,10 @@ void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
     publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
   }
 }
+
+void DecisionMakerNode::updateDriveEmergencyState(cstring_t& state_name, int status)
+{
+
+}
+
 }

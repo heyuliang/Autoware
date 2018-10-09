@@ -1,0 +1,9 @@
+<launch>
+    <param name="error_code_config_path" value="$(find decision_maker)/config/emergency_stopper_sample_diag_config.yaml"/>
+
+    <node pkg="decision_maker" type="emergency_stopper_node" name="emergency_stopper_node" output="screen" respawn="true">
+    </node>
+
+    <node pkg="diag_lib" type="watchdog_node" name="watchdog_node" output="screen" respawn="true">
+    </node>
+</launch>

@@ -242,15 +242,15 @@ void DecisionMakerNode::displayMarker(void)
 void DecisionMakerNode::update_msgs(void)
 {
 #if 1
-  if (ctx)
+  if (ctx_vehicle && ctx_mission && ctx_drive)
   {
     static std_msgs::String state_msg;
-    state_msg.data = ctx->getStateText();
+    state_msg.data = ctx_vehicle->getStateText() + ctx_mission->getStateText() + ctx_drive->getStateText();
     Pubs["state"].publish(state_msg);
     Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
 
     static std_msgs::String transition_msg;
-    transition_msg.data = ctx->getAvailableTransition();
+    transition_msg.data = ctx_vehicle->getAvailableTransition() + ctx_mission->getAvailableTransition() + ctx_drive->getAvailableTransition();
 
     Pubs["available_transition"].publish(transition_msg);
   }
