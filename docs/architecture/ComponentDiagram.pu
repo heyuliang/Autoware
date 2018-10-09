@@ -50,11 +50,11 @@ folder detection {
     'outputs
     image_detector --> detected_objects_vision
 
-    [plane_tracker]
-    'inputs
-    detected_objects_vision --> plane_tracker
+    [image_tracker]
+    'inputsß
+    detected_objects_vision --> image_tracker
     'outputs
-    plane_tracker --> tracked_objects_vision
+    image_tracker --> tracked_objects_vision
 
     [lidar_detector]
     'inputs
