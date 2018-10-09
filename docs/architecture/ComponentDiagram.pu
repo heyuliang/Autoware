@@ -37,7 +37,7 @@ folder sensing {
 
 folder detection {
     () "autoware_detection_msgs::ObjectArray\n/detection/image_objects" as detected_objects_vision
-    () "autoware_detection_msgs::ObjectArray\n/detection/tracked_objects_vision" as tracked_objects_vision
+    () "autoware_detection_msgs::ObjectArray\n/detection/image_objects_tracked" as image_objects_tracked
     () "or" as image_objects
     () "autoware_detection_msgs::ObjectArray\n/detection/lidar_objects" as detected_objects_lidar
     () "autoware_detection_msgs::ObjectArray\n/detection/objects_postfused" as detected_objects_combined
@@ -54,7 +54,7 @@ folder detection {
     'inputs
     detected_objects_vision --> image_tracker
     'outputs
-    image_tracker --> tracked_objects_vision
+    image_tracker --> image_objects_tracked
 
     [lidar_detector]
     'inputs
@@ -78,7 +78,7 @@ folder detection {
 
     'connection
     detected_objects_vision --> image_objects
-    tracked_objects_vision --> image_objects
+    image_objects_tracked --> image_objects
 
     detected_objects_lidar --> objects_fused
     detected_objects_combined --> objects_fused
