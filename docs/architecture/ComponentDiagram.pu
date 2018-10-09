@@ -32,17 +32,17 @@ folder sensing {
     gnss --> nmea_sentence
 }
 
-() "autoware_detection_msgs::ObjectArray\n/detection/objects_tracked" as objects_tracked
+() "autoware_detection_msgs::ObjectArray\n/detection/objects/tracked" as objects_tracked
 '() "autoware_detection_msgs::TrafficLight\n/detection/traffic_light_color" as traffic_light_color
 
 folder detection {
     () "autoware_detection_msgs::ObjectArray\n/detection/image/objects" as detected_objects_vision
-    () "autoware_detection_msgs::ObjectArray\n/detection/image/objects_tracked" as image_objects_tracked
+    () "autoware_detection_msgs::ObjectArray\n/detection/image/objects/tracked" as image_objects_tracked
     () "or" as image_objects
     () "autoware_detection_msgs::ObjectArray\n/detection/lidar/objects" as detected_objects_lidar
-    () "autoware_detection_msgs::ObjectArray\n/detection/objects_postfused" as detected_objects_combined
-    () "autoware_detection_msgs::ObjectArray\n/detection/objects_prefused" as detected_objects_fused
-    () "autoware_detection_msgs::ObjectArray\n/detection/objects_fused" as objects_fused
+    () "autoware_detection_msgs::ObjectArray\n/detection/objects/postfused" as detected_objects_combined
+    () "autoware_detection_msgs::ObjectArray\n/detection/objects/prefused" as detected_objects_fused
+    () "autoware_detection_msgs::ObjectArray\n/detection/objects/fused" as objects_fused
 
     [image_detector]
     'inputs
