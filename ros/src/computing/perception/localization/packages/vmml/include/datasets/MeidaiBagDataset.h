@@ -194,6 +194,7 @@ public:
 
 	size_t sizeAll() const;
 
+	void addCameraParameter(const CameraPinholeParams &c);
 	CameraPinholeParams getCameraParameter() const;
 
 	cv::Mat getMask();
@@ -255,6 +256,8 @@ protected:
 
 	ros::Time subsetBeginTime = ros::TIME_MIN,
 		subsetEndTime = ros::TIME_MIN;
+
+	CameraPinholeParams cameraParams;
 
 private:
 	void loadCache ();

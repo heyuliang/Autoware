@@ -151,8 +151,13 @@ CameraPinholeParams
 MeidaiBagDataset::getCameraParameter()
 const
 {
-	throw runtime_error("Not implemented");
+	return cameraParams * zoomRatio;
 }
+
+
+void
+MeidaiBagDataset::addCameraParameter(const CameraPinholeParams &c)
+{ cameraParams = c; }
 
 
 cv::Mat

@@ -282,7 +282,8 @@ public:
 		};
 		builder.registerFrameCallback(frmCallback);
 
-		for (int framePtr=0; framePtr<datasetSrc->size(); framePtr++) {
+		int N = datasetSrc->size();
+		for (int framePtr=0; framePtr<N; framePtr++) {
 
 			InputFrame frame;
 			if (slDatasourceType==OXFORD_DATASET_TYPE) {
@@ -625,52 +626,50 @@ private:
 	}
 
 
-	void map_create_meidai ()
-	{
-		MeidaiBagDataset::Ptr meidaiBag = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
-
-		size_t sizeAll = meidaiBag->sizeAll();
-		size_t size = meidaiBag->size();
-		if (sizeAll != size) {
-			debug (string("Mapping ") + to_string(size) + string(" out of ") + to_string(sizeAll));
-		}
-
-		MapBuilder2 builder;
-		CameraPinholeParams camera = meidaiCamera1Params * meidaiBag->getZoomRatio();
-		builder.addCameraParam(camera);
-
-		// XXX: Not finished yet
-	}
-
-
 	void map_create_cmd (const stringTokens &cmd)
 	{
-		if (slDatasourceType==MEIDAI_DATASET_TYPE) {
-			debug ("Mapping (still) not supported on NU Dataset");
-			return;
-		}
-
-		OxfordDataset::Ptr oxfSubset;
-		OxfordDataset::Ptr oxfAll = static_pointer_cast<OxfordDataset>(loadedDataset);
-		bool isSubset;
-
-		double start, duration;
-		if (cmd.size() >= 2) {
-			start = stod(cmd[0]);
-			duration = stod(cmd[1]);
-			oxfSubset = oxfAll->timeSubset(start, duration);
-			isSubset = true;
-		}
-		else {
-			oxfSubset = oxfAll;
-			start = 0;
-			duration = double(oxfSubset->getTimeLength().total_microseconds())/1e6;
-			isSubset = false;
-		}
-
-		debug ("About to run mapping with duration "+to_string(duration) +" seconds, " +to_string(oxfSubset->size()) + " frames");
+		GenericDataset::Ptr targetDataset;
+		double duration;
+		uint32_t numOfFrames;
 
 		MapBuilder2 mapBld;
+
+		if (slDatasourceType==OXFORD_DATASET_TYPE) {
+			OxfordDataset::Ptr oxfSubset;
+			OxfordDataset::Ptr oxfAll = static_pointer_cast<OxfordDataset>(loadedDataset);
+			bool isSubset;
+
+			double start;
+			if (cmd.size() >= 2) {
+				start = stod(cmd[0]);
+				duration = stod(cmd[1]);
+				oxfSubset = oxfAll->timeSubset(start, duration);
+				isSubset = true;
+			}
+			else {
+				oxfSubset = oxfAll;
+				start = 0;
+				duration = double(oxfSubset->getTimeLength().total_microseconds())/1e6;
+				isSubset = false;
+			}
+
+			targetDataset = oxfSubset;
+			numOfFrames = oxfSubset->size();
+		}
+
+		else if (slDatasourceType==MEIDAI_DATASET_TYPE) {
+
+			// Meidai Dataset does not have integrated camera parameters (yet)
+			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
+			meidaiDs->addCameraParameter(meidaiCamera1Params);
+			targetDataset = meidaiDs;
+			numOfFrames = meidaiDs->size();
+			duration = meidaiDs->length();
+		}
+
+		debug ("About to run mapping with duration "+to_string(duration) +" seconds, " +to_string(numOfFrames) + " frames");
+
+
 		if (mask.empty()==false) {
 			float zr = loadedDataset->getZoomRatio();
 			cv::Mat mapMask;
@@ -678,7 +677,7 @@ private:
 			mapBld.setMask(mapMask);
 		}
 
-		buildMap(oxfSubset, mapBld);
+		buildMap(targetDataset, mapBld);
 
 		const string mapFilePath = createMapFilename();
 		mapBld.getMap()->save(mapFilePath);
