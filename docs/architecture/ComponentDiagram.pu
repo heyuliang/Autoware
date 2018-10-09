@@ -44,11 +44,11 @@ folder detection {
     () "autoware_detection_msgs::ObjectArray\n/detection/objects_prefused" as detected_objects_fused
     () "autoware_detection_msgs::ObjectArray\n/detection/objects_fused" as objects_fused
 
-    [vision_detector]
+    [image_detector]
     'inputs
-    image_raw --> vision_detector
+    image_raw --> image_detector
     'outputs
-    vision_detector --> detected_objects_vision
+    image_detector --> detected_objects_vision
 
     [plane_tracker]
     'inputs
