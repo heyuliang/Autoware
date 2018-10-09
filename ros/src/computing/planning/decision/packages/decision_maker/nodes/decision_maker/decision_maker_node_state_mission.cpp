@@ -2,7 +2,16 @@
 
 namespace decision_maker
 {
-void DecisionMakerNode::entryWaitMissionOrderState(cstring_t& state_name, int status)
+void DecisionMakerNode::entryWaitVehicleReadyState(cstring_t& state_name, int status)
+{
+
+}
+void DecisionMakerNode::updateWaitVehicleReadyState(cstring_t& state_name, int status)
+{
+
+}
+
+void DecisionMakerNode::entryWaitOrderState(cstring_t& state_name, int status)
 {
   publishOperatorHelpMessage("Please load mission order (waypoints).");
   if (!isSubscriberRegistered("lane_waypoints_array"))
@@ -12,7 +21,7 @@ void DecisionMakerNode::entryWaitMissionOrderState(cstring_t& state_name, int st
   }
 }
 
-void DecisionMakerNode::updateWaitMissionOrderState(cstring_t& state_name, int status)
+void DecisionMakerNode::updateWaitOrderState(cstring_t& state_name, int status)
 {
   if (isEventFlagTrue("received_based_lane_waypoint"))
   {
@@ -20,7 +29,7 @@ void DecisionMakerNode::updateWaitMissionOrderState(cstring_t& state_name, int s
     tryNextState("received_mission_order");
   }
 }
-void DecisionMakerNode::exitWaitMissionOrderState(cstring_t& state_name, int status)
+void DecisionMakerNode::exitWaitOrderState(cstring_t& state_name, int status)
 {
 }
 
@@ -98,6 +107,32 @@ void DecisionMakerNode::updateDriveReadyState(cstring_t& state_name, int status)
   {
     tryNextState("engage");
   }
+}
+
+void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
+{
+  tryNextState("operation_start");
+}
+void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
+{
+
+}
+void DecisionMakerNode::exitDrivingState(cstring_t& state_name, int status)
+{
+  tryNextState("operation_end");
+}
+
+void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, int status)
+{
+
+}
+void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name, int status)
+{
+
+}
+void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, int status)
+{
+
 }
 
 void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)

@@ -130,6 +130,15 @@ void DecisionMakerNode::entryVehicleReadyState(cstring_t &state_name, int status
 
 void DecisionMakerNode::updateVehicleReadyState(cstring_t &state_name, int status)
 {
-  tryNextState("going_to_wait_mission_order");
+  // tryNextState("going_to_wait_mission_order");
+}
+
+void DecisionMakerNode::entryVehicleEmergencyState(cstring_t &state_name, int status)
+{
+}
+
+void DecisionMakerNode::updateVehicleEmergencyState(cstring_t &state_name, int status)
+{
+  // tryNextState("going_to_wait_mission_order");
 }
 }

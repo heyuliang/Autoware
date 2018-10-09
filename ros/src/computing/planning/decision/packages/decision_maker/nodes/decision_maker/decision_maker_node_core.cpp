@@ -25,7 +25,9 @@ namespace decision_maker
 {
 void DecisionMakerNode::tryNextState(const std::string &key)
 {
-  ctx->nextState(key);
+  ctx_vehicle->nextState(key);
+  ctx_mission->nextState(key);
+  ctx_drive->nextState(key);
 #if 0
   std_msgs::String msg;
   msg.data = Pubs[""].publish
@@ -35,8 +37,12 @@ void DecisionMakerNode::tryNextState(const std::string &key)
 void DecisionMakerNode::update(void)
 {
   update_msgs();
-  if (ctx)
-    ctx->onUpdate();
+  if (ctx_vehicle)
+    ctx_vehicle->onUpdate();
+  if (ctx_mission)
+    ctx_mission->onUpdate();
+  if (ctx_drive)
+    ctx_drive->onUpdate();
 }
 
 void DecisionMakerNode::run(void)

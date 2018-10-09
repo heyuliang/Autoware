@@ -186,7 +186,7 @@ inline double getDistance(double ax, double ay, double bx, double by)
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
-  intersects.clear();
+  // intersects.clear();
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
   for (auto& area : intersects)
@@ -299,7 +299,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 
 bool DecisionMakerNode::drivingMissionCheck()
 {
-  std::string current_state = ctx->getStateText();
+  // std::string current_state = ctx->getStateText();
 
   publishOperatorHelpMessage("Received new mission, checking now...");
   setEventFlag("received_back_state_waypoint", false);

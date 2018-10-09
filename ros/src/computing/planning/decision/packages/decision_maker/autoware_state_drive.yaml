@@ -5,76 +5,13 @@ autoware_states:
     Transition:
       -
         Key: started
-        Target: Init
+        Target: WaitEngage
     Parent: ~
   -
-    StateName: Init
+    StateName: WaitEngage
     Transition:
       -
-        Key: init_start
-        Target: SensorInit
-    Parent: ~
-  -
-    StateName: SensorInit
-    Transition:
-      -
-        Key: sensor_is_ready
-        Target: MapInit
-    Parent: Init
-  -
-    StateName: MapInit
-    Transition:
-      -
-        Key: map_is_ready
-        Target: LocalizationInit
-    Parent: Init
-  -
-    StateName: LocalizationInit
-    Transition:
-      -
-        Key: localization_is_ready
-        Target: PlanningInit
-    Parent: Init
-  -
-    StateName: PlanningInit
-    Transition:
-      -
-        Key: planning_is_ready
-        Target: VehicleInit
-    Parent: Init
-  -
-    StateName: VehicleInit
-    Transition:
-      -
-        Key: vehicle_is_ready
-        Target: VehicleReady
-    Parent: Init
-  -
-    StateName: VehicleReady
-    Transition:
-      -
-        Key: going_to_wait_mission_order
-        Target: WaitMissionOrder
-    Parent: ~
-  -
-    StateName: WaitMissionOrder
-    Transition:
-      -
-        Key: received_mission_order
-        Target: MissionCheck
-    Parent: ~
-  -
-    StateName: MissionCheck
-    Transition:
-      -
-        Key: mission_is_compatible
-        Target: DriveReady
-    Parent: ~
-  -
-    StateName: DriveReady
-    Transition:
-      -
-        Key: engage
+        Key: operation_start
         Target: Drive
     Parent: ~
   -
@@ -87,14 +24,8 @@ autoware_states:
         Key: on_free_area
         Target: FreeArea
       -
-        Key: arrived_goal
-        Target: MissionComplete
-      -
-        Key: mission_aborted
-        Target: MissionAborted
-      -
-        Key: emergency
-        Target: Emergency
+        Key: operation_end
+        Target: WaitEngage
     Parent: ~
   -
     StateName: LaneArea
@@ -105,6 +36,9 @@ autoware_states:
       -
         Key: on_bus_stop
         Target: BusStop
+      -
+        Key: emergency
+        Target: LaneAreaEmergency
     Parent: Drive
   -
     StateName: BusStop
@@ -330,37 +264,60 @@ autoware_states:
         Target: B_StopLine
     Parent: Back
   -
-    StateName: FreeArea
+    StateName: LeftLaneChange
+    Transition:
+      -
+        Key: check_target_lane
+        Target: CheckLeftLane
+    Parent: Cruise
+  -
+    StateName: CheckLeftLane
+    Transition:
+      -
+        Key: clear
+        Target: ChangeToLeft
+    Parent: LeftLaneChange
+  -
+    StateName: ChangeToLeft
     Transition: []
+    Parent: LeftLaneChange
+  -
+    StateName: RightLaneChange
+    Transition:
+      -
+        Key: check_target_lane
+        Target: CheckRightLane
+    Parent: Cruise
+  -
+    StateName: CheckRightLane
+    Transition:
+      -
+        Key: clear
+        Target: ChangeToRight
+    Parent: RightLaneChange
+  -
+    StateName: ChangeToRight
+    Transition: []
+    Parent: RightLaneChange
+  -
+    StateName: FreeArea
+    Transition:
+      -
+        Key: on_parking
+        Target: Parking
+      -
+        Key: emergency
+        Target: FreeAreaEmergency
     Parent: Drive
   -
-    StateName: MissionComplete
-    Transition:
-      -
-        Key: goto_wait_order
-        Target: WaitOrder
-      -
-        Key: re_enter_mission
-        Target: DriveReady
-    Parent: ~
+    StateName: Parking
+    Transition: []
+    Parent: FreeArea
   -
-    StateName: MissionAborted
-    Transition:
-      -
-        Key: goto_wait_order
-        Target: WaitOrder
-    Parent: ~
+    StateName: LaneAreaEmergency
+    Transition: []
+    Parent: LaneArea
   -
-    StateName: Emergency
-    Transition:
-      -
-        Key: return_from_emergency
-        Target: WaitOrder
-    Parent: ~
-  -
-    StateName: WaitOrder
-    Transition:
-      -
-        Key: received_mission_order
-        Target: MissionCheck
-    Parent: ~
+    StateName: FreeAreaEmergency
+    Transition: []
+    Parent: FreeArea
