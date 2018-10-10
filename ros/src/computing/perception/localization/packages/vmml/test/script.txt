@@ -5,8 +5,13 @@ dataset /media/sujiwo/ssd/oxford/map/2014-06-23-15-36-04 /home/sujiwo/Sources/ro
 zoom 0.5
 detect 89.38
 
-# For testing Meidai Dataset
+# For building Meidai Dataset
 dataset /media/sujiwo/ssd/log_2016-12-26-13-21-10.bag
 velodyne /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml
 pcdmap /home/sujiwo/Data/NagoyaUniversityMap/bin_meidai_ndmap.pcd
 build 317.22 486.53
+
+# Mapping in meidai
+dataset /media/sujiwo/ssd/log_2016-12-26-13-21-10.bag
+mask /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/test/meidai_mask.png
+zoom 0.3333

@@ -46,6 +46,7 @@ struct {
 } meidaiNdtParameters;
 
 
+// XXX: Find a way to specify these values from external input
 CameraPinholeParams meidaiCamera1Params(
 	1150.96938467,	// fx
 	1150.96938467,	// fy

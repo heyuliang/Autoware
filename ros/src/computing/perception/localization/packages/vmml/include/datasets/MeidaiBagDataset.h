@@ -32,6 +32,7 @@
 #define _MEIDAIBAG_H_
 
 
+
 struct PoseTimestamp : public Pose
 {
 	PoseTimestamp():
@@ -61,6 +62,10 @@ struct PoseTimestamp : public Pose
 		const ros::Time &t);
 
 	ros::Time timestamp;
+
+	static
+	Quaterniond
+	extrapolate(const PoseTimestamp &p1, const PoseTimestamp &p2, const decltype(PoseTimestamp::timestamp) &tx);
 
 	template<class Archive>
 	inline void save(Archive &ar, const unsigned int v) const
@@ -294,5 +299,7 @@ void createTrajectoryFromNDT (
 	RandomAccessBag &bagsrc,
 	Trajectory &resultTrack, const Trajectory &gnssTrack,
 	const std::string &velodyneParamFile, const std::string &pcdMapFile);
+
+
 
 #endif /* _MEIDAIBAG_H_ */

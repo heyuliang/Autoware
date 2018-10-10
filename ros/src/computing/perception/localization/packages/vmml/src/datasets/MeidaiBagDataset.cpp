@@ -416,8 +416,7 @@ Trajectory::extrapolate (const ros::Time& t) const
 			(lastPose.timestamp.toSec() - lastPose_1.timestamp.toSec());
 
 		xpos = lastPose_1.position() + r*(lastPose.position() - lastPose_1.position());
-		// XXX: Not true
-		xori = lastPose.orientation();
+		xori = PoseTimestamp::extrapolate(lastPose_1, lastPose, t);
 	}
 
 	else if (t < front().timestamp) {
@@ -428,8 +427,7 @@ Trajectory::extrapolate (const ros::Time& t) const
 		r = (t.toSec() - firstPose_1.timestamp.toSec()) /
 			(firstPose.timestamp.toSec() - firstPose_1.timestamp.toSec());
 		xpos = firstPose_1.position() + r*(firstPose.position() - firstPose_1.position());
-		// ??
-		xori = firstPose.orientation();
+		xori = PoseTimestamp::extrapolate(firstPose, firstPose_1, t);
 	}
 
 	return PoseTimestamp(xpos, xori, t);
@@ -452,6 +450,57 @@ Trajectory::subset(const ros::Time &start, const ros::Time &stop) const
 }
 
 
+double normalizeAngle(const double &r)
+{
+	if (r > 2*M_PI) {
+
+	}
+
+	else if (r<0) {
+
+	}
+
+	else return r;
+}
+
+
+Quaterniond
+PoseTimestamp::extrapolate(const PoseTimestamp &p1, const PoseTimestamp &p2, const decltype(PoseTimestamp::timestamp) &txinp)
+{
+	assert (p1.timestamp < p2.timestamp);
+	if (p1.timestamp <= txinp and txinp <= p2.timestamp)
+		throw runtime_error("Requested timestamp are within both data points; use interpolation instead");
+
+	Vector3d euler1, euler2, eulerx;
+	euler1 = quaternionToRPY(p1.orientation());
+	euler2 = quaternionToRPY(p2.orientation());
+	double t1, t2, tx, r;
+	t1 = p1.timestamp.toSec();
+	t2 = p2.timestamp.toSec();
+	tx = txinp.toSec();
+
+	if (txinp<=p1.timestamp) {
+		r = (t1 - tx) / (t2 - t1);
+		eulerx.x() = euler1.x() - r*(euler2.x() - euler1.x());
+		eulerx.y() = euler1.y() - r*(euler2.y() - euler1.y());
+		eulerx.z() = euler1.z() - r*(euler2.z() - euler1.z());
+	}
+
+	else {
+		r = (tx - t1) / (t2 - t1);
+		eulerx.x() = euler1.x() + r*(euler2.x() - euler1.x());
+		eulerx.y() = euler1.y() + r*(euler2.y() - euler1.y());
+		eulerx.z() = euler1.z() + r*(euler2.z() - euler1.z());
+	}
+
+//	eulerx.x() = normalizeAngle(eulerx.x());
+//	eulerx.y() = normalizeAngle(eulerx.y());
+//	eulerx.z() = normalizeAngle(eulerx.z());
+
+	return fromRPY(eulerx.x(), eulerx.y(), eulerx.z());
+}
+
+
 void
 MeidaiDataItem::init()
 {
@@ -459,23 +508,19 @@ MeidaiDataItem::init()
 }
 
 
-/*
- * XXX: Stub
- */
 Vector3d
 MeidaiDataItem::getPosition() const
 {
-	return Vector3d::Zero();
+	auto &p = parent.cameraTrack[pId];
+	return p.position();
 }
 
 
-/*
- * XXX: Stub
- */
 Quaterniond
 MeidaiDataItem::getOrientation() const
 {
-	return Quaterniond::Identity();
+	auto &p = parent.cameraTrack[pId];
+	return p.orientation();
 }
 
 

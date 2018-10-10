@@ -151,7 +151,7 @@ MapBuilder2::runFromDataset(GenericDataset *ds)
 {
 	sourceDataset = ds;
 	if (initialized != false)
-		throw runtime_error("Map has been running; aborted");
+		throw runtime_error("Map process has been running; aborted");
 
 	initialized = true;
 
