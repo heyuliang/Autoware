@@ -125,7 +125,7 @@ MapBuilder2::isNormalFrame (const InputFrame &f)
 void
 MapBuilder2::build ()
 {
-//	mapPointCulling();
+	mapPointCulling();
 
 	thread ba([this] {
 				cout << "Bundling...";
@@ -166,10 +166,14 @@ void
 MapBuilder2::mapPointCulling()
 {
 	vector<mpid> mpToRemove;
-	const int kfRelatedFromMP = 2;
+	const int minKfRelatedFromMP = 2;
+	auto allMapPoints = cMap->allMapPoints();
+	const int N = allMapPoints.size();
 
-	for (auto mp: cMap->allMapPoints()) {
-		if (1) {
+	for (auto &mp: allMapPoints) {
+
+		auto relatedKfs = cMap->getRelatedKeyFrames(mp);
+		if (relatedKfs.size() < minKfRelatedFromMP) {
 			mpToRemove.push_back(mp);
 		}
 	}
@@ -177,6 +181,8 @@ MapBuilder2::mapPointCulling()
 	for (auto mp: mpToRemove) {
 		cMap->removeMapPoint(mp);
 	}
+
+	cout << "Removed " << mpToRemove.size() << " out of " << N << " points";
 }
 
 
