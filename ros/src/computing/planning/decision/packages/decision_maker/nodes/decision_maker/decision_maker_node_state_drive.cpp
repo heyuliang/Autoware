@@ -9,7 +9,7 @@ void DecisionMakerNode::updateWaitEngageState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryDriveState(cstring_t& state_name, int status)
 {
-  setEventFlag("received_based_lane_waypoint", false);
+  // setEventFlag("received_based_lane_waypoint", false);
   // publishOperatorHelpMessage("Engaged");
 }
 void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
@@ -18,23 +18,6 @@ void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
   {
     tryNextState("arrived_goal");
     return;
-  }
-
-  if (isEventFlagTrue("received_based_lane_waypoint"))
-  {
-    setEventFlag("received_based_lane_waypoint", false);
-    // publishOperatorHelpMessage("Received new waypoint.");
-    if (!drivingMissionCheck())
-    {
-      publishOperatorHelpMessage("Failed to change the mission.");
-      tryNextState("mission_aborted");
-      return;
-    }
-    else
-    {
-      publishOperatorHelpMessage("Mission change succeeded.");
-      return;
-    }
   }
 
   if (current_status_.closest_waypoint == -1)

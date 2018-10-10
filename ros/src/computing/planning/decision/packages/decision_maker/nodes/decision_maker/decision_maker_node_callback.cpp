@@ -69,6 +69,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
   auto_mission_reload_ = msg.auto_mission_reload;
+  disable_management_system_ = msg.disable_management_system;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
   dist_threshold_ = msg.dist_threshold;
   angle_threshold_ = msg.angle_threshold;
@@ -299,10 +300,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 
 bool DecisionMakerNode::drivingMissionCheck()
 {
-  // std::string current_state = ctx->getStateText();
-
   publishOperatorHelpMessage("Received new mission, checking now...");
-  setEventFlag("received_back_state_waypoint", false);
 
   int gid = 0;
   for (auto& lane : current_status_.based_lane_array.lanes)

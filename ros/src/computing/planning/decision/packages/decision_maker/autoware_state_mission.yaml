@@ -68,14 +68,14 @@ autoware_states:
     StateName: MissionChangeSucceeded
     Transition:
       -
-        Key: return_to_drive
+        Key: return_to_driving
         Target: Driving
     Parent: ~
   -
     StateName: MissionChangeFailed
     Transition:
       -
-        Key: return_to_drive
+        Key: return_to_driving
         Target: Driving
     Parent: ~
   -

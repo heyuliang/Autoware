@@ -813,6 +813,9 @@ subs :
       gui  :
           dialog_width  : 400
           dialog_height : 600
+          auto_mission_reload:
+            depend : disable_management_system
+            depend_bool : 'lambda v : v == 1'
 
     - name : planner_selector
       desc : planner_selector desc sample
@@ -2020,11 +2023,6 @@ params :
       label: enable_display_marker
       kind : checkbox
       v    : False
-    - name : auto_mission_reload
-      desc : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
-      label: auto_mission_reload
-      kind : checkbox
-      v    : False
     - name : num_of_steer_behind
       desc : e
       label: num_of_steer_behind
@@ -2032,18 +2030,17 @@ params :
       max  : 50
       v    : 20
     - name: dist_threshold
-      desc : distance threashold for driveMissionCheck state.[m]
+      desc : distance threashold for drivingMissionChange state, between current pose and new closest waypoit.[m]
       label: dist_threshold
       min: 0.0
       max: 10.0
       v: 1.0
     - name: angle_threshold
-      desc : angle threashold for driveMissionCheck state.[deg]
+      desc : angle threashold for drivingMissionChange state, between current pose and new closest waypoint.[deg]
       label: angle_threshold
       min: 0.0
       max: 180.0
       v: 15.0
-
     - name : points_topic
       desc : points_topic
       kind : str
@@ -2058,6 +2055,16 @@ params :
       cmd_param:
               dash : ''
               delim: ':='
+    - name : disable_management_system
+      desc : If this is enabled, part of the state transition is automatically executed.
+      label: disable_management_system
+      kind : checkbox
+      v    : False
+    - name : auto_mission_reload
+      desc : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
+      label: auto_mission_reload
+      kind : checkbox
+      v    : False
 
 
   - name  : car_kf
