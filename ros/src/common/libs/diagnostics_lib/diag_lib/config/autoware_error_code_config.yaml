@@ -1,0 +1,312 @@
+/watchdog_node:
+  node_number: 0
+  errors:
+  - num: 0
+    name: required file does not exist
+    category: 7    
+    description: required file does not exist
+/ndt_matching:
+  node_number: 1
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /ndt_matching node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /filtered_points subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /filtered_points subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 3
+    name: low operation cycle
+    category: 6
+    description: node /ndt_matching operation cycle was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 4
+    name: low operation cycle
+    category: 6
+    description: node /ndt_matching operation cycle rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 5
+    name: low publish rate
+    category: 5
+    description: topic /ndt_pose publish rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 6
+    name: low publish rate
+    category: 5
+    description: topic /ndt_pose publish rate rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 7
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle/odom subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 8
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle/odom subscribe rate rate was low (Error)
+    threshold: 5.0
+    level: error
+/lane_rule:
+  node_number: 2
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /lane_rule node is dead
+/lane_stop:
+  node_number: 3
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /lane_stop node is dead
+/lane_select:
+  node_number: 2
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /lane_select node is dead
+  - num: 1
+    name: low publish rate
+    category: 5
+    description: topic /base_waypoints publish rate was low (Warn)
+    threshold: 30.0
+    level: warn
+  - num: 2
+    name: low publish rate
+    category: 5
+    description: topic /base_waypoints publish rate rate was low (Error)
+    threshold: 10.0
+    level: error
+/obstacle_avoid:
+  node_number: 3
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /obstacle_avoid node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Error)
+    threshold: 1.0
+    level: error
+  - num: 3
+    name: low subscribe rate
+    category: 4
+    description: topic /current_pose subscribe rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 4
+    name: low subscribe rate
+    category: 4
+    description: topic /current_pose subscribe rate was low (Error)
+    threshold: 1.0
+    level: error
+  - num: 5
+    name: low subscribe rate
+    category: 4
+    description: topic /obstacle_waypoint subscribe rate was low (Warn)
+    threshold: 0.5
+    level: warn
+  - num: 6
+    name: low subscribe rate
+    category: 4
+    description: topic /obstacle_waypoint subscribe rate was low (Error)
+    threshold: 0.1
+    level: error
+  - num: 7
+    name: low subscribe rate
+    category: 4
+    description: topic /base_waypoints subscribe rate was low (Warn)
+    threshold: 0.5
+    level: warn
+  - num: 8
+    name: low subscribe rate
+    category: 4
+    description: topic /base_waypoints subscribe rate was low (Error)
+    threshold: 0.1
+    level: error
+/velocity_set:
+  node_number: 4
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /velocity_set node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Error)
+    threshold: 1.0
+    level: error
+  - num: 3
+    name: low subscribe rate
+    category: 4
+    description: topic /current_pose subscribe rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 4
+    name: low subscribe rate
+    category: 4
+    description: topic /current_pose subscribe rate was low (Error)
+    threshold: 1.0
+    level: error
+/can_odometry:
+  node_number: 5
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /can_odometry node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle_status subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle_status subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 3
+    name: low publish rate
+    category: 5
+    description: topic /vehicle/odom publish rate was low (Warn)
+    threshold: 30.0
+    level: warn
+  - num: 4
+    name: low publish rate
+    category: 5
+    description: topic /vehicle/odom publish rate was low (Error)
+    threshold: 10.0
+    level: error
+/can_status_translator:
+  node_number: 6
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /can_status_translator node is dead
+/pure_pursuit:
+  node_number: 7
+  errors:
+  - num: 0
+    name:  node is ded
+    category: 3    
+    description: /pure_pursuit node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Warn)
+    threshold: 40.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /current_velocity subscribe rate was low (Error)
+    threshold: 20.0
+    level: error
+  - num: 3
+    name: low subscribe rate
+    category: 4
+    description: topic /current_pose subscribe rate was low (Warn)
+    threshold: 40.0
+    level: warn
+  - num: 4
+    name: low subscribe rate
+    category: 4
+    description: topic /current_pose subscribe rate was low (Error)
+    threshold: 2.0
+    level: error
+  - num: 5
+    name: low subscribe rate
+    category: 4
+    description: topic /final_waypoints subscribe rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 6
+    name: low subscribe rate
+    category: 5
+    description: topic /final_waypoints subscribe rate was low (Error)
+    threshold: 2.0
+    level: error
+  - num: 7
+    name: low publish rate
+    category: 4
+    description: topic /ctrl_cmd publish rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 8
+    name: low publish rate
+    category: 5
+    description: topic /ctrl_cmd publish rate was low (Error)
+    threshold: 2.0
+    level: error
+/twist_gate:
+  node_number: 8
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /velocity_set node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /ctrl_cmd subscribe rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /ctrl_cmd subscribe rate was low (Error)
+    threshold: 1.0
+    level: error
+/decision_maker:
+  node_number: 9
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /decision_maker node is dead
+  - num: 1
+    name: low publish rate
+    category: 5
+    description: topic /decision_maker/state publish rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 2
+    name: low publich rate
+    category: 5
+    description: topic /decision_maker/state publish rate was low (Error)
+    threshold: 1.0
+    level: error

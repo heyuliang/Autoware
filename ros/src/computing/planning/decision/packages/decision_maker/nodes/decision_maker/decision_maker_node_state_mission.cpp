@@ -14,6 +14,7 @@ void DecisionMakerNode::updateWaitVehicleReadyState(cstring_t& state_name, int s
 void DecisionMakerNode::entryWaitOrderState(cstring_t& state_name, int status)
 {
   publishOperatorHelpMessage("Please load mission order (waypoints).");
+  setEventFlag("received_based_lane_waypoint", false);
   if (!isSubscriberRegistered("lane_waypoints_array"))
   {
     Subs["lane_waypoints_array"] =
@@ -90,9 +91,18 @@ void DecisionMakerNode::updateMissionCheckState(cstring_t& state_name, int statu
   }
 }
 
+void DecisionMakerNode::entryMissionAbortedState(cstring_t& state_name, int status)
+{
+  tryNextState("operation_end");
+}
 void DecisionMakerNode::updateMissionAbortedState(cstring_t& state_name, int status)
 {
-  tryNextState("goto_wait_order");
+  if(disable_management_system_)
+  {
+    sleep(1);
+    tryNextState("goto_wait_order");
+    return;
+  }
 }
 
 void DecisionMakerNode::entryDriveReadyState(cstring_t& state_name, int status)
@@ -119,35 +129,70 @@ void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 }
 void DecisionMakerNode::exitDrivingState(cstring_t& state_name, int status)
 {
-  tryNextState("operation_end");
+}
+
+void DecisionMakerNode::entryDrivingMissionChangeState(cstring_t& state_name, int status)
+{
+  setEventFlag("received_based_lane_waypoint", false);
 }
 
 void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, int status)
 {
-
-}
-void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name, int status)
-{
-
-}
-void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, int status)
-{
-
-}
-
-void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
-{
-  sleep(1);
   if (isEventFlagTrue("received_based_lane_waypoint"))
   {
     setEventFlag("received_based_lane_waypoint", false);
+    // publishOperatorHelpMessage("Received new waypoint.");
+    if (!drivingMissionCheck())
+    {
+      publishOperatorHelpMessage("Failed to change the mission.");
+      tryNextState("mission_is_conflicting");
+      return;
+    }
+    else
+    {
+      publishOperatorHelpMessage("Mission change succeeded.");
+      tryNextState("mission_is_compatible");
+      return;
+    }
   }
+}
 
-  if(auto_mission_reload_){
-    publishOperatorHelpMessage("Reload mission.");
-    tryNextState("re_enter_mission");
-    return;
+void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name, int status)
+{
+  if(disable_management_system_)
+  {
+    sleep(1);
+    tryNextState("return_to_driving");
   }
-  tryNextState("goto_wait_order");
+}
+void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, int status)
+{
+  if(disable_management_system_)
+  {
+    sleep(1);
+    tryNextState("return_to_driving");
+  }
+}
+
+void DecisionMakerNode::entryMissionCompleteState(cstring_t& state_name, int status)
+{
+  tryNextState("operation_end");
+}
+void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
+{
+  if(disable_management_system_)
+  {
+    if(auto_mission_reload_){
+      publishOperatorHelpMessage("Reload mission.");
+      tryNextState("re_enter_mission");
+      return;
+    }
+    else
+    {
+      sleep(1);
+      tryNextState("goto_wait_order");
+      return;
+    }
+  }
 }
 }

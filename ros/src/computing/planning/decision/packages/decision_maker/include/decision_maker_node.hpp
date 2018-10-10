@@ -174,6 +174,7 @@ private:
   // Param
   bool enableDisplayMarker;
   bool auto_mission_reload_;
+  bool disable_management_system_;
   uint32_t param_num_of_steer_behind_;
   double dist_threshold_;
   double angle_threshold_;
@@ -286,6 +287,9 @@ private:
   void entryMissionCheckState(cstring_t& state_name, int status);
   void entryDriveReadyState(cstring_t& state_name, int status);
   void entryDrivingState(cstring_t& state_name, int status);
+  void entryDrivingMissionChangeState(cstring_t& state_name, int status);
+  void entryMissionAbortedState(cstring_t& state_name, int status);
+  void entryMissionCompleteState(cstring_t& state_name, int status);
   // update callback
   void updateWaitVehicleReadyState(cstring_t& state_name, int status);
   void updateWaitOrderState(cstring_t& state_name, int status);
@@ -370,7 +374,7 @@ public:
   VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char** argv)
-    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), param_num_of_steer_behind_(30)
+    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), disable_management_system_(false), param_num_of_steer_behind_(30)
   {
     std::string file_name;
     std::string file_name_mission;

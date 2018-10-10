@@ -44,7 +44,7 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx_vehicle->setCallback(state_machine::CallbackType::UPDATE, "VehicleEmergency",
                    std::bind(&DecisionMakerNode::updateVehicleEmergencyState, this, std::placeholders::_1, 0));
 
-  /*** state middion ***/
+  /*** state mission ***/
   ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "WaitVehicleReady",
                    std::bind(&DecisionMakerNode::entryWaitVehicleReadyState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "WaitVehicleReady",
@@ -69,14 +69,20 @@ void DecisionMakerNode::setupStateCallback(void)
                    std::bind(&DecisionMakerNode::updateDrivingState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::EXIT, "Driving",
                    std::bind(&DecisionMakerNode::exitDrivingState, this, std::placeholders::_1, 0));
+  ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "DrivingMissionChange",
+                   std::bind(&DecisionMakerNode::entryDrivingMissionChangeState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "DrivingMissionChange",
                    std::bind(&DecisionMakerNode::updateDrivingMissionChangeState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "MissionChangeSucceeded",
                    std::bind(&DecisionMakerNode::updateMissionChangeSucceededState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "MissionChangeFailed",
                    std::bind(&DecisionMakerNode::updateMissionChangeFailedState, this, std::placeholders::_1, 0));
+  ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "MissionComplete",
+                   std::bind(&DecisionMakerNode::entryMissionCompleteState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "MissionComplete",
                    std::bind(&DecisionMakerNode::updateMissionCompleteState, this, std::placeholders::_1, 0));
+  ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "MissionAborted",
+                   std::bind(&DecisionMakerNode::entryMissionAbortedState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "MissionAborted",
                    std::bind(&DecisionMakerNode::updateMissionAbortedState, this, std::placeholders::_1, 0));
 

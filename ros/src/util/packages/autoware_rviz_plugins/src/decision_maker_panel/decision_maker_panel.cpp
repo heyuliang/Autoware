@@ -99,6 +99,23 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   button_layout->addWidget(button_stop);
   button_layout->addWidget(button_go);
 
+  QHBoxLayout* button_middle_layout = new QHBoxLayout;
+  QPushButton* button_request_mission_change = new QPushButton("Request mission change");
+  signalMapper->setMapping(button_request_mission_change, QString("request_mission_change"));
+  connect(button_request_mission_change, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
+  QPushButton* button_return_to_driving = new QPushButton("Return to driving");
+  signalMapper->setMapping(button_return_to_driving, QString("return_to_driving"));
+  connect(button_return_to_driving, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
+  QPushButton* button_mission_canceled = new QPushButton("Mission cancel");
+  signalMapper->setMapping(button_mission_canceled, QString("mission_canceled"));
+  connect(button_mission_canceled, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
+  button_middle_layout->addWidget(button_request_mission_change);
+  button_middle_layout->addWidget(button_return_to_driving);
+  button_middle_layout->addWidget(button_mission_canceled);
+
   QHBoxLayout* button_low_layout = new QHBoxLayout;
   QPushButton* button_emergency = new QPushButton("Emergency");
   signalMapper->setMapping(button_emergency, QString("emergency"));
@@ -114,6 +131,7 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addLayout(label_layout);
   layout->addLayout(button_layout);
+  layout->addLayout(button_middle_layout);
   layout->addLayout(button_low_layout);
   setLayout(layout);
 }
