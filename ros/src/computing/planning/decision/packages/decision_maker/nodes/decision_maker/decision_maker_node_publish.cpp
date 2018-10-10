@@ -246,6 +246,8 @@ void DecisionMakerNode::update_msgs(void)
   {
     static std_msgs::String state_msg;
     state_msg.data = ctx_vehicle->getStateText() + ctx_mission->getStateText() + ctx_drive->getStateText();
+    diag_manager_.DIAG_RATE_CHECK(1);
+    diag_manager_.DIAG_RATE_CHECK(2);
     Pubs["state"].publish(state_msg);
     Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
 

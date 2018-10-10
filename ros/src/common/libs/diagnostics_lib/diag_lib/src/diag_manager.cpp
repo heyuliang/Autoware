@@ -115,11 +115,11 @@ void diag_manager::DIAG_RATE_CHECK(int num)
         catch(std::out_of_range&)
         {
 #ifdef STRICT_ERROR_CODE_CHECK
-        ROS_ERROR_STREAM("rate checker object cannot found. Please check " << error_code_config_path_);
-        WRITE_LOG();
-        std::exit(-1);
+            ROS_ERROR_STREAM("rate checker object cannot found. Please check " << error_code_config_path_);
+            WRITE_LOG();
+            std::exit(-1);
 #else
-        ROS_WARN_STREAM("rate checker object cannot found. Please check " << error_code_config_path_);
+            ROS_WARN_STREAM("rate checker object cannot found. Please check " << error_code_config_path_);
 #endif
         }
     }

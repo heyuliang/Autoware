@@ -513,8 +513,6 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 
 void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg)
 {
-  diag_manager_.DIAG_RATE_CHECK(0);
-  diag_manager_.DIAG_RATE_CHECK(1);
   current_status_.velocity = amathutils::mps2kmph(msg.twist.linear.x);
 }
 }
