@@ -51,6 +51,8 @@ struct CameraPinholeParams;
 
 //const kfid defaultKfId = std::numeric_limits<kfid>;
 
+class Frame;
+
 
 class KeyFrame {
 public:
@@ -92,6 +94,11 @@ public:
 		std::vector<FeaturePair> &featurePairs,
 		const kpidField &kp1list, const kpidField &kp2list
 	);
+
+	static void
+	match (const KeyFrame &k1,
+			const Frame &frame,
+			std::vector<FeaturePair> &featurePairs);
 
 	static void triangulate (
 		const KeyFrame *kf1, const KeyFrame *kf2,

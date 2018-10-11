@@ -8,6 +8,7 @@
 #include "KeyFrame.h"
 #include <exception>
 #include <bitset>
+#include "Frame.h"
 //#include "MapBuilder.h"
 #include "utilities.h"
 
@@ -122,6 +123,15 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 			featurePairs.push_back (fp);
 		}
 	}
+}
+
+
+void
+match (const KeyFrame &k1,
+		const Frame &frame,
+		std::vector<FeaturePair> &featurePairs)
+{
+	// XXX: Stub
 }
 
 

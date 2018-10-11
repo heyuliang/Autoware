@@ -52,15 +52,21 @@ Localizer::detect (cv::Mat &frmImg)
 
 	Frame frame (rzImg, this);
 	vector<kfid> placeCandidates = imgDb->findCandidates(frame);
+	map<kfid, set<mpid>> kfMapMatchesList;
+	map<kfid, bool> isValidKf;
 
 	// BoW Check
 	for (int i=0; i<placeCandidates.size(); i++) {
+		kfid k = placeCandidates[i];
 		set<mpid> kfMapPtsMatches;
-		int nmatches = SearchBoW(placeCandidates[i], frame, kfMapPtsMatches);
-		if (nmatches < 15)
+		int nmatches = SearchBoW(k, frame, kfMapPtsMatches);
+		if (nmatches < 15) {
+			isValidKf[k] = false;
 			continue;
+		}
 		else {
-
+			isValidKf[k] = true;
+			kfMapMatchesList.insert(make_pair(placeCandidates[i], kfMapPtsMatches));
 		}
 	}
 
