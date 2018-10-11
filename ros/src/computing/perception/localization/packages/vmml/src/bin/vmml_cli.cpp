@@ -426,6 +426,16 @@ private:
 		}
 		debug("# of keyframe(s): "+to_string(mapSrc->numOfKeyFrames()));
 		debug("# of map point(s): " +to_string(mapSrc->numOfMapPoints()));
+
+		auto &mapInfo = mapSrc->getAllInfo();
+		for (auto rInfo: mapInfo) {
+			const string
+				&k = rInfo.first,
+				&v = rInfo.second;
+			stringstream ss;
+			ss << k << " : " << v;
+			debug(ss.str());
+		}
 	}
 
 
@@ -463,8 +473,11 @@ private:
 		}
 
 		auto mapPoses = mapSrc->dumpCameraPoses();
+		uint32_t ix = 0;
 		for (auto ps: mapPoses) {
+			mapTrFd << ix << " ";
 			mapTrFd << dumpVector(ps.first) << " " << dumpVector(ps.second) << endl;
+			ix += 1;
 		}
 
 		mapTrFd.close();
@@ -656,6 +669,10 @@ private:
 
 			targetDataset = oxfSubset;
 			numOfFrames = oxfSubset->size();
+
+			// Information
+			mapBld.getMap()->setInfo("sourceType", "Oxford");
+			mapBld.getMap()->setInfo("originalPath", oxfSubset->getPath());
 		}
 
 		else if (slDatasourceType==MEIDAI_DATASET_TYPE) {
@@ -666,6 +683,10 @@ private:
 			targetDataset = meidaiDs;
 			numOfFrames = meidaiDs->size();
 			duration = meidaiDs->length();
+
+			// Information
+			mapBld.getMap()->setInfo("sourceType", "Meidai");
+			mapBld.getMap()->setInfo("originalPath", meidaiDs->getPath());
 		}
 
 		debug ("About to run mapping with duration "+to_string(duration) +" seconds, " +to_string(numOfFrames) + " frames");

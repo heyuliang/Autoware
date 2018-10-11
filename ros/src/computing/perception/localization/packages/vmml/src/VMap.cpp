@@ -287,6 +287,8 @@ VMap::save(const string &filepath)
 	mapStore << kfVtxMap;
 	mapStore << kfVtxInvMap;
 
+	mapStore << keyValueInfo;
+
 	mapFileFd.close();
 	return true;
 }
@@ -330,6 +332,8 @@ VMap::load(const string &filepath)
 	mapStore >> covisibility;
 	mapStore >> kfVtxMap;
 	mapStore >> kfVtxInvMap;
+
+	mapStore >> keyValueInfo;
 
 	// Rebuild pointers
 	keyframeInvIdx.clear();

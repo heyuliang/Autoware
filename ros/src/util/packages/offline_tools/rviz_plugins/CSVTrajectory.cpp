@@ -63,27 +63,34 @@ CSVTrajectory::updatePoseAxisGeometry()
 void
 CSVTrajectory::updateDisplay (const std::string &filename)
 {
-	StringTable csvTableInp = create_table(filename);
-	axesList.resize(csvTableInp.rows());
+	try {
+		StringTable csvTableInp = create_table(filename);
+		if (csvTableInp.columns() != 8)
+			throw runtime_error("Input file must contains 8 columns without header");
+		axesList.resize(csvTableInp.rows());
 
-	for (int r=0; r<csvTableInp.rows(); ++r) {
+		for (int r=0; r<csvTableInp.rows(); ++r) {
 
-		axesList[r] = new rviz::Axes(
-			scene_manager_,
-			scene_node_,
-			axesLengthSize->getFloat(),		// Axes length; must be set using property
-			axesRadius->getFloat());		// Axes radius
+			axesList[r] = new rviz::Axes(
+				scene_manager_,
+				scene_node_,
+				axesLengthSize->getFloat(),		// Axes length; must be set using property
+				axesRadius->getFloat());		// Axes radius
 
-		axesList[r]->setPosition(Ogre::Vector3 (
-				csvTableInp.getd(r, 1),
-				csvTableInp.getd(r, 2),
-				csvTableInp.getd(r, 3)));
+			axesList[r]->setPosition(Ogre::Vector3 (
+					csvTableInp.getd(r, 1),
+					csvTableInp.getd(r, 2),
+					csvTableInp.getd(r, 3)));
 
-		axesList[r]->setOrientation(Ogre::Quaternion(
-			csvTableInp.getd(r, 7),
-			csvTableInp.getd(r, 4),
-			csvTableInp.getd(r, 5),
-			csvTableInp.getd(r, 6)));
+			axesList[r]->setOrientation(Ogre::Quaternion(
+				csvTableInp.getd(r, 7),
+				csvTableInp.getd(r, 4),
+				csvTableInp.getd(r, 5),
+				csvTableInp.getd(r, 6)));
+		}
+	} catch (std::runtime_error &e) {
+		// Catch errors here
+		// XXX: Put nice error message when unable to open input file
 	}
 
 	queueRender();

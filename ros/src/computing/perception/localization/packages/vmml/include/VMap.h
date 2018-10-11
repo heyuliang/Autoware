@@ -223,6 +223,13 @@ public:
 
 	bool removeMapPoint (const mpid &i);
 
+	typedef std::map<std::string,std::string> mapKeyValueInfo;
+
+	inline void setInfo (const std::string &key, const std::string &value)
+	{ keyValueInfo[key] = value; };
+
+	inline const mapKeyValueInfo& getAllInfo() const
+	{ return keyValueInfo; }
 
 protected:
 
@@ -268,6 +275,8 @@ protected:
 	KeyFrameGraph covisibility;
 	std::map<kfid,KeyFrameGraph::vertex_descriptor> kfVtxMap;
 	std::map<KeyFrameGraph::vertex_descriptor,kfid> kfVtxInvMap;
+
+	mapKeyValueInfo keyValueInfo;
 
 	void updateCovisibilityGraph(const kfid k);
 
