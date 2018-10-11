@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="imu_frame" default="imu"/>
+
+    <node name="cartographer_node" pkg="cartographer_ros" type="cartographer_node" args="-configuration_directory $(find cartographer_autoware)/configuration_files -configuration_basename lidar_imu.lua" output="screen">
+        <remap from="/points2" to="/points_raw"/>
+        <remap from="/imu" to="/imu_raw"/>
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_imu" args="0.0 0 0.0 0 0 0 base_link $(arg imu_frame) 10"/>
+</launch>
