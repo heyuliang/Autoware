@@ -28,6 +28,8 @@ class Localizer;
 class Frame
 {
 public:
+	friend class KeyFrame;
+
 	Frame(cv::Mat &imgSrc,
 		const Localizer* parent);
 	virtual ~Frame();
@@ -40,7 +42,7 @@ public:
 	DBoW2::FeatureVector& getFeatureVector()
 	{ return featureVec; }
 
-	const cv::Mat& descriptor()
+	const cv::Mat& descriptor() const
 	{ return mDescriptors; }
 
 	cv::Mat descriptor(const int r)

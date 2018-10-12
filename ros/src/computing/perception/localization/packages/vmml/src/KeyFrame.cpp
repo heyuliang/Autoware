@@ -127,11 +127,21 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 
 
 void
-match (const KeyFrame &k1,
+KeyFrame::match (const KeyFrame &kf,
 		const Frame &frame,
 		std::vector<FeaturePair> &featurePairs)
 {
-	// XXX: Stub
+	// Brute-force matching
+	vector<cv::DMatch> kf2fMatches;
+	auto matcher = cv::BFMatcher::create(cv::NORM_HAMMING2);
+	matcher->match(kf.descriptors, frame.descriptor(), kf2fMatches);
+
+	for (auto &m: kf2fMatches) {
+		if (m.trainIdx < kf.keypoints.size() and m.queryIdx < frame.keypoints.size()) {
+			FeaturePair fp = {m.trainIdx, kf.keypoints[m.trainIdx].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
+			featurePairs.push_back(fp);
+		}
+	}
 }
 
 

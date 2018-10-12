@@ -5,6 +5,7 @@
  *      Author: sujiwo
  */
 
+#include "KeyFrame.h"
 #include "Localizer.h"
 #include "MapPoint.h"
 #include "utilities.h"
@@ -77,10 +78,13 @@ Localizer::detect (cv::Mat &frmImg)
 
 
 float
-Localizer::projectionCheck (const Frame &frame, const kfid &keyframe)
+Localizer::projectionCheck (const Frame &frame, const kfid &keyframeId)
 const
 {
+	vector<FeaturePair> featurePairs;
+	KeyFrame *keyframe = sourceMap->keyframe(keyframeId);
 
+	KeyFrame::match(*keyframe, frame, featurePairs);
 }
 
 
