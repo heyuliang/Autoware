@@ -4,6 +4,7 @@
 #include <sstream>
 #include <limits>
 #include <cmath>
+#include <fstream>
 
 #include <ros/ros.h>
 
@@ -601,6 +602,13 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 	std::vector <ClusterPtr> all_clusters;
 
+	std::ofstream out_file("/home/anh/EuclideanClustering/execution_time.csv", std::ios::app);
+
+	if (!(out_file.is_open())) {
+		std::cout << "Error: Cannot open file to write" << std::endl;
+	}
+
+
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
 		struct timeval start, end;
@@ -617,6 +625,8 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 			std::cout << "GPU num clusters = " << local_clusters.size() << std::endl;
 			std::cout << "GPU Execution time = " << timeDiff(start, end) << std::endl;
+
+			out_file << cloud_segments_array[i]->points.size() << "," << timeDiff(start, end) << ",";
 //#else		//} else {
 			gettimeofday(&start, NULL);
 			local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
@@ -624,6 +634,8 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 			std::cout << "CPU num clusters = " << local_clusters.size() << std::endl;
 			std::cout << "CPU Execution time = " << timeDiff(start, end) << std::endl << std::endl;
+
+			out_file << timeDiff(start, end) << std::endl;
 		//}
 //#endif
 #else

@@ -22,7 +22,7 @@ public:
 	void setThreshold(double threshold);
 	void setMinClusterPts(int min_cluster_pts);
 	void setMaxClusterPts(int max_cluster_pts);
-	// Use adjacent matrix
+	// Matrix-based: Use adjacency matrix
 	void extractClusters();
 
 	// Vertex-based: Use adjacent list and atomic operations
@@ -30,6 +30,10 @@ public:
 
 	// Edge-based: Use edge set and atomic oprations
 	void extractClusters3();
+
+	// List of sub-matrix: Similar to matrix-based, but use a list of sub-matrix to reduce
+	// the amount of memory needed
+	void extractClusters4();
 
 	std::vector<GClusterIndex> getOutput();
 

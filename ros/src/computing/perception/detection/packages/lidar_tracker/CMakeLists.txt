@@ -234,6 +234,7 @@ if (${CUDA_FOUND})
 				nodes/euclidean_cluster/euclidean_cluster/edge_based.cu
 				nodes/euclidean_cluster/euclidean_cluster/vertex_based.cu
 				nodes/euclidean_cluster/euclidean_cluster/matrix_based.cu
+				nodes/euclidean_cluster/euclidean_cluster/layered_matrix_based.cu
             )
 
     target_link_libraries(euclidean_cluster

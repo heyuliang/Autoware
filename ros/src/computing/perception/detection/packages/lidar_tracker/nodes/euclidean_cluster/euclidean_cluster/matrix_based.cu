@@ -222,12 +222,12 @@ __global__ void mergeLocalClusters(int *cluster_list, int *matrix, int cluster_n
 			__syncthreads();
 
 			if (row - row_start < threadIdx.x && row_cluster != col_cluster && matrix[row * cluster_num + col] == 1) {
-				cluster_changed[threadIdx.x] = 1;
+				cluster_changed[col_cluster] = 1;
 				block_changed = true;
 			}
 			__syncthreads();
 
-			local_cluster_idx[threadIdx.x] = (cluster_changed[threadIdx.x] == 1) ? row_cluster : col_cluster;
+			local_cluster_idx[threadIdx.x] = (cluster_changed[col_cluster] == 1) ? row_cluster : col_cluster;
 			__syncthreads();
 		}
 
@@ -266,7 +266,7 @@ __global__ void mergeForeignClusters(int *matrix, int *cluster_list,
 	int row_start = (sub_mat_idx * sub_mat_offset + blockIdx.x % sub_mat_size) * blockDim.x;
 	int row_end = (row_start + blockDim.x <= cluster_num) ? row_start + blockDim.x : cluster_num;
 	int col = col_start + threadIdx.x;
-	bool block_changed = true;
+	bool block_changed = false;
 	__shared__ bool schanged;
 
 	__shared__ int cluster_changed[BLOCK_SIZE_X];
@@ -472,6 +472,11 @@ void GpuEuclideanCluster2::extractClusters()
 	int *new_cluster_list;
 
 	gettimeofday(&start, NULL);
+	int itr = 0;
+
+	std::cout << "Cluster num = " << cluster_num_ << std::endl;
+
+
 	do {
 		hcheck = false;
 		hchanged_diag = -1;
@@ -584,12 +589,16 @@ void GpuEuclideanCluster2::extractClusters()
 			checkCudaErrors(cudaFree(matrix));
 			matrix = new_matrix;
 		}
+		std::cout << "Cluster num = " << cluster_num_ << std::endl;
+
+
+		itr++;
 	} while (hcheck);
 
 
 	gettimeofday(&end, NULL);
 
-	std::cout << "Iteration = " << timeDiff(start, end) << std::endl;
+	std::cout << "Iteration = " << timeDiff(start, end) << " number of iterations = " << itr << std::endl;
 
 	renamingClusters(cluster_name_, cluster_location, point_num_);
 
