@@ -9,7 +9,7 @@ Please download the following sample demo data before running the demo.
 
 #. Download the sample 3D pointcloud/vector map data.
    [`link <https://www.autoware.ai/sample/sample_moriyama_data.tar.gz>`_]
-#. Download the sample ROSBAG data (LiDAR: VELODYNE HDL-32E, Camera: PointGrey Grasshopper 3,
+#. Download the sample ROSBAG data (LiDAR: VELODYNE HDL-32E,
    GNSS: JAVAD GPS RTK Delta 3).
    [`link <https://www.autoware.ai/sample/sample_moriyama_150324.tar.gz>`_]
 
