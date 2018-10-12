@@ -199,6 +199,7 @@ __global__ void mergeLocalClustersM4(int *cluster_list, int *matrix, int cluster
 		// Column id is also the point id
 		int local_col = threadIdx.x;
 		int global_col = threadIdx.x + blockIdx.x * BLOCK_SIZE_X;
+		int row_end = (blockIdx.x * BLOCK_SIZE_X + BLOCK_SIZE_X <= cluster_num) ? BLOCK_SIZE_X : cluster_num - blockIdx.x * BLOCK_SIZE_X;
 
 		if (global_col < cluster_num) {
 			int *sub_mat = matrix + sub_mat_location[blockIdx.x + blockIdx.x * sample_mat_size] * BLOCK_SIZE_X * BLOCK_SIZE_X;
@@ -206,7 +207,7 @@ __global__ void mergeLocalClustersM4(int *cluster_list, int *matrix, int cluster
 			local_cluster_idx[threadIdx.x] = threadIdx.x;
 			__syncthreads();
 
-			for (int local_row = 0; local_row < local_col; local_row++) {
+			for (int local_row = 0; local_row < row_end; local_row++) {
 				int col_cluster = local_cluster_idx[local_col];
 				int row_cluster = local_cluster_idx[local_row];
 
@@ -217,7 +218,7 @@ __global__ void mergeLocalClustersM4(int *cluster_list, int *matrix, int cluster
 				/* If the col and row clusters are different and they are connected,
 				 * then the col cluster will be 'marked' to be changed to the row cluster.
 				 */
-				if (col_cluster != row_cluster && sub_mat[local_col + local_row * BLOCK_SIZE_X] == 1) {
+				if (local_row < local_col && col_cluster != row_cluster && sub_mat[local_col + local_row * BLOCK_SIZE_X] == 1) {
 					local_cluster_changed[col_cluster] = 1;
 					lchanged = true;
 				}
@@ -517,6 +518,22 @@ void GpuEuclideanCluster2::extractClusters4()
 	int itr = 0;
 
 	std::cout << "Cluster num = " << cluster_num_ << std::endl;
+	int *matrix_test = (int*)malloc(sizeof(int) * sub_mat_num * BLOCK_SIZE_X * BLOCK_SIZE_X);
+
+	checkCudaErrors(cudaMemcpy(matrix_test, matrix, sizeof(int) * sub_mat_num * BLOCK_SIZE_X * BLOCK_SIZE_X, cudaMemcpyDeviceToHost));
+
+	for (int i = 0; i < sub_mat_num; i++) {
+		for (int j = 0; j < BLOCK_SIZE_X; j++) {
+			for (int k = 0; k < BLOCK_SIZE_X; k++) {
+				if (matrix_test[i * BLOCK_SIZE_X * BLOCK_SIZE_X + j * BLOCK_SIZE_X + k] != 0)
+					std::cout << "(" << j << "," << k << ") ";
+			}
+		}
+
+		std::cout << std::endl << std::endl;
+	}
+
+	free(matrix_test);
 
 	do {
 		hcheck = false;

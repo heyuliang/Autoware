@@ -476,6 +476,17 @@ void GpuEuclideanCluster2::extractClusters()
 
 	std::cout << "Cluster num = " << cluster_num_ << std::endl;
 
+	int *matrix_test = (int*)malloc(sizeof(int) * cluster_num_ * cluster_num_);
+
+	checkCudaErrors(cudaMemcpy(matrix_test, matrix, sizeof(int) * cluster_num_ * cluster_num_, cudaMemcpyDeviceToHost));
+
+	for (int j = 0; j < cluster_num_; j++) {
+		for (int k = 0; k < cluster_num_; k++) {
+			if (matrix_test[j * cluster_num_ + k] != 0)
+				std::cout << "(" << j << "," << k << ") ";
+		}
+	}
+	std::cout << std::endl;
 
 	do {
 		hcheck = false;
