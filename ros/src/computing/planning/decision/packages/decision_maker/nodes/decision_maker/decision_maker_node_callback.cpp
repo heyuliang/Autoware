@@ -515,4 +515,9 @@ void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistSt
 {
   current_status_.velocity = amathutils::mps2kmph(msg.twist.linear.x);
 }
+
+void DecisionMakerNode::callbackFromObstacleWaypoint(const std_msgs::Int32& msg)
+{
+  current_status_.obstacle_waypoint = msg.data;
+}
 }

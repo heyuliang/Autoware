@@ -99,6 +99,7 @@ struct AutowareStatus
   autoware_msgs::LaneArray based_lane_array;
   autoware_msgs::lane finalwaypoints;
   int closest_waypoint;
+  int obstacle_waypoint;
 
   // vehicle status
   geometry_msgs::Pose pose;
@@ -107,7 +108,7 @@ struct AutowareStatus
   int found_stopsign_idx;
   int prev_stopped_wpidx;
 
-  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1)
+  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1), obstacle_waypoint(-1)
   {
   }
 
@@ -310,6 +311,10 @@ private:
   // entry callback
   void entryDriveState(cstring_t& state_name, int status);
   void entryTurnState(cstring_t& state_name, int status);
+  void entryTryAvoidanceState(cstring_t& state_name, int status);
+  void entryCheckAvoidanceState(cstring_t& state_name, int status);
+  void entryAvoidanceState(cstring_t& state_name, int status);
+  void entryReturnToLaneState(cstring_t& state_name, int status);
   // update callback
   void updateWaitEngageState(cstring_t& state_name, int status);
   void updateDriveState(cstring_t& state_name, int status);
@@ -335,6 +340,10 @@ private:
   void updateCheckRightLaneState(cstring_t& state_name, int status);
   void updateChangeToLeftState(cstring_t& state_name, int status);
   void updateChangeToRightState(cstring_t& state_name, int status);
+  void updateTryAvoidanceState(cstring_t& state_name, int status);
+  void updateCheckAvoidanceState(cstring_t& state_name, int status);
+  void updateAvoidanceState(cstring_t& state_name, int status);
+  void updateReturnToLaneState(cstring_t& state_name, int status);
   // exit callback
   void exitStopState(cstring_t& state_name, int status);
 
@@ -352,6 +361,7 @@ private:
   void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
+  void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);
 
   void setEventFlag(cstring_t& key, const bool& value)
   {

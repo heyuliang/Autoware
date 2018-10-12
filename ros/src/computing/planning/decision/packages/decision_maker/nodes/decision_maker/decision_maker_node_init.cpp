@@ -200,6 +200,24 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx_drive->setCallback(state_machine::CallbackType::EXIT, "B_Stop",
                    std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 1));
 
+
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "TryAvoidance",
+                   std::bind(&DecisionMakerNode::entryTryAvoidanceState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "TryAvoidance",
+                   std::bind(&DecisionMakerNode::updateTryAvoidanceState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "CheckAvoidance",
+                   std::bind(&DecisionMakerNode::entryCheckAvoidanceState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "CheckAvoidance",
+                   std::bind(&DecisionMakerNode::updateCheckAvoidanceState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Avoidance",
+                   std::bind(&DecisionMakerNode::entryAvoidanceState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Avoidance",
+                   std::bind(&DecisionMakerNode::updateAvoidanceState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "ReturnToLane",
+                   std::bind(&DecisionMakerNode::entryReturnToLaneState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "ReturnToLane",
+                   std::bind(&DecisionMakerNode::updateReturnToLaneState, this, std::placeholders::_1, 0));
+
   ctx_vehicle->nextState("started");
   ctx_mission->nextState("started");
   ctx_drive->nextState("started");
@@ -214,6 +232,7 @@ void DecisionMakerNode::createSubscriber(void)
   Subs["state_cmd"] = nh_.subscribe("/state_cmd", 1, &DecisionMakerNode::callbackFromStateCmd, this);
   Subs["current_velocity"] =
       nh_.subscribe("/current_velocity", 1, &DecisionMakerNode::callbackFromCurrentVelocity, this);
+  Subs["obstacle_waypoint"] = nh_.subscribe("/obstacle_waypoint", 1, &DecisionMakerNode::callbackFromObstacleWaypoint, this);
 }
 void DecisionMakerNode::createPublisher(void)
 {

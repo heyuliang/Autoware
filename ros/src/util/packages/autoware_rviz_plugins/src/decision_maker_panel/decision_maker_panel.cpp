@@ -99,6 +99,18 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   button_layout->addWidget(button_stop);
   button_layout->addWidget(button_go);
 
+  QHBoxLayout* button_second_layout = new QHBoxLayout;
+  QPushButton* button_execute_avoidance = new QPushButton("Execute Avoidance");
+  signalMapper->setMapping(button_execute_avoidance, QString("execute_avoidance"));
+  connect(button_execute_avoidance, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
+  QPushButton* button_execute_lane_change = new QPushButton("Execute LaneChange");
+  signalMapper->setMapping(button_execute_lane_change, QString("execute_lane_change"));
+  connect(button_execute_lane_change, SIGNAL(clicked()), signalMapper, SLOT(map()));
+
+  button_second_layout->addWidget(button_execute_avoidance);
+  button_second_layout->addWidget(button_execute_lane_change);
+
   QHBoxLayout* button_middle_layout = new QHBoxLayout;
   QPushButton* button_request_mission_change = new QPushButton("Request mission change");
   signalMapper->setMapping(button_request_mission_change, QString("request_mission_change"));
@@ -131,6 +143,7 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addLayout(label_layout);
   layout->addLayout(button_layout);
+  layout->addLayout(button_second_layout);
   layout->addLayout(button_middle_layout);
   layout->addLayout(button_low_layout);
   setLayout(layout);

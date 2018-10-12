@@ -286,6 +286,20 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
     current_status_.found_stopsign_idx = get_stopsign.second;
     tryNextState("found_stopline");
   }
+
+  static double stopped_time;
+  const double avoiding_timer = 3.0;//threshold time[s]
+  if (current_status_.velocity == 0.0 && current_status_.obstacle_waypoint != -1)
+  {
+    if (ros::Time::now().toSec() - stopped_time > avoiding_timer)
+    {
+      tryNextState("completely_stopped");
+    }
+  }
+  else
+  {
+    stopped_time = ros::Time::now().toSec();
+  }
 }
 
 void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
@@ -339,6 +353,34 @@ void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
     current_status_.found_stopsign_idx = -1;
     publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
   }
+}
+
+void DecisionMakerNode::entryTryAvoidanceState(cstring_t& state_name, int status)
+{
+}
+void DecisionMakerNode::updateTryAvoidanceState(cstring_t& state_name, int status)
+{
+}
+
+void DecisionMakerNode::entryCheckAvoidanceState(cstring_t& state_name, int status)
+{
+}
+void DecisionMakerNode::updateCheckAvoidanceState(cstring_t& state_name, int status)
+{
+}
+
+void DecisionMakerNode::entryAvoidanceState(cstring_t& state_name, int status)
+{
+}
+void DecisionMakerNode::updateAvoidanceState(cstring_t& state_name, int status)
+{
+}
+
+void DecisionMakerNode::entryReturnToLaneState(cstring_t& state_name, int status)
+{
+}
+void DecisionMakerNode::updateReturnToLaneState(cstring_t& state_name, int status)
+{
 }
 
 void DecisionMakerNode::updateDriveEmergencyState(cstring_t& state_name, int status)
