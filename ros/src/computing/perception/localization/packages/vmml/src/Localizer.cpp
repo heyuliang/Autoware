@@ -85,6 +85,10 @@ const
 	KeyFrame *keyframe = sourceMap->keyframe(keyframeId);
 
 	KeyFrame::match(*keyframe, frame, featurePairs);
+
+	for (int i=0; i<featurePairs; i++) {
+
+	}
 }
 
 
