@@ -613,14 +613,14 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
         param: op_trajectory_evaluator
       - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner 
+        desc : Decision making by selecting best behavior for local planner
         cmd  : roslaunch op_local_planner op_behavior_selector.launch
 
     - name : OpenPlanner - Utilities
       desc : Testing UI, Loggers , ..
       subs :
       - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file 
+        desc : Publish transformation from ndt_pose read from rosbag file
         cmd  : roslaunch op_utilities op_pose2tf.launch
         param: op_pose2tf
       - name : op_bag_player
@@ -639,7 +639,7 @@ subs :
         cmd  : roslaunch op_simulation_package op_signs_simulator.launch
         param: op_signs_simulator
       - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner 
+        desc : Simulate a car using OpenPlanner
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
         param: op_car_simulator
 
@@ -1211,7 +1211,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLogging
-      desc : Enable Writ csv of internal tracking state 
+      desc : Enable Writ csv of internal tracking state
       label: Enable CSV Logs
       kind : checkbox
       v    : False
@@ -3064,7 +3064,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : maxAcceleration
-      desc : Maximum acceleration allowed 
+      desc : Maximum acceleration allowed
       label: Acceleration
       min  : 0.01
       max  : 25.0
@@ -3207,7 +3207,7 @@ params :
   - name  : op_motion_predictor
     vars  :
     - name : enableCurbObstacles
-      desc : Enable using curb from map as obstacles 
+      desc : Enable using curb from map as obstacles
       label: Detect curbs from map
       kind : checkbox
       v    : False
@@ -3260,7 +3260,7 @@ params :
   - name  : op_trajectory_evaluator
     vars  :
     - name : enablePrediction
-      desc : treat all obstacles as dynamic or as static 
+      desc : treat all obstacles as dynamic or as static
       label: Enable Prediction
       kind : checkbox
       v    : False
@@ -3381,7 +3381,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : logFolder
-      desc : Folder for simulation data logging 
+      desc : Folder for simulation data logging
       label: Log Folder
       kind : path
       cmd_param:
@@ -4226,9 +4226,27 @@ params :
 
   - name : points2costmap
     vars :
+    - name      : vehicle_length
+      desc      : Vehicle length [m]
+      label     : Vehicle Length
+      min       : 0.0
+      max       : 10.0
+      v         : 4.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : vehicle_width
+      desc      : Vehicle width [m]
+      label     : Vehicle Width
+      min       : 0.0
+      max       : 10.0
+      v         : 1.75
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : resolution
-      desc      : Map resolution [meter]
-      label     : resolution
+      desc      : Map resolution [m]
+      label     : Resolution
       min       : 0.0
       max       : 1.0
       v         : 0.2
@@ -4236,8 +4254,8 @@ params :
         dash      : ''
         delim     : ':='
     - name      : cell_width
-      desc      : Map cell size x
-      label     : map_size_x
+      desc      : Map cell size x [-]
+      label     : Map Size X
       min       : 0
       max       : 1000
       v         : 300
@@ -4245,8 +4263,8 @@ params :
         dash      : ''
         delim     : ':='
     - name      : cell_height
-      desc      : Map cell size y
-      label     : map_size_y
+      desc      : Map cell size y [-]
+      label     : Map Size Y
       min       : 0
       max       : 1000
       v         : 150
@@ -4254,8 +4272,8 @@ params :
         dash      : ''
         delim     : ':='
     - name      : offset_x
-      desc      : Map offset of x [meter]
-      label     : map_offset_x
+      desc      : Map offset of x [m]
+      label     : Map Offset X
       min       : -100
       max       : 100
       v         : 25.0
@@ -4263,8 +4281,8 @@ params :
         dash      : ''
         delim     : ':='
     - name      : offset_y
-      desc      : Map offset of y [meter]
-      label     : map_offset_y
+      desc      : Map offset of y [m]
+      label     : Map Offset Y
       min       : -100
       max       : 100
       v         : 0.0
@@ -4272,19 +4290,52 @@ params :
         dash      : ''
         delim     : ':='
     - name      : offset_z
-      desc      : Map offset of z [meter]
-      label     : map_offset_z
+      desc      : Map offset of z [m]
+      label     : Map Offset Z
       min       : -100
       max       : 100
       v         : -2.0
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : occupied_cost
+      desc      : Occupied cell cost [-]
+      label     : Occupied Cost
+      min       : 0
+      max       : 255
+      v         : 100
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : points_topic
-      desc      : Subscribing topic for generating a cost map (PointCloud2 message)
+      desc      : Subscribing PointCloud2 topic for generating costmap
       label     : Points Topic
       kind      : str
-      v         : /points_lanes
+      v         : /points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : objects_topic
+      desc      : Subscribing DetectedObjectArray topic for generating costmap
+      label     : Objects Topic
+      kind      : str
+      v         : /detected_objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_points
+      desc      : Use PointCloud2 message for generating costmap
+      label     : Use Points
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_objects
+      desc      : Use DetectedObjectArray message for generating costmap
+      label     : Use Objects
+      kind      : checkbox
+      v         : True
       cmd_param :
         dash      : ''
         delim     : ':='

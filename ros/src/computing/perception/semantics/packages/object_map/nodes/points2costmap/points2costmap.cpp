@@ -32,190 +32,136 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <autoware_msgs/DetectedObjectArray.h>
 
 #include <utility>
 
 namespace
 {
-constexpr double HEIGHT_LIMIT = 0.1;  // from sensor
-constexpr double CAR_LENGTH = 4.5;
-constexpr double CAR_WIDTH = 1.75;
+// ros
+ros::Publisher costmap_pub_;
+// params
+bool use_points_;
+bool use_objects_;
+double vehicle_length_;
+double vehicle_width_;
+double resolution_;
+int cell_width_;
+int cell_height_;
+double offset_x_;
+double offset_y_;
+double offset_z_;
+int occupied_cost_;
+// variables
+nav_msgs::OccupancyGrid costmap_;
 
-ros::Publisher g_costmap_pub;
-double g_resolution;
-int g_cell_width;
-int g_cell_height;
-double g_offset_x;
-double g_offset_y;
-double g_offset_z;
-
-pcl::PointCloud<pcl::PointXYZ> g_obstacle_sim_points;
-bool g_use_obstacle_sim = false;
-
-void callbackFromObstacleSim(const sensor_msgs::PointCloud2ConstPtr &msg)
+void initCostmap()
 {
-  pcl::fromROSMsg(*msg, g_obstacle_sim_points);
-
-  g_use_obstacle_sim = true;
+  costmap_.info.resolution = resolution_;
+  costmap_.info.width = cell_width_;
+  costmap_.info.height = cell_height_;
+  costmap_.info.origin.position.x = (-1) * (cell_width_ / 2.0) * resolution_ + offset_x_;
+  costmap_.info.origin.position.y = (-1) * (cell_height_ / 2.0) * resolution_ + offset_y_;
+  costmap_.info.origin.position.z = offset_z_;
+  costmap_.info.origin.orientation.x = 0.0;
+  costmap_.info.origin.orientation.y = 0.0;
+  costmap_.info.origin.orientation.z = 0.0;
+  costmap_.info.origin.orientation.w = 1.0;
+  costmap_.data.resize(cell_width_ * cell_height_);
 }
 
-void joinPoints(const pcl::PointCloud<pcl::PointXYZ>& points1, pcl::PointCloud<pcl::PointXYZ>* points2)
+void updateCostMap(const pcl::PointCloud<pcl::PointXYZ>& points)
 {
-  for (const auto& p : points1)
+  std::fill(costmap_.data.begin(), costmap_.data.end(), 0);
+  double map_center_x = (cell_width_ / 2.0) * resolution_ - offset_x_;
+  double map_center_y = (cell_height_ / 2.0) * resolution_ - offset_y_;
+
+  for (const auto& p : points.points)
   {
-    points2->push_back(p);
-  }
-}
-
-std::vector<int> createCostMap(const pcl::PointCloud<pcl::PointXYZ> &scan)
-{
-  std::vector<int> cost_map(g_cell_width * g_cell_height, 0);
-  double map_center_x = (g_cell_width / 2.0) * g_resolution - g_offset_x;
-  double map_center_y = (g_cell_height / 2.0) * g_resolution - g_offset_y;
-
-  // scan points are in sensor frame
-  for (const auto &p : scan.points)
-  {
-    if (p.z > HEIGHT_LIMIT)
+    if (std::fabs(p.x) < vehicle_length_ && std::fabs(p.y) < vehicle_width_)
+    {
       continue;
-    if (std::fabs(p.x) < CAR_LENGTH && std::fabs(p.y) < CAR_WIDTH)
-      continue;
-
-    // Calculate grid index
-    int grid_x = (p.x + map_center_x) / g_resolution;
-    int grid_y = (p.y + map_center_y) / g_resolution;
-    if (grid_x < 0 || grid_x >= g_cell_width || grid_y < 0 || grid_y >= g_cell_height)
-      continue;
-
-    int index = g_cell_width * grid_y + grid_x;
-    cost_map[index] += 15;
-
-    // Max cost value is 100
-    if (cost_map[index] > 100)
-      cost_map[index] = 100;
-  }
-
-  return cost_map;
-}
-
-void setOccupancyGrid(nav_msgs::OccupancyGrid *og)
-{
-  og->info.resolution = g_resolution;
-  og->info.width = g_cell_width;
-  og->info.height = g_cell_height;
-  og->info.origin.position.x = (-1) * (g_cell_width / 2.0) * g_resolution + g_offset_x;
-  og->info.origin.position.y = (-1) * (g_cell_height / 2.0) * g_resolution + g_offset_y;
-  og->info.origin.position.z = g_offset_z;
-  og->info.origin.orientation.x = 0.0;
-  og->info.origin.orientation.y = 0.0;
-  og->info.origin.orientation.z = 0.0;
-  og->info.origin.orientation.w = 1.0;
-}
-
-std::vector<int> filterCostMap(std::vector<int>& cost_map)
-{
-  std::vector<int> filtered_cost_map(cost_map.size(), 0);
-
-  // cells around reference (x, y)
-  std::vector<std::pair<int, int>> neighborhood
-  {
-    std::make_pair(-1, -1), std::make_pair( 0, -1), std::make_pair( 1, -1),
-    std::make_pair(-1,  0), std::make_pair( 1,  0),
-    std::make_pair(-1,  1), std::make_pair( 0,  1), std::make_pair( 1,  1),
-  };
-
-  for (size_t size = cost_map.size(), i = 0; i < size; i++) {
-    int ref_cost = cost_map[i];
-
-    int ref_x = i % g_cell_width;
-    int ref_y = (i - ref_x) / g_cell_width;
-
-    // we don't have to filter if the cost is 0
-    if (ref_cost <= 0)
-      continue;
-
-    filtered_cost_map[i] += ref_cost;
-
-    // increase the cost for each neighborhood cell
-    for (const auto& n : neighborhood) {
-      int neighbor_x = ref_x + n.first;
-      int neighbor_y = ref_y + n.second;
-
-      if (neighbor_x < 0 || neighbor_x >= g_cell_width || neighbor_y < 0 || neighbor_y >= g_cell_height)
-        continue;
-
-      int neighbor_index = neighbor_x + neighbor_y * g_cell_width;
-      filtered_cost_map[neighbor_index] += ref_cost;
     }
 
-  }
+    int grid_x = (p.x + map_center_x) / resolution_;
+    int grid_y = (p.y + map_center_y) / resolution_;
 
-  // handle the cost over 100
-  for (auto &cost : filtered_cost_map) {
-    if (cost > 100)
-      cost = 100;
-  }
+    if (grid_x < 0 || grid_x >= cell_width_ || grid_y < 0 || grid_y >= cell_height_)
+    {
+      continue;
+    }
 
-  return filtered_cost_map;
+    int index = cell_width_ * grid_y + grid_x;
+    costmap_.data[index] = occupied_cost_;
+  }
 }
 
-void createOccupancyGrid(const sensor_msgs::PointCloud2::ConstPtr &input)
+void pointsCallback(const sensor_msgs::PointCloud2& msg)
 {
-  static int count = 0;
-  pcl::PointCloud<pcl::PointXYZ> scan;
-  pcl::fromROSMsg(*input, scan);
-
-  // use simulated obstacle
-  if (g_use_obstacle_sim)
+  if (!use_points_)
   {
-    joinPoints(g_obstacle_sim_points, &scan);
-    g_obstacle_sim_points.clear();
+    return;
   }
-  // ---
 
-  static nav_msgs::OccupancyGrid og;
-  if (!count)
-    setOccupancyGrid(&og);
+  pcl::PointCloud<pcl::PointXYZ> points;
+  pcl::fromROSMsg(msg, points);
 
-  og.header = input->header;
+  costmap_.header = msg.header;
+  updateCostMap(points);
+  costmap_pub_.publish(costmap_);
+}
 
-  // create cost map with pointcloud
-  std::vector<int> cost_map = createCostMap(scan);
+void objectsCallback(const autoware_msgs::DetectedObjectArray& msg)
+{
+  if (!use_objects_)
+  {
+    return;
+  }
 
-  /*
-  bool filter = false;
-  if (filter)
-    cost_map = filterCostMap(cost_map);
-  */
+  pcl::PointCloud<pcl::PointXYZ> points;
+  for (const auto& obj : msg.objects)
+  {
+    if (obj.pointcloud.data.size() != 0)
+    {
+      pcl::PointCloud<pcl::PointXYZ> p;
+      pcl::fromROSMsg(obj.pointcloud, p);
+      points += p;
+    }
+  }
 
-  og.data.insert(og.data.end(), cost_map.begin(), cost_map.end());
-  g_costmap_pub.publish(og);
-  og.data.clear();
-  count++;
+  if (points.size() > 0)
+  {
+    costmap_.header = msg.objects[0].header;
+    updateCostMap(points);
+    costmap_pub_.publish(costmap_);
+  }
 }
 
 }  // namespace
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "points2costmap");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  // Subscribing topic of PointCloud2 message
-  std::string points_topic;
+  private_nh.param<bool>("use_points", use_points_, true);
+  private_nh.param<bool>("use_objects", use_objects_, true);
+  private_nh.param<double>("vehicle_length", vehicle_length_, 4.5);
+  private_nh.param<double>("vehicle_width", vehicle_width_, 1.75);
+  private_nh.param<double>("resolution", resolution_, 0.2);
+  private_nh.param<int>("cell_width", cell_width_, 300);
+  private_nh.param<int>("cell_height", cell_height_, 150);
+  private_nh.param<double>("offset_x", offset_x_, 25.0);
+  private_nh.param<double>("offset_y", offset_y_, 0.0);
+  private_nh.param<double>("offset_z", offset_z_, -2.0);
+  private_nh.param<int>("points_cost", occupied_cost_, 100);
 
-  private_nh.param<double>("resolution", g_resolution, 1.0);
-  private_nh.param<int>("cell_width", g_cell_width, 50);
-  private_nh.param<int>("cell_height", g_cell_height, 50);
-  private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<double>("offset_x", g_offset_x, 30.0);
-  private_nh.param<double>("offset_y", g_offset_y, 0.0);
-  private_nh.param<double>("offset_z", g_offset_z, -2.0);
+  costmap_pub_ = nh.advertise<nav_msgs::OccupancyGrid>("realtime_cost_map", 10);
+  ros::Subscriber points_sub = nh.subscribe("points_no_ground", 1, pointsCallback);
+  ros::Subscriber objects_sub = nh.subscribe("detected_objects", 1, objectsCallback);
 
-  g_costmap_pub = nh.advertise<nav_msgs::OccupancyGrid>("realtime_cost_map", 10);
-  ros::Subscriber points_sub = nh.subscribe(points_topic, 10, createOccupancyGrid);
-  ros::Subscriber obstacle_sim_points_sub = nh.subscribe("obstacle_sim_pointcloud", 1, callbackFromObstacleSim);
+  initCostmap();
 
   ros::spin();
 }
