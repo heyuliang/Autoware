@@ -52,6 +52,7 @@ add_message_files(
             waypoint.msg
             WaypointState.msg
             VehicleCmd.msg
+            VehicleLocation.msg
             VehicleStatus.msg
             TrafficLightResult.msg
             TrafficLightResultArray.msg

@@ -48,6 +48,7 @@
 #include "autoware_msgs/ConfigLaneSelect.h"
 #include "autoware_msgs/LaneArray.h"
 #include "autoware_msgs/state.h"
+#include "autoware_msgs/VehicleLocation.h"
 #include "hermite_curve.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
@@ -82,13 +83,14 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub3_, pub4_;
+  ros::Publisher pub1_, pub2_, pub3_, pub4_, pub5_;
   ros::Publisher vis_pub1_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_, sub6_;
 
   // variables
+  int32_t lane_array_id_;
   int32_t current_lane_idx_;  // the index of the lane we are driving
   int32_t right_lane_idx_;
   int32_t left_lane_idx_;
@@ -136,6 +138,7 @@ private:
   void publishLaneID(const autoware_msgs::lane &lane);
   void publishClosestWaypoint(const int32_t clst_wp);
   void publishChangeFlag(const ChangeFlag flag);
+  void publishVehicleLocation(const int32_t clst_wp, const int32_t larray_id);
   bool getClosestWaypointNumberForEachLanes();
   int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);
   void findCurrentLane();
