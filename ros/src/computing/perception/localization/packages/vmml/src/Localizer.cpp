@@ -16,6 +16,10 @@ const int OrbDescriptorDistanceLowerThreshold = 50;
 const int OrbDescriptorHistogramLength = 30;
 
 
+using Eigen::Vector2d;
+using Eigen::Vector3d;
+
+
 
 Localizer::Localizer(VMap *parentMap, bool emptyMask) :
 	sourceMap(parentMap),
@@ -77,6 +81,9 @@ Localizer::detect (cv::Mat &frmImg)
 }
 
 
+#define averageProjectionDeviation 2.0
+
+
 float
 Localizer::projectionCheck (const Frame &frame, const kfid &keyframeId)
 const
@@ -85,9 +92,17 @@ const
 	KeyFrame *keyframe = sourceMap->keyframe(keyframeId);
 
 	KeyFrame::match(*keyframe, frame, featurePairs);
+	vector<float> projectionErrors(featurePairs.size());
 
-	for (int i=0; i<featurePairs; i++) {
+	for (int i=0; i<featurePairs.size(); i++) {
+		auto &pair = featurePairs[i];
 
+		const MapPoint &pt3d = *sourceMap->mappoint(sourceMap->getMapPointByKeypoint(keyframeId, pair.kpid1));
+		Vector2d ptProj = keyframe->project(pt3d);
+		const float dist2D = (ptProj - Vector2d(pair.keypoint2.x, pair.keypoint2.y)).norm();
+		if (dist2D < averageProjectionDeviation) {
+
+		}
 	}
 }
 

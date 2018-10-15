@@ -11,6 +11,8 @@
 #include "Frame.h"
 //#include "MapBuilder.h"
 #include "utilities.h"
+#include "MapPoint.h"
+
 
 
 using namespace std;
@@ -228,6 +230,30 @@ Vector2d KeyFrame::project(const Vector3d &pt3) const
 {
 	Vector3d ptx = projMatrix * pt3.homogeneous();
 	return ptx.head(2) / ptx[2];
+}
+
+
+Eigen::Vector2d
+KeyFrame::project (const MapPoint &pt3) const
+{
+	return project(pt3.getPosition());
+}
+
+
+vector<Vector2d>
+KeyFrame::projectAllMapPoints() const
+{
+	auto visibleMapPts = parentMap->allMapPointsAtKeyFrame(this->id);
+	vector<Vector2d> projectionResult(visibleMapPts.size());
+
+	int i = 0;
+	for (auto &ptx: visibleMapPts) {
+		mpid pt3d = ptx.first;
+		projectionResult[i] = project(*parentMap->mappoint(pt3d));
+		i++;
+	}
+
+	return projectionResult;
 }
 
 

@@ -186,8 +186,11 @@ public:
 	inline kpid getKeyPointId (const kfid k, const mpid p)
 	{ return framePoints.at(k).at(p); }
 
+	inline mpid getMapPointByKeypoint (const kfid k, const kpid p)
+	{ return framePointsInv.at(k).at(p); }
+
 	// XXX: Causes SIGSEGV when framePoints are empty
-	std::map<mpid,kpid> allMapPointsAtKeyFrame(const kfid f);
+	std::map<mpid,kpid> allMapPointsAtKeyFrame(const kfid f) const;
 
 	bool save (const std::string &path);
 	bool load (const std::string &path);
@@ -256,6 +259,12 @@ protected:
 	// KeyFrame -> (MapPoint, KeyPoint)
 	std::map<kfid,
 		std::map<mpid, kpid> > framePoints;
+
+	// List of all map points with inverted of the above
+	// It will be useful eg. to check projection (see Localizer.cpp)
+	// KeyFrame -> (KeyPoint, MapPoint)
+	std::map<kfid,
+		std::map<kpid, mpid> > framePointsInv;
 
 	// 2D image stuff
 	cv::Mat mask;

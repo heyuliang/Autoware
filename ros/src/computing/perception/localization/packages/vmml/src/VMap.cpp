@@ -85,6 +85,7 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 		ptime tm)
 {
 	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &cameraList[cameraId], cameraId, setId);
+	nKf->parentMap = this;
 	kfid nId = nKf->getId();
 
 	keyframeInvIdx_mtx->lock();
@@ -92,6 +93,7 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 	keyframeInvIdx_mtx->unlock();
 
 	framePoints[nId] = map<mpid,kpid>();
+	framePointsInv[nId] = map<kpid,mpid>();
 
 //	imageDB->newKeyFrameCallback(nId);
 	auto vtId = boost::add_vertex(covisibility);
@@ -136,6 +138,9 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 		framePoints[kfid1], framePoints[kfid2],
 		this);
 
+	framePointsInv[kfid1] = reverseMap(framePoints[kfid1]);
+	framePointsInv[kfid2] = reverseMap(framePoints[kfid2]);
+
 	// Update visibility information
 	for (mpid &mpidx: newMapPointList) {
 		pointAppearances[mpidx].insert(kfid1);
@@ -164,7 +169,7 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	kpidField allKp2 = makeField(kfid2);
 	vector<FeaturePair> pairList12;
 	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, allKp2);
-	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
+	map<kpid,mpid> &kf1kp2mp = framePointsInv[kfid1];
 
 	// Check the matching with projection
 	for (int i=0; i<pairList12.size(); i++) {
@@ -180,6 +185,7 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 		// This particular mappoint is visible in KF2
 		pointAppearances[ptId].insert(kfid2);
 		framePoints[kfid2][ptId] = p.kpid2;
+		framePointsInv[kfid2][p.kpid2] = ptId;
 	}
 
 	// Estimate new mappoints that are visible in KF1 & KF2
@@ -191,8 +197,11 @@ VMap::estimateAndTrack (const kfid &kfid1, const kfid &kfid2)
 	vector<mpid> newMapPointList;
 	KeyFrame::triangulate(kf1, kf2, newMapPointList, pairList12,
 		framePoints[kfid1], framePoints[kfid2],
-
 		this);
+
+	// Update inverse map from map points to keypoints
+	framePointsInv[kfid1] = reverseMap(framePoints[kfid1]);
+	framePointsInv[kfid2] = reverseMap(framePoints[kfid2]);
 
 	// Update visibility information
 	for (mpid &mpidx: newMapPointList) {
@@ -276,6 +285,7 @@ VMap::save(const string &filepath)
 
 	mapStore << pointAppearances;
 	mapStore << framePoints;
+	mapStore << framePointsInv;
 
 	mapStore << mask;
 
@@ -322,6 +332,7 @@ VMap::load(const string &filepath)
 
 	mapStore >> pointAppearances;
 	mapStore >> framePoints;
+	mapStore >> framePointsInv;
 
 	mapStore >> mask;
 
@@ -340,6 +351,7 @@ VMap::load(const string &filepath)
 	for (int i=0; i<header.numOfKeyFrame; i++) {
 		KeyFrame *kf = &(kfArray[i]);
 		keyframeInvIdx.insert(pair<kfid,KeyFrame*>(kf->getId(), kf));
+		kf->parentMap = this;
 	}
 
 	mappointInvIdx.clear();
@@ -355,6 +367,7 @@ VMap::load(const string &filepath)
 
 map<mpid,kpid>
 VMap::allMapPointsAtKeyFrame(const kfid f)
+const
 {
 	if (framePoints.size()==0)
 		return map<mpid,kpid>();
@@ -506,6 +519,7 @@ VMap::reset()
 	mappointInvIdx.clear();
 	pointAppearances.clear();
 	framePoints.clear();
+	framePointsInv.clear();
 }
 
 
@@ -608,7 +622,7 @@ VMap::trackMapPoints (const kfid kfid1, const kfid kfid2)
 	kpidField allKp2 = makeField(kfid2);
 	vector<FeaturePair> pairList12;
 	KeyFrame::matchSubset(*kf1, *kf2, descriptorMatcher, pairList12, kp1List, allKp2);
-	map<kpid,mpid> kf1kp2mp = reverseMap(framePoints[kfid1]);
+	map<kpid,mpid> kf1kp2mp = framePointsInv[kfid1];
 
 	// Check the matching with projection
 	int pointMatchCounter = 0;
@@ -626,6 +640,7 @@ VMap::trackMapPoints (const kfid kfid1, const kfid kfid2)
 		pointMatchCounter += 1;
 		pointAppearances[ptId].insert(kfid2);
 		framePoints[kfid2][ptId] = p.kpid2;
+		framePointsInv[kfid2][p.kpid2] = ptId;
 	}
 
 	if (pointMatchCounter > matchCountThreshold) {
@@ -650,7 +665,9 @@ VMap::removeMapPoint (const mpid &i)
 	mappointInvIdx.erase(i);
 	set<kfid> ptAppears = pointAppearances[i];
 	for (auto k: ptAppears) {
+		const kpid kp = framePoints[k].at(i);
 		framePoints[k].erase(i);
+		framePointsInv[k].erase(kp);
 	}
 
 	pointAppearances.erase(i);
