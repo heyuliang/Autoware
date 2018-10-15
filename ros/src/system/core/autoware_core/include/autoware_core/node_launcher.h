@@ -5,19 +5,23 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <stdlib.h>
+#include <thread>
 
-//headers in boost
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-
-struct launch_info
+class launch_info
 {
-    const std::string package;
-    const std::string launch_filename;
-    launch_info(std::string package_, std::string launch_filename_) : package(package_), launch_filename(launch_filename_)
+public:
+    launch_info(std::string package, std::string launch_filename)
     {
-
+        package_ = package;
+        launch_filename_ = launch_filename;
     }
+    std::string get_package(){return package_;};
+    std::string get_launch_filename(){return launch_filename_;};
+private:
+    std::string package_;
+    std::string launch_filename_;
+
 };
 
 class node_launcher

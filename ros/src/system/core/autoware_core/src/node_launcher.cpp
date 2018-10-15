@@ -13,6 +13,7 @@ node_launcher::~node_launcher()
 void node_launcher::launch(std::string package,std::string launch_filename)
 {
     launch_info info(package,launch_filename);
+    std::thread exec_thread(&node_launcher::execute_, this, info);
     return;
 }
 
@@ -22,26 +23,19 @@ void node_launcher::execute_(launch_info info)
     launched_info_.push_back(info);
     mtx_.unlock();
 
+    std::string cmd = "roslaunch " + info.get_package() + " " + info.get_launch_filename();
+    int ret = system(cmd.c_str());
+
     mtx_.lock();
-    /*
+    std::vector<launch_info> new_launched_info;
     for(auto itr=launched_info_.begin() ; itr!=launched_info_.end(); itr++)
     {
-        if(itr->package == info.package && itr->launch_filename == info.launch_filename)
+        if(itr->get_package() != info.get_package() || itr->get_launch_filename() != info.get_launch_filename())
         {
-            //launched_info_.erase(itr);
-            break;
-        }
-        /*
-        if(launched_info_[i].package == info.package && launched_info_[i].launch_filename == info.launch_filename)
-        {
-            launched_info_.erase(launched_info_.begin());
-            //launched_info_.erase(launched_info_.begin());
-            //launched_info_.begin() + (unsigned int)i;
-            //launched_info_.erase(launched_info_.begin() + (unsigned int)(i));
-            break;
+            new_launched_info.push_back(*itr);
         }
     }
-    */
+    launched_info_ = new_launched_info;
     mtx_.unlock();
     return;
 }
