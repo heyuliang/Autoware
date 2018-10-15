@@ -390,6 +390,7 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 	autoware_msgs::LaneArray traffic_waypoint;
 	autoware_msgs::LaneArray red_waypoint;
 	autoware_msgs::LaneArray green_waypoint;
+	traffic_waypoint.id = red_waypoint.id = green_waypoint.id = msg.id;
 	for (size_t i = 0; i < msg.lanes.size(); ++i) {
 		autoware_msgs::lane lane = create_new_lane(msg.lanes[i], header);
 
@@ -428,9 +429,9 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 				for (size_t j = 1; j < lane.waypoints.size()-1; ++j) {
 					if(lane.waypoints.at(j).twist.twist.linear.x != 0)
 					{
-						lane.waypoints[j].twist.twist.linear.x = 
-							(temp_lane.waypoints.at(j-1).twist.twist.linear.x + 
-							 temp_lane.waypoints.at(j).twist.twist.linear.x + 
+						lane.waypoints[j].twist.twist.linear.x =
+							(temp_lane.waypoints.at(j-1).twist.twist.linear.x +
+							 temp_lane.waypoints.at(j).twist.twist.linear.x +
 							 temp_lane.waypoints.at(j+1).twist.twist.linear.x) / 3 ;
 					}
 				}
