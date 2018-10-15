@@ -42,6 +42,7 @@ void command_executer::execute_roslaunch_command(const httplib::Request& req, ht
         pt.put("response.description", "Failed to get package or launch_filename field.");
     }
     write_json(ss, pt);
-    res.body = ss.str();
+    res.set_content(ss.str(),"text/plain");
+    //res.body = ss.str();
     return;
 }
