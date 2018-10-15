@@ -10,8 +10,9 @@ command_executer::~command_executer()
     
 }
 
-void command_executer::execute(std::string command)
+void command_executer::execute(const httplib::Request& req, const httplib::Response& res)
 {
+    std::string command  = req.body;
     std::stringstream ss;
     ss << command;
     boost::property_tree::ptree pt;

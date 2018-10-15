@@ -19,5 +19,7 @@ void autoware_core::run()
 void autoware_core::run_server_()
 {
     server_.listen("localhost", 8080);
+    execute_func_ = std::bind(&command_executer::execute, &command_executer_, std::placeholders::_1, std::placeholders::_2);
+    server_.set_logger(execute_func_);
     return;
 }

@@ -7,6 +7,9 @@
 //headers in autoware_core
 #include <autoware_core/node_launcher.h>
 
+//headers in httplib
+#include <cpp-httplib/httplib.h>
+
 //headers in boost
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -18,7 +21,7 @@ class command_executer
 public:
     command_executer();
     ~command_executer();
-    void execute(std::string command);
+    void execute(const httplib::Request& req, const httplib::Response& res);
 private:
     //parameters for roslaunch command
     node_launcher launcher_;

@@ -10,6 +10,9 @@
 //headers in httplib
 #include <cpp-httplib/httplib.h>
 
+//heaaders in Autoware
+#include <autoware_core/command_executer.h>
+
 class autoware_core
 {
 public:
@@ -17,10 +20,13 @@ public:
     ~autoware_core();
     void run();
 private:
+    std::string request_to_string_(httplib::Request req);
     void run_server_();
     ros::NodeHandle nh_;
     httplib::Server server_;
     int port_;
+    command_executer command_executer_;
+    std::function<void (const httplib::Request&, const httplib::Response&)> execute_func_;
 };
 
 #endif  //AUTOWARE_CORE_H_INCLUDED
