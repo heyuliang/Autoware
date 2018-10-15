@@ -814,8 +814,8 @@ subs :
           dialog_width  : 400
           dialog_height : 600
           auto_mission_reload:
-            depend : disable_management_system
-            depend_bool : 'lambda v : v == 1'
+            depend : use_management_system
+            depend_bool : 'lambda v : v == 0'
 
     - name : planner_selector
       desc : planner_selector desc sample
@@ -2055,9 +2055,9 @@ params :
       cmd_param:
               dash : ''
               delim: ':='
-    - name : disable_management_system
-      desc : If this is enabled, part of the state transition is automatically executed.
-      label: disable_management_system
+    - name : use_management_system
+      desc : If this is disbled, part of the state transition is automatically executed.
+      label: use_management_system
       kind : checkbox
       v    : False
     - name : auto_mission_reload

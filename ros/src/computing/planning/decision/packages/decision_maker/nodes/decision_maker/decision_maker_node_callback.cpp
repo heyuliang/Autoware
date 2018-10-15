@@ -51,7 +51,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
   auto_mission_reload_ = msg.auto_mission_reload;
-  disable_management_system_ = msg.disable_management_system;
+  use_management_system_ = msg.use_management_system;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
   dist_threshold_ = msg.dist_threshold;
   angle_threshold_ = msg.angle_threshold;
