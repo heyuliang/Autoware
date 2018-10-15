@@ -103,7 +103,7 @@ private:
       previous_command_mode_;
   std_msgs::String command_mode_topic_;
 
-  bool is_state_drive_ = false;
+  bool is_state_drive_ = true;
   // still send is true
   bool send_emergency_cmd = false;
 };
