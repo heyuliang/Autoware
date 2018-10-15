@@ -123,6 +123,7 @@ public:
 
 	// Project to 2D
 	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
+	Eigen::Vector2d project (const MapPoint &pt3) const;
 
 	// Transform point (in world) to camera coordinate system
 	Eigen::Vector3d transform (const Eigen::Vector3d &pt3) const;
@@ -143,6 +144,9 @@ public:
 	void setTimestamp
 	(const ptime &t)
 	{ frCreationTime = t; }
+
+	std::vector<Eigen::Vector2d>
+	projectAllMapPoints () const;
 
 protected:
 
@@ -169,6 +173,7 @@ protected:
 	static kfid nextId;
 
 //	KeyFrame* prev;
+	VMap* parentMap;
 };
 
 #endif /* KEYFRAME_H_ */

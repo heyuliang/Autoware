@@ -158,13 +158,13 @@ InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
 	cv::Mat img=DI->getImage();
 	cv::cvtColor(img, img, CV_BGR2GRAY, 1);
 
-	/*
-	 * Contrarily, we let VMap use autonumbering for keymap ID
-	 */
 	InputFrame f(
 		img,
 		DI->getPosition(),
-		DI->getOrientation());
+		DI->getOrientation(),
+		// Force Keyframe ID using data Item ID
+		static_cast<kfid> ( DI->getId() )
+	);
 	f.tm = DI->getTimestamp();
 
 	return f;
