@@ -26,16 +26,22 @@ void command_executer::execute_roslaunch_command(const httplib::Request& req, ht
     catch(...)
     {
         ROS_ERROR_STREAM("Failed to parse roslaunch command.");
-        //res.body = std::string("Failed to parse roslaunch command.");
+        pt.put("response.success", false);
+        pt.put("response.description", "Failed to parse roslaunch command.");
         return;
     }
     if(package && launch_filename)
     {
         launcher_.launch(package.get(), launch_filename.get());
+        pt.put("response.success", true);
     }
     else
     {
-        ROS_ERROR_STREAM("Failed to get package or launch_filename field");
+        ROS_ERROR_STREAM("Failed to get package or launch_filename field.");
+        pt.put("response.success", false);
+        pt.put("response.description", "Failed to get package or launch_filename field.");
     }
+    write_json(ss, pt);
+    res.body = ss.str();
     return;
 }

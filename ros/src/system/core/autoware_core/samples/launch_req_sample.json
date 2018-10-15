@@ -1,9 +1,4 @@
 {
     "package" : "diag_lib",
-    "launch_filename" : "watchdog_sample.launch",
-    "res" : 
-    {
-        "success" : true,
-        "description" : "hogehoge"
-    }
+    "launch_filename" : "watchdog_sample.launch"
 }
