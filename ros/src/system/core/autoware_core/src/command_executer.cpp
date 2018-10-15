@@ -25,7 +25,7 @@ void command_executer::execute_roslaunch_command(const httplib::Request& req, ht
     }
     catch(...)
     {
-        ROS_ERROR_STREAM("Failed to parse roslaunch command.");
+        //ROS_ERROR_STREAM("Failed to parse roslaunch command.");
         pt.put("response.success", false);
         pt.put("response.description", "Failed to parse roslaunch command.");
         return;
@@ -34,10 +34,11 @@ void command_executer::execute_roslaunch_command(const httplib::Request& req, ht
     {
         launcher_.launch(package.get(), launch_filename.get());
         pt.put("response.success", true);
+        pt.put("response.description", "");
     }
     else
     {
-        ROS_ERROR_STREAM("Failed to get package or launch_filename field.");
+        //ROS_ERROR_STREAM("Failed to get package or launch_filename field.");
         pt.put("response.success", false);
         pt.put("response.description", "Failed to get package or launch_filename field.");
     }

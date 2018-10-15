@@ -13,7 +13,7 @@ node_launcher::~node_launcher()
 void node_launcher::launch(std::string package,std::string launch_filename)
 {
     launch_info info(package,launch_filename);
-    std::thread exec_thread(&node_launcher::execute_, this, info);
+    boost::thread exec_thread(&node_launcher::execute_, this, info);
     return;
 }
 

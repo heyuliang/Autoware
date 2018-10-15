@@ -1,9 +1,6 @@
 #ifndef COMMAND_EXECUTER_H_INCLUDED
 #define COMMAND_EXECUTER_H_INCLUDED
 
-//headers in ROS
-#include <ros/ros.h>
-
 //headers in autoware_core
 #include <autoware_core/node_launcher.h>
 

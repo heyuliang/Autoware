@@ -6,7 +6,9 @@
 #include <vector>
 #include <mutex>
 #include <stdlib.h>
-#include <thread>
+
+//headers in boost
+#include <boost/thread.hpp>
 
 class launch_info
 {
