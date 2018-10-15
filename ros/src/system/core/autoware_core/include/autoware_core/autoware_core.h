@@ -26,7 +26,7 @@ private:
     httplib::Server server_;
     int port_;
     command_executer command_executer_;
-    std::function<void (const httplib::Request&, const httplib::Response&)> execute_func_;
+    std::function<void (const httplib::Request&, httplib::Response&)> execute_roslaunch_func_;
 };
 
 #endif  //AUTOWARE_CORE_H_INCLUDED

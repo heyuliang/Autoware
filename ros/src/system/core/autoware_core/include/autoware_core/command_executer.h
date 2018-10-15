@@ -21,11 +21,10 @@ class command_executer
 public:
     command_executer();
     ~command_executer();
-    void execute(const httplib::Request& req, const httplib::Response& res);
+    void execute_roslaunch_command(const httplib::Request& req, httplib::Response& res);
 private:
     //parameters for roslaunch command
     node_launcher launcher_;
-    void execute_roslaunch_command_(std::string command);
 };
 
 #endif  //COMMAND_EXECUTER_H_INCLUDED

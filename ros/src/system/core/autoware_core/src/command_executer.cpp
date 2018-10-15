@@ -10,32 +10,9 @@ command_executer::~command_executer()
     
 }
 
-void command_executer::execute(const httplib::Request& req, const httplib::Response& res)
+void command_executer::execute_roslaunch_command(const httplib::Request& req, httplib::Response& res)
 {
     std::string command  = req.body;
-    std::stringstream ss;
-    ss << command;
-    boost::property_tree::ptree pt;
-    boost::optional<std::string> command_type;
-    try
-    {
-        boost::property_tree::read_json(ss, pt);
-        command_type = pt.get_optional<std::string>("command");
-    }
-    catch(...)
-    {
-        ROS_ERROR_STREAM("Failed to parse command.");
-        return;
-    }
-    if(command_type == std::string("roslaunch"))
-    {
-        execute_roslaunch_command_(command);
-    }
-    return;
-}
-
-void command_executer::execute_roslaunch_command_(std::string command)
-{
     std::stringstream ss;
     ss << command;
     boost::property_tree::ptree pt;
@@ -49,6 +26,7 @@ void command_executer::execute_roslaunch_command_(std::string command)
     catch(...)
     {
         ROS_ERROR_STREAM("Failed to parse roslaunch command.");
+        //res.body = std::string("Failed to parse roslaunch command.");
         return;
     }
     if(package && launch_filename)

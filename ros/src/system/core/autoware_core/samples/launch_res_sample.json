@@ -1,5 +1,4 @@
 {
-    "command" : "roslaunch",
     "package" : "diag_lib",
     "launch_filename" : "watchdog_sample.launch"
 }
