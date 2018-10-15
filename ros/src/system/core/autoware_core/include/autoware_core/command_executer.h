@@ -1,6 +1,9 @@
 #ifndef COMMAND_EXECUTER_H_INCLUDED
 #define COMMAND_EXECUTER_H_INCLUDED
 
+//headers in ROS
+#include <ros/ros.h>
+
 //headers in autoware_core
 #include <autoware_core/node_launcher.h>
 
@@ -15,9 +18,11 @@ class command_executer
 public:
     command_executer();
     ~command_executer();
-    //parse();
+    void execute(std::string command);
 private:
+    //parameters for roslaunch command
     node_launcher launcher_;
+    void execute_roslaunch_command_(std::string command);
 };
 
 #endif  //COMMAND_EXECUTER_H_INCLUDED
