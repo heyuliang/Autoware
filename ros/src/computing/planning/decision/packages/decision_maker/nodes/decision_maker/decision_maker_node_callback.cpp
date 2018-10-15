@@ -43,25 +43,7 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::String& msg)
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
 {
-#if 0
-  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT) &&
-      ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
-  {
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-  }
-  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT) &&
-           ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
-  {
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-  }
-  else
-  {
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-  }
-#endif
+  current_status_.change_flag = msg.data;
 }
 
 void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg)

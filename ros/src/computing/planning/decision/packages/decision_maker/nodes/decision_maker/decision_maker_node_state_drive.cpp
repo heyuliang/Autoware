@@ -177,19 +177,33 @@ void DecisionMakerNode::updateCruiseState(cstring_t& state_name, int status)
     return;
   }
 
-  switch (getSteeringStateFromWaypoint())
+  if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::STRAIGHT))
   {
-    case autoware_msgs::WaypointState::STR_LEFT:
-      tryNextState("on_left_turn");
-      break;
-    case autoware_msgs::WaypointState::STR_RIGHT:
-      tryNextState("on_right_turn");
-      break;
-    case autoware_msgs::WaypointState::STR_STRAIGHT:
-      tryNextState("on_straight");
-      break;
-    default:
-      break;
+    switch (getSteeringStateFromWaypoint())
+    {
+      case autoware_msgs::WaypointState::STR_LEFT:
+        tryNextState("on_left_turn");
+        break;
+      case autoware_msgs::WaypointState::STR_RIGHT:
+        tryNextState("on_right_turn");
+        break;
+      case autoware_msgs::WaypointState::STR_STRAIGHT:
+        tryNextState("on_straight");
+        break;
+      default:
+        break;
+    }
+  }
+  else
+  {
+    if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
+    {
+      tryNextState("lane_change_left");
+    }
+    else if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
+    {
+      tryNextState("lane_change_right");
+    }
   }
 }
 
@@ -238,11 +252,14 @@ void DecisionMakerNode::updateRightTurnState(cstring_t& state_name, int status)
   publishLampCmd(E_Lamp::LAMP_RIGHT);
 }
 
+void DecisionMakerNode::entryLaneChangeState(cstring_t& state_name, int status)
+{
+  tryNextState("check_target_lane");
+}
 void DecisionMakerNode::updateLeftLaneChangeState(cstring_t& state_name, int status)
 {
   publishLampCmd(E_Lamp::LAMP_LEFT);
 }
-
 void DecisionMakerNode::updateRightLaneChangeState(cstring_t& state_name, int status)
 {
   publishLampCmd(E_Lamp::LAMP_RIGHT);
@@ -250,12 +267,14 @@ void DecisionMakerNode::updateRightLaneChangeState(cstring_t& state_name, int st
 
 void DecisionMakerNode::updateCheckLeftLaneState(cstring_t& state_name, int status)
 {
-
+  /* need safety check function */
+  // static bool is_target_lane_safe = false;
 }
 
 void DecisionMakerNode::updateCheckRightLaneState(cstring_t& state_name, int status)
 {
-
+  /* need safety check function */
+  // static bool is_target_lane_safe = false;
 }
 
 void DecisionMakerNode::updateChangeToLeftState(cstring_t& state_name, int status)

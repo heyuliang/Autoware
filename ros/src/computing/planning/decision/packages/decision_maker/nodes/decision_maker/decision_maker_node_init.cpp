@@ -121,8 +121,12 @@ void DecisionMakerNode::setupStateCallback(void)
                    std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Back",
                    std::bind(&DecisionMakerNode::updateBackState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "LeftLaneChange",
+                   std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "LeftLaneChange",
                    std::bind(&DecisionMakerNode::updateLeftLaneChangeState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "RightLaneChange",
+                   std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "RightLaneChange",
                    std::bind(&DecisionMakerNode::updateRightLaneChangeState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "PullOver",
@@ -233,6 +237,7 @@ void DecisionMakerNode::createSubscriber(void)
   Subs["current_velocity"] =
       nh_.subscribe("/current_velocity", 1, &DecisionMakerNode::callbackFromCurrentVelocity, this);
   Subs["obstacle_waypoint"] = nh_.subscribe("/obstacle_waypoint", 1, &DecisionMakerNode::callbackFromObstacleWaypoint, this);
+  Subs["change_flag"] = nh_.subscribe("/change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
 }
 void DecisionMakerNode::createPublisher(void)
 {

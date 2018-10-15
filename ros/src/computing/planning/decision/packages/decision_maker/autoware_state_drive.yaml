@@ -73,6 +73,12 @@ autoware_states:
       -
         Key: on_back
         Target: Back
+      -
+        Key: lane_change_left
+        Target: LeftLaneChange
+      -
+        Key: lane_change_right
+        Target: RightLaneChange
     Parent: LaneArea
   -
     StateName: LeftTurn

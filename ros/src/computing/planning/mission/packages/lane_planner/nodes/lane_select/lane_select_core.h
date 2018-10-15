@@ -114,7 +114,7 @@ private:
   void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromState(const std_msgs::StringConstPtr &msg);
-  void callbackFromStates(const autoware_msgs::stateConstPtr &msg);
+  void callbackFromDecisionMakerState(const std_msgs::StringConstPtr &msg);
   void callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg);
 
   // initializer

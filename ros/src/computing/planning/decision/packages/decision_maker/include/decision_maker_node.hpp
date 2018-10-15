@@ -100,6 +100,7 @@ struct AutowareStatus
   autoware_msgs::lane finalwaypoints;
   int closest_waypoint;
   int obstacle_waypoint;
+  int change_flag;
 
   // vehicle status
   geometry_msgs::Pose pose;
@@ -315,6 +316,7 @@ private:
   void entryCheckAvoidanceState(cstring_t& state_name, int status);
   void entryAvoidanceState(cstring_t& state_name, int status);
   void entryReturnToLaneState(cstring_t& state_name, int status);
+  void entryLaneChangeState(cstring_t& state_name, int status);
   // update callback
   void updateWaitEngageState(cstring_t& state_name, int status);
   void updateDriveState(cstring_t& state_name, int status);
