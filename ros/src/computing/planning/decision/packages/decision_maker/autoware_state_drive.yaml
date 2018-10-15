@@ -73,6 +73,12 @@ autoware_states:
       -
         Key: on_back
         Target: Back
+      -
+        Key: lane_change_left
+        Target: LeftLaneChange
+      -
+        Key: lane_change_right
+        Target: RightLaneChange
     Parent: LaneArea
   -
     StateName: LeftTurn
@@ -219,6 +225,49 @@ autoware_states:
       -
         Key: found_stopline
         Target: StopLine
+      -
+        Key: completely_stopped
+        Target: TryAvoidance
+    Parent: Straight
+  -
+    StateName: TryAvoidance
+    Transition:
+      -
+        Key: found_path
+        Target: CheckAvoidance
+      -
+        Key: cannot_found_path
+        Target: Go
+    Parent: Straight
+  -
+    StateName: CheckAvoidance
+    Transition:
+      -
+        Key: execute_avoidance
+        Target: Avoidance
+      -
+        Key: avoidance_aborted
+        Target: Go
+    Parent: Straight
+  -
+    StateName: Avoidance
+    Transition:
+      -
+        Key: completed_avoidance
+        Target: ReturnToLane
+      -
+        Key: avoidance_aborted
+        Target: Go
+    Parent: Straight
+  -
+    StateName: ReturnToLane
+    Transition:
+      -
+        Key: completed_return
+        Target: Go
+      -
+        Key: avoidance_aborted
+        Target: Go
     Parent: Straight
   -
     StateName: Back
@@ -274,7 +323,7 @@ autoware_states:
     StateName: CheckLeftLane
     Transition:
       -
-        Key: clear
+        Key: execute_lane_change
         Target: ChangeToLeft
     Parent: LeftLaneChange
   -
@@ -292,7 +341,7 @@ autoware_states:
     StateName: CheckRightLane
     Transition:
       -
-        Key: clear
+        Key: execute_lane_change
         Target: ChangeToRight
     Parent: RightLaneChange
   -

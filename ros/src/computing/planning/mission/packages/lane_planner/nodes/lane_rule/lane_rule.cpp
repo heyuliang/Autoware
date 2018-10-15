@@ -391,6 +391,7 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 	autoware_msgs::LaneArray traffic_waypoint;
 	autoware_msgs::LaneArray red_waypoint;
 	autoware_msgs::LaneArray green_waypoint;
+	traffic_waypoint.id = red_waypoint.id = green_waypoint.id = msg.id;
 	for (size_t i = 0; i < msg.lanes.size(); ++i) {
 		autoware_msgs::lane lane = create_new_lane(msg.lanes[i], header);
 

@@ -99,6 +99,8 @@ struct AutowareStatus
   autoware_msgs::LaneArray based_lane_array;
   autoware_msgs::lane finalwaypoints;
   int closest_waypoint;
+  int obstacle_waypoint;
+  int change_flag;
 
   // vehicle status
   geometry_msgs::Pose pose;
@@ -107,7 +109,7 @@ struct AutowareStatus
   int found_stopsign_idx;
   int prev_stopped_wpidx;
 
-  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1)
+  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1), obstacle_waypoint(-1)
   {
   }
 
@@ -174,7 +176,7 @@ private:
   // Param
   bool enableDisplayMarker;
   bool auto_mission_reload_;
-  bool disable_management_system_;
+  bool use_management_system_;
   uint32_t param_num_of_steer_behind_;
   double dist_threshold_;
   double angle_threshold_;
@@ -310,6 +312,11 @@ private:
   // entry callback
   void entryDriveState(cstring_t& state_name, int status);
   void entryTurnState(cstring_t& state_name, int status);
+  void entryTryAvoidanceState(cstring_t& state_name, int status);
+  void entryCheckAvoidanceState(cstring_t& state_name, int status);
+  void entryAvoidanceState(cstring_t& state_name, int status);
+  void entryReturnToLaneState(cstring_t& state_name, int status);
+  void entryLaneChangeState(cstring_t& state_name, int status);
   // update callback
   void updateWaitEngageState(cstring_t& state_name, int status);
   void updateDriveState(cstring_t& state_name, int status);
@@ -335,6 +342,10 @@ private:
   void updateCheckRightLaneState(cstring_t& state_name, int status);
   void updateChangeToLeftState(cstring_t& state_name, int status);
   void updateChangeToRightState(cstring_t& state_name, int status);
+  void updateTryAvoidanceState(cstring_t& state_name, int status);
+  void updateCheckAvoidanceState(cstring_t& state_name, int status);
+  void updateAvoidanceState(cstring_t& state_name, int status);
+  void updateReturnToLaneState(cstring_t& state_name, int status);
   // exit callback
   void exitStopState(cstring_t& state_name, int status);
 
@@ -352,6 +363,7 @@ private:
   void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
+  void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);
 
   void setEventFlag(cstring_t& key, const bool& value)
   {
@@ -374,7 +386,7 @@ public:
   VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char** argv)
-    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), disable_management_system_(false), param_num_of_steer_behind_(30)
+    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), use_management_system_(false), param_num_of_steer_behind_(30)
   {
     std::string file_name;
     std::string file_name_mission;

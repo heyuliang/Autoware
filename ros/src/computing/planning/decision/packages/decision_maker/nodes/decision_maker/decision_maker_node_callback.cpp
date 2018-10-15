@@ -43,25 +43,7 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::String& msg)
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
 {
-#if 0
-  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT) &&
-      ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
-  {
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-  }
-  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT) &&
-           ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
-  {
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-  }
-  else
-  {
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-  }
-#endif
+  current_status_.change_flag = msg.data;
 }
 
 void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg)
@@ -69,7 +51,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
   auto_mission_reload_ = msg.auto_mission_reload;
-  disable_management_system_ = msg.disable_management_system;
+  use_management_system_ = msg.use_management_system;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
   dist_threshold_ = msg.dist_threshold;
   angle_threshold_ = msg.angle_threshold;
@@ -521,5 +503,10 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg)
 {
   current_status_.velocity = amathutils::mps2kmph(msg.twist.linear.x);
+}
+
+void DecisionMakerNode::callbackFromObstacleWaypoint(const std_msgs::Int32& msg)
+{
+  current_status_.obstacle_waypoint = msg.data;
 }
 }

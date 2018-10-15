@@ -97,7 +97,7 @@ void DecisionMakerNode::entryMissionAbortedState(cstring_t& state_name, int stat
 }
 void DecisionMakerNode::updateMissionAbortedState(cstring_t& state_name, int status)
 {
-  if(disable_management_system_)
+  if(!use_management_system_)
   {
     sleep(1);
     tryNextState("goto_wait_order");
@@ -159,7 +159,7 @@ void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, i
 
 void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name, int status)
 {
-  if(disable_management_system_)
+  if(!use_management_system_)
   {
     sleep(1);
     tryNextState("return_to_driving");
@@ -167,7 +167,7 @@ void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name,
 }
 void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, int status)
 {
-  if(disable_management_system_)
+  if(!use_management_system_)
   {
     sleep(1);
     tryNextState("return_to_driving");
@@ -180,7 +180,7 @@ void DecisionMakerNode::entryMissionCompleteState(cstring_t& state_name, int sta
 }
 void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
 {
-  if(disable_management_system_)
+  if(!use_management_system_)
   {
     if(auto_mission_reload_){
       publishOperatorHelpMessage("Reload mission.");

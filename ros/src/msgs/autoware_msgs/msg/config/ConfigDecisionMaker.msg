@@ -1,7 +1,7 @@
 Header header
 bool enable_display_marker
 bool auto_mission_reload
-bool disable_management_system
+bool use_management_system
 uint32 num_of_steer_behind
 float64 dist_threshold
 float64 angle_threshold
