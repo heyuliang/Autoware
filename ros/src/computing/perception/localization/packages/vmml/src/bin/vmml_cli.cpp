@@ -233,6 +233,9 @@ public:
 			else if (command[0]=="save")
 				dataset_save_dsecond(command[1]);
 
+			else if (command[0]=="savei")
+				dataset_save_id(command[1]);
+
 			else if (command[0]=="zoom")
 				dataset_set_zoom(command[1]);
 
@@ -611,6 +614,16 @@ private:
 		cv::Mat img = di->getImage();
 		cv::imwrite(dumpImagePath, img);
 		debug("Dumped to " + dumpImagePath);
+	}
+
+	void dataset_save_id(const string &sid)
+	{
+		dataItemId requestId = static_cast<dataItemId>(std::stoi(sid));
+
+		auto md = loadedDataset->get(requestId);
+		cv::Mat img = md->getImage();
+		cv::imwrite(dumpImagePath, img);
+		debug("Image #" + sid + " dumped to " + dumpImagePath);
 	}
 
 	void debug(const string &s, double is_error=false)
