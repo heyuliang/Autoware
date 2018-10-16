@@ -45,7 +45,7 @@
 #include <decision_maker_param.hpp>
 #include <state_machine_lib/state_context.hpp>
 
-//headers in diag_lib
+// headers in diag_lib
 #include <diag_lib/diag_manager.h>
 
 namespace decision_maker
@@ -386,7 +386,11 @@ public:
   VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char** argv)
-    : private_nh_("~"), enableDisplayMarker(false), auto_mission_reload_(false), use_management_system_(false), param_num_of_steer_behind_(30)
+    : private_nh_("~")
+    , enableDisplayMarker(false)
+    , auto_mission_reload_(false)
+    , use_management_system_(false)
+    , param_num_of_steer_behind_(30)
   {
     std::string file_name;
     std::string file_name_mission;

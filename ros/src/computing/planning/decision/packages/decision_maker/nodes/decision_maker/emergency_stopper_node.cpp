@@ -1,10 +1,10 @@
-//headers in decision_maker
+// headers in decision_maker
 #include <emergency_stopper.h>
 
-//headers in ROS
+// headers in ROS
 #include <ros/ros.h>
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "emergency_stopper");
   emergency_stopper stopper;

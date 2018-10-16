@@ -4,14 +4,12 @@ namespace decision_maker
 {
 void DecisionMakerNode::updateWaitEngageState(cstring_t& state_name, int status)
 {
-
 }
 
 void DecisionMakerNode::entryDriveState(cstring_t& state_name, int status)
 {
-  // setEventFlag("received_based_lane_waypoint", false);
-  // publishOperatorHelpMessage("Engaged");
 }
+
 void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
 {
   if (isArrivedGoal())
@@ -121,7 +119,8 @@ std::pair<uint8_t, int> DecisionMakerNode::getStopSignStateFromWaypoint(void)
 
   // reset previous stop
   if (current_status_.finalwaypoints.waypoints.at(1).gid > current_status_.prev_stopped_wpidx ||
-      (unsigned int)(current_status_.prev_stopped_wpidx - current_status_.finalwaypoints.waypoints.at(1).gid) > reset_count)
+      (unsigned int)(current_status_.prev_stopped_wpidx - current_status_.finalwaypoints.waypoints.at(1).gid) >
+          reset_count)
   {
     current_status_.prev_stopped_wpidx = -1;
   }
@@ -279,12 +278,10 @@ void DecisionMakerNode::updateCheckRightLaneState(cstring_t& state_name, int sta
 
 void DecisionMakerNode::updateChangeToLeftState(cstring_t& state_name, int status)
 {
-
 }
 
 void DecisionMakerNode::updateChangeToRightState(cstring_t& state_name, int status)
 {
-
 }
 
 void DecisionMakerNode::updateBackState(cstring_t& state_name, int status)
@@ -307,7 +304,7 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
   }
 
   static double stopped_time;
-  const double avoiding_timer = 3.0;//threshold time[s]
+  const double avoiding_timer = 3.0;  // threshold time[s]
   if (current_status_.velocity == 0.0 && current_status_.obstacle_waypoint != -1)
   {
     if (ros::Time::now().toSec() - stopped_time > avoiding_timer)
@@ -404,7 +401,5 @@ void DecisionMakerNode::updateReturnToLaneState(cstring_t& state_name, int statu
 
 void DecisionMakerNode::updateDriveEmergencyState(cstring_t& state_name, int status)
 {
-
 }
-
 }
