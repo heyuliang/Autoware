@@ -36,8 +36,8 @@ MapBuilder2::~MapBuilder2()
 void
 MapBuilder2::initialize (const InputFrame &f1, const InputFrame &f2)
 {
-	kfid k1 = cMap->createKeyFrame(f1.image, f1.position, f1.orientation, f1.cameraId, NULL, f1.setKfId, f1.tm);
-	kfid k2 = cMap->createKeyFrame(f2.image, f2.position, f2.orientation, f2.cameraId, NULL, f2.setKfId, f2.tm);
+	kfid k1 = cMap->createKeyFrame(f1.image, f1.position, f1.orientation, f1.cameraId, NULL, f1.sourceId, f1.tm);
+	kfid k2 = cMap->createKeyFrame(f2.image, f2.position, f2.orientation, f2.cameraId, NULL, f2.sourceId, f2.tm);
 	cMap->estimateStructure(k1, k2);
 	kfAnchor = k1;
 	ifrAnchor = f1;
@@ -50,7 +50,7 @@ MapBuilder2::track (const InputFrame &f)
 	if (initialized==false)
 		throw runtime_error("Map not initialized");
 
-	kfid fId = cMap->createKeyFrame(f.image, f.position, f.orientation, f.cameraId, NULL, f.setKfId, f.tm);
+	kfid fId = cMap->createKeyFrame(f.image, f.position, f.orientation, f.cameraId, NULL, f.sourceId, f.tm);
 	cMap->estimateAndTrack(kfAnchor, fId);
 
 	// XXX: Decide when to move the anchor
@@ -80,6 +80,7 @@ MapBuilder2::input(const InputFrame &f)
 				initialize(frame0, f);
 				inputCallback(f);
 				initialized = true;
+				cerr << "Initialized; # of map points: " << cMap->allMapPoints().size() << endl;
 				return;
 			}
 		}

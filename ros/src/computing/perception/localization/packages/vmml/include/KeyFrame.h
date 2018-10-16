@@ -23,6 +23,7 @@
 #include "MapPoint.h"
 #include "triangulation.h"
 #include "utilities.h"
+#include "datasets/GenericDataset.h"
 
 
 namespace boost {
@@ -65,7 +66,8 @@ public:
 			cv::Ptr<cv::FeatureDetector> fdetector,
 			const CameraPinholeParams *cameraIntr,
 			const int _cameraId,
-			kfid forceId=std::numeric_limits<kfid>::max());
+			dataItemId _srcItemId=std::numeric_limits<dataItemId>::max());
+
 	virtual ~KeyFrame();
 
 	inline int numOfKeyPoints() const
@@ -148,6 +150,9 @@ public:
 	std::vector<Eigen::Vector2d>
 	projectAllMapPoints () const;
 
+	dataItemId getSourceItemId() const
+	{ return srcItemId; }
+
 protected:
 
 	template <class Archive>
@@ -159,6 +164,9 @@ protected:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
+
+	// To be used for referring to original dataset
+	dataItemId srcItemId;
 
 	Eigen::Vector3d position;
 	Eigen::Quaterniond orientation;

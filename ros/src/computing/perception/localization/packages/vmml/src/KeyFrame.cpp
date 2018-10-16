@@ -53,21 +53,20 @@ KeyFrame::KeyFrame(
 	cv::Ptr<cv::FeatureDetector> fdetector,
 	const CameraPinholeParams *cameraIntr,
 	const int _cameraId,
-	kfid forceId) :
+	dataItemId _srcItemId) :
 
 	orientation(o),
 	position(p),
 	cameraId(_cameraId),
-	frCreationTime(boost::posix_time::second_clock::local_time())
+	frCreationTime(boost::posix_time::second_clock::local_time()),
+	srcItemId(_srcItemId),
+	parentMap(NULL)
 
 {
 	if(cameraIntr->width < 0 or cameraIntr->height < 0)
 		throw runtime_error("Camera parameter has not been initialized properly (<0)");
 
-	if (forceId==numeric_limits<kfid>::max()) {
-		id = nextId++;
-	}
-	else id = forceId;
+	id = nextId++;
 
 	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
 

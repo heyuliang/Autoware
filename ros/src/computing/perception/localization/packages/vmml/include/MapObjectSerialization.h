@@ -139,7 +139,8 @@ void serialize (
 	ar &
 		kf.id &
 		kf.keypoints &
-		kf.descriptors;
+		kf.descriptors &
+		kf.srcItemId;
 	ar &
 		kf.position &
 		kf.orientation &
@@ -164,14 +165,6 @@ void serialize (
 }
 
 
-//template <class Archive>
-//void load (
-//		Archive &ar,
-//		KeyFrame &kf,
-//		const unsigned int version)
-//{
-//
-//}
 
 }	/* serialization */
 }	/* boost */

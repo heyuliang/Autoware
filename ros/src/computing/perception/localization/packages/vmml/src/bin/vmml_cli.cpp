@@ -146,7 +146,7 @@ InputFrame createInputFrame(OxfordDataItem::ConstPtr &DI)
 		DI->getOrientation(),
 		// Force Keyframe ID using timestamp. This way, we can refer to original
 		// image for display purpose (which is the case for Oxford Dataset)
-		static_cast<kfid>(DI->timestamp));
+		static_cast<dataItemId>(DI->timestamp));
 	f.tm = DI->getTimestamp();
 
 	return f;
@@ -163,7 +163,7 @@ InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
 		DI->getPosition(),
 		DI->getOrientation(),
 		// Force Keyframe ID using data Item ID
-		static_cast<kfid> ( DI->getId() )
+		DI->getId()
 	);
 	f.tm = DI->getTimestamp();
 

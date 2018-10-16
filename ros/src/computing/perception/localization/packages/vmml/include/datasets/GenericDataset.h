@@ -16,8 +16,8 @@
 #include <Eigen/Eigen>
 #include <opencv2/core.hpp>
 
-#include "VMap.h"
 #include "utilities.h"
+#include "CameraPinholeParams.h"
 
 
 typedef uint64_t dataItemId;

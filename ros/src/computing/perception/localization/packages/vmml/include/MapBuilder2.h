@@ -34,16 +34,21 @@ public:
 	Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
 	bool positionIsValid = true;
 	uint cameraId = 0;
-	kfid setKfId=std::numeric_limits<kfid>::max();
+	dataItemId sourceId=std::numeric_limits<dataItemId>::max();
 	ptime tm=boost::posix_time::not_a_date_time;
 
 	InputFrame() {}
 
-	InputFrame (const cv::Mat &i, const Eigen::Vector3d &p, const Eigen::Quaterniond &o, kfid _forceKfId=std::numeric_limits<kfid>::max()) :
+	InputFrame (
+			const cv::Mat &i,
+			const Eigen::Vector3d &p,
+			const Eigen::Quaterniond &o,
+			dataItemId _forceSrcId=std::numeric_limits<dataItemId>::max()) :
+
 		image(i),
 		position(p),
 		orientation(o),
-		setKfId(_forceKfId)
+		sourceId(_forceSrcId)
 	{}
 
 	Pose getPose() const

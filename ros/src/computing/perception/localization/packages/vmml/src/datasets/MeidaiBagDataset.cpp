@@ -11,6 +11,7 @@
 
 #include <exception>
 #include <algorithm>
+#include <fstream>
 #include <string>
 #include <ros/ros.h>
 #include "datasets/MeidaiBagDataset.h"

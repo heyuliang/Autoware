@@ -81,10 +81,10 @@ kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 		const int cameraId,
 		KeyFrame **ptr,
-		kfid setId,
+		dataItemId sourceItemId,
 		ptime tm)
 {
-	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &cameraList[cameraId], cameraId, setId);
+	KeyFrame *nKf = new KeyFrame(imgSrc, p, o, mask, featureDetector, &cameraList[cameraId], cameraId, sourceItemId);
 	nKf->parentMap = this;
 	kfid nId = nKf->getId();
 
@@ -129,9 +129,6 @@ void VMap::estimateStructure(const kfid &kfid1, const kfid &kfid2)
 
 	vector<FeaturePair> featurePairs_1_2;
 	KeyFrame::match(*kf1, *kf2, descriptorMatcher, featurePairs_1_2);
-
-//	map<mpid, kpid> &kf1kp = framePoints[kfid1];
-//	map<mpid, kpid> &kf2kp = framePoints[kfid2];
 
 	vector<mpid> newMapPointList;
 	KeyFrame::triangulate(kf1, kf2, newMapPointList, featurePairs_1_2,
