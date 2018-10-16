@@ -718,7 +718,7 @@ private:
 		mapBld.getMap()->save(mapFilePath);
 
 		debug ("Mapping done");
-		debug ("Duration " + to_string(duration) + " seconds");
+		debug ("Time elapsed: " + to_string(duration) + " seconds");
 		debug ("Path: " + mapFilePath);
 
 	}

@@ -131,14 +131,14 @@ MapBuilder2::build ()
 	thread ba([this] {
 				cout << "Bundling...";
 				bundle_adjustment(cMap);
-				cout << "Done\n";
+				cout << "BA Done\n";
 	});
 
 	thread db([this] {
 				cout << "Rebuilding Image DB... ";
 				cout.flush();
 				cMap->getImageDB()->rebuildAll();
-				cout << "Done\n";
+				cout << "Image DB Build Done\n";
 	});
 
 	ba.join();
