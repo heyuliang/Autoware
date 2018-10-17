@@ -15,8 +15,7 @@
 #include <utility>
 #include <limits>
 #include <algorithm>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+#include <Eigen/Eigen>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/serialization/serialization.hpp>
@@ -128,19 +127,6 @@ inline
 int medianx (const Eigen::VectorXi &v)
 {
 	return median(v);
-}
-
-
-template <typename Derived>
-typename Derived::Scalar medianz (const Eigen::VectorBlock<Derived> &v)
-{
-	int n = v.rows() * v.cols();
-	vector<typename Derived::Scalar> vs(v.data(), v.data()+n);
-	sort(vs.begin(), vs.end());
-	if (n%2==1)
-		return (vs[(n-1)/2]);
-	else
-		return ( (vs[n/2]) + (vs[(n/2)-1]) ) / 2;
 }
 
 

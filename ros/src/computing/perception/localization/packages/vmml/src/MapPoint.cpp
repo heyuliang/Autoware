@@ -52,6 +52,31 @@ int ORBDescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 }
 
 
+//template <typename Derived>
+//typename Derived::Scalar medianz (const Eigen::MatrixBase<Derived> &v)
+//{
+//	int n = v.rows() * v.cols();
+//
+//	vector<typename Derived::Scalar> vs(n);
+//
+//	int i=0;
+//	for (typename Eigen::MatrixBase<Derived>::InnerIterator it(v, n); it; ++it) {
+//		vs.at(i) = it.value();
+//		++i;
+//	}
+//
+//	sort(vs.begin(), vs.end());
+//	if (n%2==1)
+//		return (vs[(n-1)/2]);
+//	else
+//		return ( (vs[n/2]) + (vs[(n/2)-1]) ) / 2;
+//}
+
+
+
+/*
+ * XXX: This function should be regarded incorrect
+ */
 void
 MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 {
@@ -77,8 +102,8 @@ MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 	double BestMedian = numeric_limits<double>::max();
 	int medIdx;
 	for (int j=0; j<N; j++) {
-//		double cMedian = medianx(MDistances.col(j));
-		double cMedian = medianz(MDistances.col(j));
+		double cMedian = medianx(MDistances.col(j));
+//		double cMedian = medianz(MDistances.col(j));
 		if (cMedian < BestMedian) {
 			BestMedian = cMedian;
 			medIdx = j;
