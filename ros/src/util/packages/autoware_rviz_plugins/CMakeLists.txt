@@ -54,7 +54,9 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
-  )
+  src/autoware_launcher/panel.cpp
+  src/autoware_launcher/launch_button.cpp
+)
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
