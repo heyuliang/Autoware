@@ -59,11 +59,11 @@ public:
 
   void initROS();
 
-  void callbackFromClosest(const ros::MessageEvent<std_msgs::Int32> &event);
-  void callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event);
-  void callbackFromLattice(const std_msgs::Int32 &msg);
-  void callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg);
-  void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
+  void callbackFromClosest(const ros::MessageEvent<std_msgs::Int32>& event);
+  void callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const>& event);
+  void callbackFromLattice(const std_msgs::Int32& msg);
+  void callbackFromConfig(const autoware_msgs::ConfigPlannerSelector& msg);
+  void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg);
 };
 }
 #endif

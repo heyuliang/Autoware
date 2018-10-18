@@ -2,7 +2,7 @@
 
 namespace decision_maker
 {
-void DecisionMakerNode::entryInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryInitState(cstring_t& state_name, int status)
 {
   ROS_INFO("Hello Autoware World");
 
@@ -11,7 +11,7 @@ void DecisionMakerNode::entryInitState(cstring_t &state_name, int status)
   tryNextState("init_start");
 }
 
-void DecisionMakerNode::updateInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::updateInitState(cstring_t& state_name, int status)
 {
   static bool is_first_callback = true;
 
@@ -23,20 +23,20 @@ void DecisionMakerNode::updateInitState(cstring_t &state_name, int status)
   is_first_callback = false;
 }
 
-void DecisionMakerNode::entrySensorInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::entrySensorInitState(cstring_t& state_name, int status)
 {
   Subs["filtered_points"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromFilteredPoints, this);
   publishOperatorHelpMessage("Please publish \"filtered_points\"");
 }
 
-void DecisionMakerNode::updateSensorInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::updateSensorInitState(cstring_t& state_name, int status)
 {
   const double timeout = 1;
 
   std::vector<std::string> node_list;
 
   ros::master::getNodes(node_list);
-  for (const auto &i : node_list)
+  for (const auto& i : node_list)
   {
     if ("/wf_simulator" == i)
     {
@@ -56,12 +56,12 @@ void DecisionMakerNode::updateSensorInitState(cstring_t &state_name, int status)
   ROS_INFO("DecisionMaker is waiting filtered_point for NDT");
 }
 
-void DecisionMakerNode::entryMapInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryMapInitState(cstring_t& state_name, int status)
 {
   publishOperatorHelpMessage("Please load map");
 }
 
-void DecisionMakerNode::updateMapInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::updateMapInitState(cstring_t& state_name, int status)
 {
   bool vmap_loaded = false;
 
@@ -69,10 +69,8 @@ void DecisionMakerNode::updateMapInitState(cstring_t &state_name, int status)
                             Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD,
                    ros::Duration(5.0));
 
-  // vmap_loaded =
-  //     g_vmap.hasSubscribed(Category::POINT | Category::LINE | Category::VECTOR | Category::AREA | Category::POLE |
-  //                          Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
-  vmap_loaded = g_vmap.hasSubscribed(Category::POINT | Category::LINE | Category::AREA | Category::DTLANE | Category::STOP_LINE);
+  vmap_loaded =
+      g_vmap.hasSubscribed(Category::POINT | Category::LINE | Category::AREA | Category::DTLANE | Category::STOP_LINE);
 
   if (!vmap_loaded)
   {
@@ -86,13 +84,13 @@ void DecisionMakerNode::updateMapInitState(cstring_t &state_name, int status)
   }
 }
 
-void DecisionMakerNode::entryLocalizationInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryLocalizationInitState(cstring_t& state_name, int status)
 {
   Subs["current_pose"] = nh_.subscribe("current_pose", 5, &DecisionMakerNode::callbackFromCurrentPose, this);
   publishOperatorHelpMessage("Please start localization in stopped.");
 }
 
-void DecisionMakerNode::updateLocalizationInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::updateLocalizationInitState(cstring_t& state_name, int status)
 {
   if (isLocalizationConvergence(current_status_.pose.position))
   {
@@ -100,23 +98,23 @@ void DecisionMakerNode::updateLocalizationInitState(cstring_t &state_name, int s
   }
 }
 
-void DecisionMakerNode::entryPlanningInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryPlanningInitState(cstring_t& state_name, int status)
 {
   Subs["closest_waypoint"] =
       nh_.subscribe("closest_waypoint", 1, &DecisionMakerNode::callbackFromClosestWaypoint, this);
 }
 
-void DecisionMakerNode::updatePlanningInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::updatePlanningInitState(cstring_t& state_name, int status)
 {
   tryNextState("planning_is_ready");
 }
 
-void DecisionMakerNode::entryVehicleInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryVehicleInitState(cstring_t& state_name, int status)
 {
   publishOperatorHelpMessage("Please prepare vehicle for depature.");
 }
 
-void DecisionMakerNode::updateVehicleInitState(cstring_t &state_name, int status)
+void DecisionMakerNode::updateVehicleInitState(cstring_t& state_name, int status)
 {
   if (true /*isEventFlagTrue("received_vehicle_status")*/)
   {
@@ -124,21 +122,19 @@ void DecisionMakerNode::updateVehicleInitState(cstring_t &state_name, int status
   }
 }
 
-void DecisionMakerNode::entryVehicleReadyState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryVehicleReadyState(cstring_t& state_name, int status)
 {
 }
 
-void DecisionMakerNode::updateVehicleReadyState(cstring_t &state_name, int status)
-{
-  // tryNextState("going_to_wait_mission_order");
-}
-
-void DecisionMakerNode::entryVehicleEmergencyState(cstring_t &state_name, int status)
+void DecisionMakerNode::updateVehicleReadyState(cstring_t& state_name, int status)
 {
 }
 
-void DecisionMakerNode::updateVehicleEmergencyState(cstring_t &state_name, int status)
+void DecisionMakerNode::entryVehicleEmergencyState(cstring_t& state_name, int status)
 {
-  // tryNextState("going_to_wait_mission_order");
+}
+
+void DecisionMakerNode::updateVehicleEmergencyState(cstring_t& state_name, int status)
+{
 }
 }

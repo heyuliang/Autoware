@@ -4,11 +4,9 @@ namespace decision_maker
 {
 void DecisionMakerNode::entryWaitVehicleReadyState(cstring_t& state_name, int status)
 {
-
 }
 void DecisionMakerNode::updateWaitVehicleReadyState(cstring_t& state_name, int status)
 {
-
 }
 
 void DecisionMakerNode::entryWaitOrderState(cstring_t& state_name, int status)
@@ -53,7 +51,8 @@ void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status
       wp.wpstate.event_state = 0;
       wp.gid = gid++;
       wp.lid = lid++;
-      if(!isEventFlagTrue("received_back_state_waypoint") && wp.twist.twist.linear.x < 0.0){
+      if (!isEventFlagTrue("received_back_state_waypoint") && wp.twist.twist.linear.x < 0.0)
+      {
         setEventFlag("received_back_state_waypoint", true);
         publishOperatorHelpMessage("Received back waypoint.");
       }
@@ -97,7 +96,7 @@ void DecisionMakerNode::entryMissionAbortedState(cstring_t& state_name, int stat
 }
 void DecisionMakerNode::updateMissionAbortedState(cstring_t& state_name, int status)
 {
-  if(!use_management_system_)
+  if (!use_management_system_)
   {
     sleep(1);
     tryNextState("goto_wait_order");
@@ -125,7 +124,6 @@ void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
 }
 void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 {
-
 }
 void DecisionMakerNode::exitDrivingState(cstring_t& state_name, int status)
 {
@@ -141,7 +139,6 @@ void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, i
   if (isEventFlagTrue("received_based_lane_waypoint"))
   {
     setEventFlag("received_based_lane_waypoint", false);
-    // publishOperatorHelpMessage("Received new waypoint.");
     if (!drivingMissionCheck())
     {
       publishOperatorHelpMessage("Failed to change the mission.");
@@ -159,7 +156,7 @@ void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, i
 
 void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name, int status)
 {
-  if(!use_management_system_)
+  if (!use_management_system_)
   {
     sleep(1);
     tryNextState("return_to_driving");
@@ -167,7 +164,7 @@ void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name,
 }
 void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, int status)
 {
-  if(!use_management_system_)
+  if (!use_management_system_)
   {
     sleep(1);
     tryNextState("return_to_driving");
@@ -180,9 +177,10 @@ void DecisionMakerNode::entryMissionCompleteState(cstring_t& state_name, int sta
 }
 void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
 {
-  if(!use_management_system_)
+  if (!use_management_system_)
   {
-    if(auto_mission_reload_){
+    if (auto_mission_reload_)
+    {
       publishOperatorHelpMessage("Reload mission.");
       tryNextState("re_enter_mission");
       return;

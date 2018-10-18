@@ -3,7 +3,7 @@
 
 namespace decision_maker
 {
-void DecisionMakerNode::publishLampCmd(const E_Lamp &status)
+void DecisionMakerNode::publishLampCmd(const E_Lamp& status)
 {
   autoware_msgs::lamp_cmd lamp_msg;
 
@@ -30,7 +30,7 @@ void DecisionMakerNode::publishLampCmd(const E_Lamp &status)
   Pubs["lamp_cmd"].publish(lamp_msg);
 }
 
-jsk_rviz_plugins::OverlayText createOverlayText(cstring_t &data, const int column)
+jsk_rviz_plugins::OverlayText createOverlayText(cstring_t& data, const int column)
 {
   jsk_rviz_plugins::OverlayText ret;
 
@@ -57,7 +57,7 @@ jsk_rviz_plugins::OverlayText createOverlayText(cstring_t &data, const int colum
   return ret;
 }
 
-void DecisionMakerNode::publishOperatorHelpMessage(cstring_t &message)
+void DecisionMakerNode::publishOperatorHelpMessage(cstring_t& message)
 {
   static std::vector<std::string> msg_log;
   static const size_t log_size = 10;
@@ -70,7 +70,7 @@ void DecisionMakerNode::publishOperatorHelpMessage(cstring_t &message)
   }
 
   std::string joined_msg;
-  for (const auto &i : msg_log)
+  for (const auto& i : msg_log)
   {
     joined_msg += "> " + i + "\n";
   }
@@ -83,7 +83,7 @@ void DecisionMakerNode::update_pubsub(void)
   // this function will re-definition subscriber.
 }
 
-int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale)
+int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale)
 {
   crossroad_marker.header.frame_id = "/map";
   crossroad_marker.header.stamp = ros::Time();
@@ -252,7 +252,8 @@ void DecisionMakerNode::update_msgs(void)
     Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
 
     static std_msgs::String transition_msg;
-    transition_msg.data = ctx_vehicle->getAvailableTransition() + ctx_mission->getAvailableTransition() + ctx_drive->getAvailableTransition();
+    transition_msg.data = ctx_vehicle->getAvailableTransition() + ctx_mission->getAvailableTransition() +
+                          ctx_drive->getAvailableTransition();
 
     Pubs["available_transition"].publish(transition_msg);
   }
@@ -287,7 +288,7 @@ void DecisionMakerNode::publishToVelocityArray()
   int count = 0;
   std_msgs::Float64MultiArray msg;
 
-  for (const auto &i : current_status_.finalwaypoints.waypoints)
+  for (const auto& i : current_status_.finalwaypoints.waypoints)
   {
     msg.data.push_back(amathutils::mps2kmph(i.twist.twist.linear.x));
     if (++count >= 10)

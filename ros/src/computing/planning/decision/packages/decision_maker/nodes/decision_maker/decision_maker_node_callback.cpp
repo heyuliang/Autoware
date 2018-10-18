@@ -305,7 +305,8 @@ bool DecisionMakerNode::drivingMissionCheck()
       wp.wpstate.event_state = 0;
       wp.gid = gid++;
       wp.lid = lid++;
-      if(!isEventFlagTrue("received_back_state_waypoint") && wp.twist.twist.linear.x < 0.0){
+      if (!isEventFlagTrue("received_back_state_waypoint") && wp.twist.twist.linear.x < 0.0)
+      {
         setEventFlag("received_back_state_waypoint", true);
         publishOperatorHelpMessage("Received back waypoint.");
       }
@@ -329,7 +330,7 @@ bool DecisionMakerNode::drivingMissionCheck()
       wp.gid = gid++;
       wp.lid = lid++;
       double dst = amathutils::find_distance(current_status_.pose.position, wp.pose.pose.position);
-      if(min_dist > dst)
+      if (min_dist > dst)
       {
         min_dist = dst;
         nearest_wp_pose = wp.pose.pose;
@@ -337,9 +338,8 @@ bool DecisionMakerNode::drivingMissionCheck()
     }
   }
 
-  double angle_diff_degree = fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180/M_PI;
-  //const double dist_threshold = 1.0;// [m]
-  //const double angle_threshold = 15;// [deg]
+  double angle_diff_degree =
+      fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180 / M_PI;
   if (min_dist > dist_threshold_ || angle_diff_degree > angle_threshold_)
   {
     return false;
@@ -356,7 +356,6 @@ bool DecisionMakerNode::drivingMissionCheck()
 
     return true;
   }
-
 }
 
 // for based waypoint
