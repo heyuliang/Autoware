@@ -52,26 +52,32 @@ int ORBDescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 }
 
 
-//template <typename Derived>
-//typename Derived::Scalar medianz (const Eigen::MatrixBase<Derived> &v)
-//{
-//	int n = v.rows() * v.cols();
-//
-//	vector<typename Derived::Scalar> vs(n);
-//
-//	int i=0;
-//	for (typename Eigen::MatrixBase<Derived>::InnerIterator it(v, n); it; ++it) {
-//		vs.at(i) = it.value();
-//		++i;
-//	}
-//
-//	sort(vs.begin(), vs.end());
-//	if (n%2==1)
-//		return (vs[(n-1)/2]);
-//	else
-//		return ( (vs[n/2]) + (vs[(n/2)-1]) ) / 2;
-//}
+template <typename Derived>
+double medianz (const Eigen::MatrixBase<Derived> &v)
+{
+	int n = v.size();
 
+	vector<typename Derived::Scalar> vs(n);
+
+	if (v.Flags & Eigen::MatrixBase<Derived>::IsRowMajor) {
+		for (int i=0; i<v.rows(); ++i)
+			for (int j=0; j<v.cols(); ++j)
+				vs[i*v.cols() + j] = v(i,j);
+	}
+
+	else {
+		for (int j=0; j<v.cols(); ++j)
+			for (int i=0; i<v.rows(); ++i)
+				vs[j*v.rows() + i] = v(i,j);
+	}
+
+	sort(vs.begin(), vs.end());
+
+	if (n%2==1)
+		return (static_cast<double> (vs[(n-1)/2]) );
+	else
+		return static_cast<double>( (vs[n/2]) + (vs[(n/2)-1]) ) / 2;
+}
 
 
 /*
@@ -102,8 +108,8 @@ MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 	double BestMedian = numeric_limits<double>::max();
 	int medIdx;
 	for (int j=0; j<N; j++) {
-		double cMedian = medianx(MDistances.col(j));
-//		double cMedian = medianz(MDistances.col(j));
+//		double cMedian = medianx(MDistances.col(j));
+		double cMedian = medianz(MDistances.col(j));
 		if (cMedian < BestMedian) {
 			BestMedian = cMedian;
 			medIdx = j;

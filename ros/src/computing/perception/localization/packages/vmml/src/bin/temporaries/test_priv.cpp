@@ -19,17 +19,24 @@ using namespace Eigen;
 template <typename Derived>
 double medianz (const Eigen::MatrixBase<Derived> &v)
 {
-	int n = v.rows() * v.cols();
+	int n = v.size();
 
 	vector<typename Derived::Scalar> vs(n);
 
-	int i=0;
-	for (typename Eigen::MatrixBase<Derived>::InnerIterator it(v, n); it; ++it) {
-		vs.at(i) = it.value();
-		++i;
+	if (v.Flags & Eigen::MatrixBase<Derived>::IsRowMajor) {
+		for (int i=0; i<v.rows(); ++i)
+			for (int j=0; j<v.cols(); ++j)
+				vs[i*v.cols() + j] = v(i,j);
+	}
+
+	else {
+		for (int j=0; j<v.cols(); ++j)
+			for (int i=0; i<v.rows(); ++i)
+				vs[j*v.rows() + i] = v(i,j);
 	}
 
 	sort(vs.begin(), vs.end());
+
 	if (n%2==1)
 		return (static_cast<double> (vs[(n-1)/2]) );
 	else
@@ -37,21 +44,12 @@ double medianz (const Eigen::MatrixBase<Derived> &v)
 }
 
 
-template <typename Derived>
-void useless (Eigen::MatrixBase<Derived> &v)
-{
-	v(0,0) = -v(0,0);
-	return;
-}
-
-
 int main()
 {
-	Matrix3d M = Matrix3d::Identity();
-	M(2,2) = 2.0;
-	useless(M);
+	Matrix4d M = Matrix4d::Random();
+	double d = medianz(M.diagonal());
 
-	cout << M << endl;
+//	cout << M << endl;
 //	double med = medianz(M.col(2));
 
 	return 0;
