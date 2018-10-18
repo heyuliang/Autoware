@@ -7,8 +7,20 @@
 #include <mutex>
 #include <stdlib.h>
 
-//headers in boost
-#include <boost/thread.hpp>
+class LaunchElement
+{
+    public:
+
+        LaunchElement( std::string filename );
+
+        std::string execute();
+
+    private:
+
+        //std::string package_;
+        std::string filename_;
+        std::vector<std::string> nodes;
+};
 
 class launch_info
 {

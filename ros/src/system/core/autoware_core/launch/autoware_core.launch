@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="autoware_core" type="autoware_core_node" name="autoware_core_node" output="screen" respawn="true">
+    <node pkg="autoware_core" type="autoware_core" name="autoware_core" output="screen" respawn="true">
     </node>
 
     <include file="$(find diag_lib)/launch/watchdog_sample.launch">

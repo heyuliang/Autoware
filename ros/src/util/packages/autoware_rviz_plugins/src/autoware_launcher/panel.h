@@ -9,16 +9,23 @@
 namespace autoware_rviz_plugins
 {
 
+class LaunchButton;
+
 class AutowareLauncher : public rviz::Panel
 {
 	Q_OBJECT
 	
 	public:
 
-		AutowareLauncher( QWidget* parent = 0 );
+        AutowareLauncher( QWidget* parent = 0 );
 
-	private:
+        void save( rviz::Config config ) const override;
+        void load( const rviz::Config& config ) override;
 
+    private:
+
+        static constexpr int LAUNCHER_COUNT = 6;
+        LaunchButton* launchers[LAUNCHER_COUNT];
 };
 
 }

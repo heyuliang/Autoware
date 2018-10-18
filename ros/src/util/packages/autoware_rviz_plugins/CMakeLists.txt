@@ -5,18 +5,20 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   rviz
   std_msgs
+  diag_lib
+  diag_msgs
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
   message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
+  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui QtNetwork)
   ## pull in all required include dirs, define QT_LIBRARIES, etc.
   include(${QT_USE_FILE})
 else()
   message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
+  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets Network)
   ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
-  set(QT_LIBRARIES Qt5::Widgets)
+  set(QT_LIBRARIES Qt5::Widgets Qt5::Network)
 endif()
 
 ###################################
@@ -56,6 +58,7 @@ set(SOURCE_FILES
   src/sim_object/autoware_flag_tool.cpp
   src/autoware_launcher/panel.cpp
   src/autoware_launcher/launch_button.cpp
+  src/autoware_launcher/command_button.cpp
 )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})

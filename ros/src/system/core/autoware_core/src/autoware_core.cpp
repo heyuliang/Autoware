@@ -1,4 +1,4 @@
-#include <autoware_core/autoware_core.h>
+#include "autoware_core.h"
 
 autoware_core::autoware_core()
 {

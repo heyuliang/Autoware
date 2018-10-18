@@ -1,0 +1,1 @@
+<launch><node pkg="rviz" name="rviz" type="rviz"/></launch>

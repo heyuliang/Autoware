@@ -1,4 +1,37 @@
-#include <autoware_core/node_launcher.h>
+#include "node_launcher.h"
+
+
+//headers in boost
+#include <boost/thread.hpp>
+
+LaunchElement::LaunchElement( std::string filename )
+{
+    filename_ = filename;
+}
+
+std::string LaunchElement::execute()
+{
+    std::string error;
+
+    // parse XML
+
+    // create node
+    // ros->lock();
+    // check node duplication
+    // add to launch collection
+    // add to node collection
+    // ros->unlock();
+
+    //std::string command = "roslaunch " + filename_;
+    //system( command.c_str() );
+
+    // ros->lock();
+    // remove from node collection
+    // remove from launch collection
+    // ros->unlock();
+
+    return error;
+}
 
 node_launcher::node_launcher()
 {
@@ -14,7 +47,6 @@ void node_launcher::launch(std::string package,std::string launch_filename)
 {
     launch_info info(package,launch_filename);
     boost::thread exec_thread(&node_launcher::execute_, this, info);
-    return;
 }
 
 void node_launcher::execute_(launch_info info)

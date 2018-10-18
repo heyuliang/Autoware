@@ -1,4 +1,4 @@
-#include <autoware_core/command_executer.h>
+#include "command_executer.h"
 
 command_executer::command_executer()
 {
@@ -19,6 +19,7 @@ void command_executer::execute_roslaunch_command(const httplib::Request& req, ht
     boost::optional<std::string> package,launch_filename;
     try
     {
+        printf("%s\n", command.c_str());
         boost::property_tree::read_json(ss, pt);
         package = pt.get_optional<std::string>("package");
         launch_filename = pt.get_optional<std::string>("launch_filename");
