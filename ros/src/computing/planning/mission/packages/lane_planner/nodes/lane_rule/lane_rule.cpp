@@ -375,6 +375,7 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 
 	cached_waypoint.lanes.clear();
 	cached_waypoint.lanes.shrink_to_fit();
+	cached_waypoint.id = msg.id;
 	for (const autoware_msgs::lane& l : msg.lanes)
 		cached_waypoint.lanes.push_back(create_new_lane(l, header));
 	if (all_vmap.points.empty() || all_vmap.lanes.empty() || all_vmap.nodes.empty() ||
