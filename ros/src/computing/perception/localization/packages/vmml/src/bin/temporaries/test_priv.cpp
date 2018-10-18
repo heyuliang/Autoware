@@ -9,33 +9,50 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include "access_private.hpp"
+#include <Eigen/Eigen>
 
 
 using namespace std;
+using namespace Eigen;
 
 
-class Widget
+template <typename Derived>
+double medianz (const Eigen::MatrixBase<Derived> &v)
 {
-public:
-	Widget(int a_, int b_):
-		a(a_), b(b_)
-	{}
+	int n = v.rows() * v.cols();
 
-private:
-	int a, b;
+	vector<typename Derived::Scalar> vs(n);
 
-	int maximum()
-	{ return max(a,b); }
-};
+	int i=0;
+	for (typename Eigen::MatrixBase<Derived>::InnerIterator it(v, n); it; ++it) {
+		vs.at(i) = it.value();
+		++i;
+	}
+
+	sort(vs.begin(), vs.end());
+	if (n%2==1)
+		return (static_cast<double> (vs[(n-1)/2]) );
+	else
+		return static_cast<double>( (vs[n/2]) + (vs[(n/2)-1]) ) / 2;
+}
 
 
-ACCESS_PRIVATE_FUN (Widget, int(), maximum);
+template <typename Derived>
+void useless (Eigen::MatrixBase<Derived> &v)
+{
+	v(0,0) = -v(0,0);
+	return;
+}
 
 
 int main()
 {
-	Widget W(100, 200);
-	Widget &X = W;
-	cout << call_private::maximum(X) << endl;
+	Matrix3d M = Matrix3d::Identity();
+	M(2,2) = 2.0;
+	useless(M);
+
+	cout << M << endl;
+//	double med = medianz(M.col(2));
+
+	return 0;
 }

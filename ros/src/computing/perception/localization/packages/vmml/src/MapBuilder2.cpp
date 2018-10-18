@@ -167,7 +167,7 @@ void
 MapBuilder2::mapPointCulling()
 {
 	vector<mpid> mpToRemove;
-	const int minKfRelatedFromMP = 2;
+	const int minKfRelatedFromMP = 3;
 	auto allMapPoints = cMap->allMapPoints();
 	const int N = allMapPoints.size();
 
