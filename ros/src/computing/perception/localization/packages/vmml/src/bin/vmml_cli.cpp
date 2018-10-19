@@ -183,8 +183,11 @@ public:
 		MEIDAI_DATASET_TYPE
 	} ;
 
+
 	LocalizerApp (int argc, char *argv[]):
-		mLineEditor(argv[0], TestPrompt)
+		mLineEditor(argv[0], TestPrompt),
+		mapPath("")
+
 	{
 	//	localizer = new Localizer()
 	}
@@ -265,6 +268,9 @@ public:
 
 			else if (command[0]=="build")
 				dataset_build(command);
+
+			else if (command[0]=="map_images")
+				map_dump_images();
 		}
 	}
 
@@ -312,6 +318,8 @@ protected:
 	LineEditor mLineEditor;
 
 	VMap *mapSrc = NULL;
+	boost::filesystem::path mapPath;
+
 	ImageDatabase *imgDb = NULL;
 	SequenceSLAM *seqSlProv = NULL;
 	Localizer *localizer = NULL;
@@ -326,17 +334,18 @@ protected:
 private:
 
 
-	void map_open_cmd(const string &mapPath)
+	void map_open_cmd(const string &mapPathInput)
 	{
 		try {
 			mapSrc = new VMap();
-			mapSrc->load(mapPath);
+			mapSrc->load(mapPathInput);
 			localizer = new Localizer(mapSrc);
 			localizer->setCameraParameterFromId(0);
 
 			debug("Map loaded");
 			imgDb = mapSrc->getImageDB();
 			seqSlProv = imgDb->getSequence();
+			mapPath = boost::filesystem::path(mapPathInput);
 
 			mask = mapSrc->getMask();
 			if (mask.empty()==false) {
@@ -704,7 +713,6 @@ private:
 
 		debug ("About to run mapping with duration "+to_string(duration) +" seconds, " +to_string(numOfFrames) + " frames");
 
-
 		if (mask.empty()==false) {
 			float zr = loadedDataset->getZoomRatio();
 			cv::Mat mapMask;
@@ -739,6 +747,38 @@ private:
 			cv::resize(mask, localizerMask, cv::Size(), zr, zr, cv::INTER_CUBIC);
 		}
 	}
+
+
+	void map_dump_images()
+	{
+		if (localizer==NULL) {
+			debug ("Map not loaded");
+			return;
+		}
+
+		MeidaiBagDataset::Ptr meidaiDs;
+		auto originalPath = mapSrc->getInfo("originalPath");
+		try {
+			meidaiDs = MeidaiBagDataset::load(originalPath);
+		} catch (exception &e) {
+			debug ("Unable to open dataset "+originalPath);
+			return;
+		}
+
+		boost::filesystem::path dumpDir = mapPath.parent_path() /= "/mapdump";
+		boost::filesystem::create_directory(dumpDir);
+
+		for (auto &kfI: mapSrc->allKeyFrames()) {
+			auto srcItemId = mapSrc->keyframe(kfI)->getSourceItemId();
+			auto srcDataItem = meidaiDs->get(srcItemId);
+			cv::Mat cImage = srcDataItem->getImage();
+			string imgNew = dumpDir.string() + '/' + (to_string(srcItemId) + ".jpg");
+			cv::imwrite(imgNew, cImage);
+		}
+
+		debug ("Map keyframes dumped to " + dumpDir.string());
+	}
+
 };
 
 

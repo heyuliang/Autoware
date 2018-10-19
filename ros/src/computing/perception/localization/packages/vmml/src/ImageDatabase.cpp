@@ -88,6 +88,7 @@ ImageDatabase::rebuildAll()
 		KeyFrame *kf = cMap->keyframe(kid);
 		vector<cv::Mat> kfDescs = toDescriptorVector(kf->getDescriptors());
 
+		// Build BoW descriptor of this keyframe
 		BoWList[kid] = DBoW2::BowVector();
 		FeatVecList[kid] = DBoW2::FeatureVector();
 		myVoc.transform(kfDescs, BoWList[kid], FeatVecList[kid], 4);

@@ -199,6 +199,9 @@ public:
 	inline void setInfo (const std::string &key, const std::string &value)
 	{ keyValueInfo[key] = value; };
 
+	inline const std::string getInfo (const std::string &key) const
+	{ return keyValueInfo.at(key); }
+
 	inline const mapKeyValueInfo& getAllInfo() const
 	{ return keyValueInfo; }
 
