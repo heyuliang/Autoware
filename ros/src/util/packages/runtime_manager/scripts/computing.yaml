@@ -51,7 +51,7 @@ subs :
         param: ndt
         gui  :
           dialog_height : 550
-          stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
+          stat_topic : [ /NDTStat.ndt_stat.exe_time ]
           x  :
             user_category : ''
           yaw:
@@ -534,6 +534,20 @@ subs :
       desc : Generates the occupancy grid indicating the status of the road
       cmd  : roslaunch road_occupancy_processor road_occupancy_processor.launch
       param: road_occupancy_processor
+
+  - name : Prediction
+    desc : Prediction desc sample
+    subs :
+    - name: motion_predictor
+      desc: motion_predictor desc samples
+      subs:
+      - name : naive_motion_predict
+        desc : naive_motion_predict desc sample
+        cmd  : roslaunch naive_motion_predict naive_motion_predict.launch
+        param: naive_motion_predict_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
 - subs :
   - name : Mission Planning
@@ -2345,7 +2359,7 @@ params :
 
   - name : feat_proj
     topic: /config/adjust_xy
-    msg  : adjust_xy
+    msg  : AdjustXY
     vars :
     - name : x
       desc : x desc sample
@@ -2528,7 +2542,7 @@ params :
 
   - name  : lane_stop
     topic : /light_color_managed
-    msg   : traffic_light
+    msg   : TrafficLight
     no_save_vars : [ lane_stop ]
     vars  :
     - name  : traffic_light
@@ -5311,6 +5325,44 @@ params :
       min     : 0.00
       max     : 3.0
       v       : 1.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name  : naive_motion_predict_param
+    vars  :
+    - name  : input_topic
+      desc  : input tppic
+      label : input_topic
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v     : /detection/lidar_tracker/objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : interval_sec
+      desc  : interval_sec desc sample
+      label : interval_sec
+      min     : 0.00
+      max     : 5.0
+      v       : 0.1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : num_prediction
+      desc  : num_prediction desc sample
+      label : num_prediction
+      min     : 0
+      max     : 200
+      v       : 20
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : sensor_height
+      desc  : sensor_height desc sample
+      label : sensor_height
+      min     : 0.0
+      max     : 5.0
+      v       : 2.0
       cmd_param :
         dash      : ''
         delim     : ':='
