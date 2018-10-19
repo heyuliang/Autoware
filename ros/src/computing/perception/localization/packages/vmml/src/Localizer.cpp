@@ -57,27 +57,46 @@ Localizer::detect (cv::Mat &frmImg)
 
 	Frame frame (rzImg, this);
 	vector<kfid> placeCandidates = imgDb->findCandidates(frame);
+
+	// for debugging
+	vector<dataItemId> srcInfo(placeCandidates.size());
+	for (int i=0; i<placeCandidates.size(); ++i) {
+		srcInfo[i] = sourceMap->keyframe(placeCandidates[i])->getSourceItemId();
+	}
+
 	map<kfid, set<mpid>> kfMapMatchesList;
 	map<kfid, bool> isValidKf;
 
-	// BoW Check
+/*
+ *  BoW Check
+ *  We need this to match keypoint from Candidate KeyFrame and (corresponding map point) to keypoint in Frame
+ *  XXX: need alternative, ie. using brute force matching from OpenCV, and check using projection
+ */
+
+	auto bfMatch = cv::BFMatcher::create();
+
 	for (int i=0; i<placeCandidates.size(); i++) {
 		kfid k = placeCandidates[i];
-		set<mpid> kfMapPtsMatches;
-		int nmatches = SearchBoW(k, frame, kfMapPtsMatches);
-		if (nmatches < 15) {
-			isValidKf[k] = false;
-			continue;
-		}
-		else {
-			isValidKf[k] = true;
-			kfMapMatchesList.insert(make_pair(placeCandidates[i], kfMapPtsMatches));
-		}
+		// XXX: finish this
 	}
 
-	// XXX: Check each candidate using projection
-
-	return placeCandidates[0];
+//	for (int i=0; i<placeCandidates.size(); i++) {
+//		kfid k = placeCandidates[i];
+//		set<mpid> kfMapPtsMatches;
+//		int nmatches = SearchBoW(k, frame, kfMapPtsMatches);
+//		if (nmatches < 15) {
+//			isValidKf[k] = false;
+//			continue;
+//		}
+//		else {
+//			isValidKf[k] = true;
+//			kfMapMatchesList.insert(make_pair(placeCandidates[i], kfMapPtsMatches));
+//		}
+//	}
+//
+//	// XXX: Check each candidate using projection
+//
+//	return placeCandidates[0];
 }
 
 
