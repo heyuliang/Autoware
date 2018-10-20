@@ -7,6 +7,11 @@ Sensing
 Detection
 ---------
 
+.. toctree::
+   :maxdepth: 1
+
+   PackagesAPI/Detection/vision_darknet_detect
+
 Localization
 ------------
 
