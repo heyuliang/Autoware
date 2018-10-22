@@ -80,9 +80,6 @@ double medianz (const Eigen::MatrixBase<Derived> &v)
 }
 
 
-/*
- * XXX: This function should be regarded incorrect
- */
 void
 MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 {
@@ -108,7 +105,6 @@ MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 	double BestMedian = numeric_limits<double>::max();
 	int medIdx;
 	for (int j=0; j<N; j++) {
-//		double cMedian = medianx(MDistances.col(j));
 		double cMedian = medianz(MDistances.col(j));
 		if (cMedian < BestMedian) {
 			BestMedian = cMedian;

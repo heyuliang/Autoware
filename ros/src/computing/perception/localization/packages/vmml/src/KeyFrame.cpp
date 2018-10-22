@@ -127,21 +127,62 @@ void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 }
 
 
+Eigen::Vector2f
+convertToEigen (const cv::Point2f &P)
+{
+	return Eigen::Vector2f(P.x, P.y);
+}
+
+
+
+/*
+ * XXX: Observation results
+ * false negatives due to missing projection
+ */
+
 void
 KeyFrame::match (const KeyFrame &kf,
 		const Frame &frame,
-		std::vector<FeaturePair> &featurePairs)
+		std::vector<FeaturePair> &featurePairs,
+		cv::Ptr<cv::DescriptorMatcher> matcher)
 {
-	// Brute-force matching
-	vector<cv::DMatch> kf2fMatches;
-	auto matcher = cv::BFMatcher::create(cv::NORM_HAMMING2);
-	matcher->match(kf.descriptors, frame.descriptor(), kf2fMatches);
+	// Select all map points and their keypoints in the keyframe
+	auto mapPtList = kf.parentMap->allMapPointsAtKeyFrame(kf.id);
+	cv::Mat kfMpDescriptors (mapPtList.size(), kf.descriptors.cols, kf.descriptors.type());
+	vector<kpid> kpToMatchList (mapPtList.size());
+	featurePairs.clear();
 
-	for (auto &m: kf2fMatches) {
-		if (m.trainIdx < kf.keypoints.size() and m.queryIdx < frame.keypoints.size()) {
-			FeaturePair fp = {m.trainIdx, kf.keypoints[m.trainIdx].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
-			featurePairs.push_back(fp);
-		}
+	int i = 0;
+	for (auto &p: mapPtList) {
+		kfMpDescriptors.row(i) = kf.getDescriptorAt(p.second);
+		kpToMatchList[i] = p.second;
+		i++;
+	}
+
+	// Matching itself
+	vector<cv::DMatch> kf2fMatches;
+	matcher->match(kfMpDescriptors, frame.descriptor(), kf2fMatches);
+
+	// Projection check
+	int correctProjection = 0;
+	for (i=0; i<kf2fMatches.size(); ++i) {
+		auto &m = kf2fMatches[i];
+
+		if (m.trainIdx >= mapPtList.size() or m.queryIdx >= frame.keypoints.size())
+			continue;
+
+		kpid keyframeKp = kpToMatchList[m.trainIdx];
+		const MapPoint &mp = *kf.parentMap->mappoint(kf.parentMap->getMapPointByKeypoint(kf.id, keyframeKp));
+		const Vector2d keypointProj = kf.project(mp);
+		const cv::Point2f &frameKp = frame.keypoints[m.queryIdx].pt;
+
+		float projDev = (convertToEigen(frameKp) - keypointProj.cast<float>()).norm();
+		if (projDev >= pixelReprojectionError)
+			continue;
+
+		FeaturePair fp = {keyframeKp, kf.keypoints[keyframeKp].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
+		featurePairs.push_back(fp);
+
 	}
 }
 
@@ -262,3 +303,5 @@ KeyFrame::transform (const Eigen::Vector3d &pt3) const
 	Vector4d ptx = externalParamMatrix4()* pt3.homogeneous();
 	return ptx.hnormalized();
 }
+
+

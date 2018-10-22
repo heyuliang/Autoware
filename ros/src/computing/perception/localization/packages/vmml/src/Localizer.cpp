@@ -64,44 +64,40 @@ Localizer::detect (cv::Mat &frmImg)
 		srcInfo[i] = sourceMap->keyframe(placeCandidates[i])->getSourceItemId();
 	}
 
-	map<kfid, set<mpid>> kfMapMatchesList;
-	map<kfid, bool> isValidKf;
-
 /*
- *  BoW Check
- *  We need this to match keypoint from Candidate KeyFrame and (corresponding map point) to keypoint in Frame
+ *  We need this section to match keypoint from Candidate KeyFrame and (corresponding map point) to keypoint in Frame
  *  XXX: need alternative, ie. using brute force matching from OpenCV, and check using projection
  */
 
 	auto bfMatch = cv::BFMatcher::create();
 
+	size_t bestKfScore=0;
+	kfid bestKfId;
+
 	for (int i=0; i<placeCandidates.size(); i++) {
-		kfid k = placeCandidates[i];
-		// XXX: finish this
+
+		const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[i]);
+		vector<FeaturePair> kfMatches;
+		KeyFrame::match(kf, frame, kfMatches, bfMatch);
+
+		size_t curScore = kfMatches.size();
+		if (curScore < 15) {
+			continue;
+		}
+
+		else if (curScore > bestKfScore) {
+			bestKfScore = curScore;
+			bestKfId = kf.getId();
+		}
 	}
 
-//	for (int i=0; i<placeCandidates.size(); i++) {
-//		kfid k = placeCandidates[i];
-//		set<mpid> kfMapPtsMatches;
-//		int nmatches = SearchBoW(k, frame, kfMapPtsMatches);
-//		if (nmatches < 15) {
-//			isValidKf[k] = false;
-//			continue;
-//		}
-//		else {
-//			isValidKf[k] = true;
-//			kfMapMatchesList.insert(make_pair(placeCandidates[i], kfMapPtsMatches));
-//		}
-//	}
-//
-//	// XXX: Check each candidate using projection
-//
-//	return placeCandidates[0];
+	return bestKfId;
 }
 
 
-#define averageProjectionDeviation 2.0
+/*
 
+#define averageProjectionDeviation 2.0
 
 float
 Localizer::projectionCheck (const Frame &frame, const kfid &keyframeId)
@@ -110,7 +106,7 @@ const
 	vector<FeaturePair> featurePairs;
 	KeyFrame *keyframe = sourceMap->keyframe(keyframeId);
 
-	KeyFrame::match(*keyframe, frame, featurePairs);
+//	KeyFrame::match(*keyframe, frame, featurePairs);
 	vector<float> projectionErrors(featurePairs.size());
 
 	for (int i=0; i<featurePairs.size(); i++) {
@@ -124,6 +120,7 @@ const
 		}
 	}
 }
+*/
 
 
 int

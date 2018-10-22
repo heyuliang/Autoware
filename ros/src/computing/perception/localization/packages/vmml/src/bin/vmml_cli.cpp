@@ -600,15 +600,29 @@ private:
 //		seqSlProv->find(img, 10);
 //	}
 
-	void map_detect_cmd(const string &durationSecStr)
+	void map_detect_cmd(const string &detectionStr)
 	{
 		if (localizer==NULL) {
 			debug("Map not loaded");
 			return;
 		}
-		double d = std::stod(durationSecStr);
-		auto di = loadedDataset->atDurationSecond(d);
-		cv::Mat img = di->getImage();
+
+		cv::Mat img;
+
+		if (boost::filesystem::exists(boost::filesystem::path(detectionStr))) {
+			img = cv::imread(detectionStr, cv::IMREAD_COLOR);
+			if (img.empty()) {
+				debug ("Unable to open requested file");
+				return;
+			}
+		}
+
+		else {
+			double d = std::stod(detectionStr);
+			auto di = loadedDataset->atDurationSecond(d);
+			img = di->getImage();
+		}
+
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 		kfid k = localizer->detect(img);
 		debug("Max.: "+to_string(k));

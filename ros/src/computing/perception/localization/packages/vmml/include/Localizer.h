@@ -26,6 +26,9 @@ public:
 
 	virtual ~Localizer();
 
+	/*
+	 * Entry point to Place Recognition Routine
+	 */
 	kfid detect (cv::Mat &frmImg);
 
 	void setCameraParameter (const CameraPinholeParams &c)

@@ -100,7 +100,8 @@ public:
 	static void
 	match (const KeyFrame &k1,
 			const Frame &frame,
-			std::vector<FeaturePair> &featurePairs);
+			std::vector<FeaturePair> &featurePairs,
+			cv::Ptr<cv::DescriptorMatcher> matcher);
 
 	static void triangulate (
 		const KeyFrame *kf1, const KeyFrame *kf2,
@@ -182,6 +183,7 @@ protected:
 
 //	KeyFrame* prev;
 	VMap* parentMap;
+
 };
 
 #endif /* KEYFRAME_H_ */
