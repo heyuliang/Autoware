@@ -1,12 +1,10 @@
 //headers in autoware_core
 #include "autoware_core.h"
 
-//headers in httplib
-#include <cpp-httplib/httplib.h>
-
 int main(int argc, char *argv[])
 {
-    autoware_core core;
-    core.run();
-    return 0;
+    using namespace autoware_core;
+
+    HttpServer http_server("localhost", 8080);
+    http_server.run();
 }
