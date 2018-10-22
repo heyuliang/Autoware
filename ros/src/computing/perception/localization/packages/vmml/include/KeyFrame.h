@@ -154,6 +154,10 @@ public:
 	dataItemId getSourceItemId() const
 	{ return srcItemId; }
 
+	void debugMapPoints() const;
+
+	void debugKeyPoints() const;
+
 protected:
 
 	template <class Archive>

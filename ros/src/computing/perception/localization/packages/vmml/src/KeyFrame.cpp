@@ -305,3 +305,15 @@ KeyFrame::transform (const Eigen::Vector3d &pt3) const
 }
 
 
+void
+KeyFrame::debugMapPoints() const
+{
+	static const string _dbgKfMapPoints = "/tmp/kf_mappoints";
+}
+
+
+void
+KeyFrame::debugKeyPoints() const
+{
+
+}

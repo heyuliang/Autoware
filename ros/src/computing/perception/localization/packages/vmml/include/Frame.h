@@ -51,6 +51,8 @@ public:
 	const cv::KeyPoint &keypoint(const kpid kp)
 	{ return keypoints.at(kp); }
 
+	void debugKeyPoints () const;
+
 protected:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
