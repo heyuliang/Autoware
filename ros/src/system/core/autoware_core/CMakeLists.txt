@@ -3,10 +3,11 @@ project(autoware_core)
 
 add_compile_options(-std=c++11)
 
-find_package(Boost COMPONENTS thread)
+find_package(Boost COMPONENTS thread filesystem)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
 )
 
 catkin_package(
@@ -21,9 +22,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(autoware_core src/autoware_core_main.cpp src/autoware_core.cpp src/command_executer.cpp src/node_launcher.cpp)
+add_executable(autoware_core src/autoware_core_main.cpp src/autoware_core.cpp src/command_executer.cpp src/node_launcher.cpp src/launch_file_analyzer.cpp)
 target_link_libraries(autoware_core ${Boost_LIBRARIES})
 #add_dependencies(autoware_core_node ${catkin_EXPORTED_TARGETS})
+
+add_executable(launch_file_analyzer_test src/launch_analuzer_test_main.cpp src/launch_file_analyzer.cpp)
+target_link_libraries(launch_file_analyzer_test ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
 set(CPP_EXEC_NAMES autoware_core)
 foreach(cpp_exec_names ${CPP_EXEC_NAMES})
