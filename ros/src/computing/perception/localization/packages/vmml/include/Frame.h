@@ -51,7 +51,13 @@ public:
 	const cv::KeyPoint &keypoint(const kpid kp)
 	{ return keypoints.at(kp); }
 
+	const vector<cv::KeyPoint> &getAllKeyPoints() const
+	{ return keypoints; }
+
 	void debugKeyPoints () const;
+
+	cv::Mat getImage() const
+	{ return image.clone(); }
 
 protected:
 	cv::Mat image;

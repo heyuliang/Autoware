@@ -29,7 +29,7 @@ typedef Matrix<double,3,4> poseMatrix;
 typedef Matrix4d poseMatrix4;
 
 
-#define pixelReprojectionError 6.0
+const float pixelReprojectionError = 6.0;
 
 
 std::set<kpid>
@@ -135,6 +135,24 @@ convertToEigen (const cv::Point2f &P)
 
 
 
+void debugMatch (const cv::Mat &imgToDraw, const vector<cv::DMatch> &matches, const vector<cv::KeyPoint> &kpList1, const vector<cv::KeyPoint> &kpList2, const string &filename)
+{
+	cv::Mat newColorImage;
+	cv::cvtColor(imgToDraw, newColorImage, CV_GRAY2BGR);
+
+	for (int i=0; i<matches.size(); ++i) {
+		const cv::DMatch &mt = matches[i];
+		if (mt.trainIdx >= kpList1.size() or mt.queryIdx >= kpList2.size())
+			continue;
+		const auto &kp1 = kpList1[mt.trainIdx];
+		const auto &kp2 = kpList2[mt.queryIdx];
+		cv::line(newColorImage, kp1.pt, kp2.pt, cv::Scalar(0,255,0));
+	}
+
+	cv::imwrite (filename, newColorImage);
+}
+
+
 /*
  * XXX: Observation results
  * false negatives due to missing projection
@@ -146,6 +164,8 @@ KeyFrame::match (const KeyFrame &kf,
 		std::vector<FeaturePair> &featurePairs,
 		cv::Ptr<cv::DescriptorMatcher> matcher)
 {
+	static bool doDebugMatch = false;
+
 	// Select all map points and their keypoints in the keyframe
 	auto mapPtList = kf.parentMap->allMapPointsAtKeyFrame(kf.id);
 	cv::Mat kfMpDescriptors (mapPtList.size(), kf.descriptors.cols, kf.descriptors.type());
@@ -163,6 +183,11 @@ KeyFrame::match (const KeyFrame &kf,
 	vector<cv::DMatch> kf2fMatches;
 	matcher->match(kfMpDescriptors, frame.descriptor(), kf2fMatches);
 
+	cv::Mat newColorImage;
+	if (doDebugMatch) {
+		cv::cvtColor(frame.getImage(), newColorImage, CV_GRAY2BGR);
+	}
+
 	// Projection check
 	int correctProjection = 0;
 	for (i=0; i<kf2fMatches.size(); ++i) {
@@ -176,6 +201,10 @@ KeyFrame::match (const KeyFrame &kf,
 		const Vector2d keypointProj = kf.project(mp);
 		const cv::Point2f &frameKp = frame.keypoints[m.queryIdx].pt;
 
+		if (doDebugMatch) {
+			cv::line(newColorImage, kf.keypoints[keyframeKp].pt, frameKp, cv::Scalar(0,255,0));
+		}
+
 		float projDev = (convertToEigen(frameKp) - keypointProj.cast<float>()).norm();
 		if (projDev >= pixelReprojectionError)
 			continue;
@@ -183,6 +212,10 @@ KeyFrame::match (const KeyFrame &kf,
 		FeaturePair fp = {keyframeKp, kf.keypoints[keyframeKp].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
 		featurePairs.push_back(fp);
 
+	}
+
+	if (doDebugMatch) {
+		cv::imwrite ("/tmp/match-1237-f.png", newColorImage);
 	}
 }
 
