@@ -180,6 +180,7 @@ private:
   uint32_t param_num_of_steer_behind_;
   double dist_threshold_;
   double angle_threshold_;
+  double time_to_avoidance_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;

@@ -55,6 +55,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
   dist_threshold_ = msg.dist_threshold;
   angle_threshold_ = msg.angle_threshold;
+  time_to_avoidance_ = msg.time_to_avoidance;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event)

@@ -304,10 +304,10 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
   }
 
   static double stopped_time;
-  const double avoiding_timer = 3.0;  // threshold time[s]
+  // const double avoiding_timer = 3.0;  // threshold time[s]
   if (current_status_.velocity == 0.0 && current_status_.obstacle_waypoint != -1)
   {
-    if (ros::Time::now().toSec() - stopped_time > avoiding_timer)
+    if (ros::Time::now().toSec() - stopped_time > time_to_avoidance_)
     {
       tryNextState("completely_stopped");
     }

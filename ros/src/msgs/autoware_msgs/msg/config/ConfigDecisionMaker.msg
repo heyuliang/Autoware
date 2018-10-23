@@ -5,3 +5,4 @@ bool use_management_system
 uint32 num_of_steer_behind
 float64 dist_threshold
 float64 angle_threshold
+float64 time_to_avoidance
