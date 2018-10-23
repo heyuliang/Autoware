@@ -53,9 +53,11 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   auto_mission_reload_ = msg.auto_mission_reload;
   use_management_system_ = msg.use_management_system;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
-  dist_threshold_ = msg.dist_threshold;
-  angle_threshold_ = msg.angle_threshold;
+  change_threshold_dist_ = msg.change_threshold_dist;
+  change_threshold_angle_ = msg.change_threshold_angle;
   time_to_avoidance_ = msg.time_to_avoidance;
+  goal_threshold_dist_ = msg.goal_threshold_dist;
+  goal_threshold_vel_ = msg.goal_threshold_vel;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event)
@@ -334,7 +336,7 @@ bool DecisionMakerNode::drivingMissionCheck()
 
   double angle_diff_degree =
       fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180 / M_PI;
-  if (min_dist > dist_threshold_ || angle_diff_degree > angle_threshold_)
+  if (min_dist > change_threshold_dist_ || angle_diff_degree > change_threshold_angle_)
   {
     return false;
   }
