@@ -29,11 +29,11 @@
 
 #include <autoware_config_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/Lane.h>
+#include <autoware_msgs/LaneArray.h>
 #include <autoware_msgs/State.h>
 #include <autoware_msgs/TrafficLight.h>
+#include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/Waypoint.h>
 #include <vector_map/vector_map.h>
 
@@ -209,10 +209,8 @@ private:
   void update(void);
   void update_msgs(void);
   void update_pubsub(void);
-  void displayMarker(void);
 
   void publishToVelocityArray();
-  std::string createStateMessageText();
   int createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale);
 
   /* for planning according to state*/

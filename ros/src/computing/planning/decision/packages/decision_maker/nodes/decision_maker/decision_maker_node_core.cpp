@@ -28,10 +28,6 @@ void DecisionMakerNode::tryNextState(const std::string& key)
   ctx_vehicle->nextState(key);
   ctx_mission->nextState(key);
   ctx_drive->nextState(key);
-#if 0
-  std_msgs::String msg;
-  msg.data = Pubs[""].publish
-#endif
 }
 
 void DecisionMakerNode::update(void)

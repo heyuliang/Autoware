@@ -30,7 +30,6 @@ void DecisionMakerNode::callbackFromFilteredPoints(const sensor_msgs::PointCloud
 void DecisionMakerNode::callbackFromSimPose(const geometry_msgs::PoseStamped& msg)
 {
   ROS_INFO("Received system is going to simulation mode");
-  // handleStateCmd(state_machine::DRIVE_STATE);
   Subs["sim_pose"].shutdown();
 }
 
@@ -38,7 +37,6 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::String& msg)
 {
   //  ROS_INFO("Received State Command");
   tryNextState(msg.data);
-  // handleStateCmd((uint64_t)1ULL << (uint64_t)msg.data);
 }
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
@@ -348,119 +346,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane& msg
 {
   current_status_.finalwaypoints = msg;
   setEventFlag("received_finalwaypoints", true);
-
-#if 0
-  if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
-  {
-    ROS_DEBUG("State is not DRIVE_STATE[%s]", ctx->getCurrentStateName().c_str());
-    return;
-  }
-
-  // cached
-  current_finalwaypoints_ = msg;
-  if (current_finalwaypoints_.waypoints.empty())
-  {
-    return;
-  }
-
-  // stopline
-  static size_t previous_idx = 0;
-
-  size_t idx;
-  idx = param_stopline_target_waypoint_ + (current_velocity_ * param_stopline_target_ratio_);
-  idx = current_finalwaypoints_.waypoints.size() - 1 > idx ? idx : current_finalwaypoints_.waypoints.size() - 1;
-
-  CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
-  try
-  {
-    for (size_t i = (previous_idx > idx) ? idx : previous_idx; i <= idx; i++)
-    {
-      if (i < current_finalwaypoints_.waypoints.size())
-      {
-        if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
-        {
-          ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-          closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
-        }
-        if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
-        {
-          ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
-          closest_stop_waypoint_ = CurrentStoplineTarget_.gid;
-        }
-      }
-    }
-  }
-  catch (std::out_of_range &oor)
-  {
-    fprintf(stderr, "[%s:%d]: access=%d, size=%d\n", __FILE__, __LINE__, idx, current_finalwaypoints_.waypoints.size());
-  }
-  previous_idx = idx;
-// steering
-#if 0
-  idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
-            param_target_waypoint_ :
-            current_finalwaypoints_.waypoints.size() - 1;
-#endif
-  double _distance = 0.0;
-  double _distance_threshold = 30;  // 30[m] is decided by japanese law.
-
-  //
-  amathutils::point _prev_point(current_finalwaypoints_.waypoints.at(0).pose.pose.position.x,
-                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.y,
-                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.z);
-
-  idx = 0;
-  for (auto &wp : current_finalwaypoints_.waypoints)
-  {
-    amathutils::point _next_point(wp.pose.pose.position.x, wp.pose.pose.position.y, wp.pose.pose.position.z);
-
-    _distance += amathutils::find_distance(&_prev_point, &_next_point);
-    idx++;
-    if (_distance >= _distance_threshold)
-    {
-      break;
-    }
-    if (idx >= current_finalwaypoints_.waypoints.size())
-    {
-      idx -= 1;
-      break;
-    }
-    _prev_point = _next_point;
-  }
-
-  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
-  {
-    ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
-  }
-  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
-  {
-    ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-  }
-  else
-  {
-    idx = (idx >= current_finalwaypoints_.waypoints.size()) ? idx = current_finalwaypoints_.waypoints.size() - 1 : idx;
-    try
-    {
-      state_machine::StateFlags _TargetStateFlag;
-      for (size_t i = idx; i > 0; i--)
-      {
-        _TargetStateFlag = getStateFlags(current_finalwaypoints_.waypoints.at(i).wpstate.steering_state);
-        if (_TargetStateFlag != state_machine::DRIVE_STR_STRAIGHT_STATE)
-        {
-          break;
-        }
-      }
-      ctx->setCurrentState(_TargetStateFlag);
-    }
-    catch (std::out_of_range &oor)
-    {
-      fprintf(stderr, "[%s:%d]: access=%d, size=%d\n", __FILE__, __LINE__, idx,
-              current_finalwaypoints_.waypoints.size());
-    }
-  }
-  // for publish plan of velocity
-  publishToVelocityArray();
-#endif
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg)
 {
