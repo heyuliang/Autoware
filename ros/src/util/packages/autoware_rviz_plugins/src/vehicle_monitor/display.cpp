@@ -16,16 +16,16 @@ VehicleMonitor::VehicleMonitor() : rviz::Display()
 
 VehicleMonitor::~VehicleMonitor()
 {
-	if( initialized() )
-	{
-		delete widget_;
-	}
+    if( initialized() )
+    {
+        delete widget_;
+    }
 }
 
 void VehicleMonitor::onInitialize()
 {
-	widget_ = new VehicleMonitorWidget();
-	setAssociatedWidget( widget_ );
+    widget_ = new VehicleMonitorWidget();
+    setAssociatedWidget( widget_ );
 
     update_topic_cmd();
     update_topic_status();
@@ -46,12 +46,12 @@ void VehicleMonitor::onInitialize()
 
 void VehicleMonitor::reset()
 {
-	return;
+    return;
 }
 
 void VehicleMonitor::update(float wall_dt, float ros_dt)
 {
-	widget_->update();
+    widget_->update();
 }
 
 void VehicleMonitor::onEnable()
@@ -63,7 +63,7 @@ void VehicleMonitor::onEnable()
 
 void VehicleMonitor::onDisable()
 {
-	sub_cmd_.shutdown();
+    sub_cmd_.shutdown();
     sub_status_.shutdown();
     sub_mode_.shutdown();
 }

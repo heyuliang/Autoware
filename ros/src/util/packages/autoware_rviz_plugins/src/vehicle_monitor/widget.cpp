@@ -101,7 +101,7 @@ void VehicleMonitorWidget::paintEvent(QPaintEvent *event)
 
     int text_height = width() / 8;
     int curr_height = 0;
-	painter.setBrush(QColor(0x00, 0x00, 0x00));
+    painter.setBrush(QColor(0x00, 0x00, 0x00));
     painter.drawRect(0, 0, width(), height());
 
     // Status
@@ -168,8 +168,8 @@ void VehicleMonitorWidget::paintEvent(QPaintEvent *event)
 
 void VehicleMonitorWidget::drawControlMode( VehicleMonitorPainter& painter )
 {
-	constexpr QRect rect_remote = QRect(  2, 0, 97, 23);
-	constexpr QRect rect_auto   = QRect(101, 0, 97, 23);
+    constexpr QRect rect_remote = QRect(  2, 0, 97, 23);
+    constexpr QRect rect_auto   = QRect(101, 0, 97, 23);
 
     painter.setWindow(0, -2, 200, 27);
 
@@ -179,8 +179,8 @@ void VehicleMonitorWidget::drawControlMode( VehicleMonitorPainter& painter )
     painter.setBrush( (twist_gate_ctrl_mode == CtrlMode::AUTO  ) ? QColor(0xFF, 0xCC, 0x00) : QColor(0x40, 0x80, 0xC0) );
     painter.drawRect( rect_auto   );
 
-	painter.setPen(QColor(0xFF, 0xFF, 0xFF));
-	painter.setBrush(Qt::NoBrush);
+    painter.setPen(QColor(0xFF, 0xFF, 0xFF));
+    painter.setBrush(Qt::NoBrush);
     painter.drawText( rect_remote, Qt::AlignHCenter | Qt::AlignVCenter, "REMOTE");
     painter.drawText( rect_auto,   Qt::AlignHCenter | Qt::AlignVCenter, "AUTO"  );
 }
@@ -221,20 +221,20 @@ void VehicleMonitorWidget::drawSpeedGraph( VehicleMonitorPainter& painter )
 
 void VehicleMonitorWidget::drawDualUnitsText( VehicleMonitorPainter& painter, const QColor& color, const QString& title, const QString& unit1, const QString& unit2 )
 {
-	constexpr QRect rect_title = QRect(  2, 0, 48, 23);
-	constexpr QRect rect_unit1 = QRect( 52, 0, 72, 23);
-	constexpr QRect rect_unit2 = QRect(126, 0, 72, 23);
+    constexpr QRect rect_title = QRect(  2, 0, 48, 23);
+    constexpr QRect rect_unit1 = QRect( 52, 0, 72, 23);
+    constexpr QRect rect_unit2 = QRect(126, 0, 72, 23);
 
-	painter.setWindow(0, 0, 200, 25);
+    painter.setWindow(0, 0, 200, 25);
 
-	painter.setPen( Qt::NoPen );
-	painter.setBrush( QColor(0x40, 0x80, 0xC0) );
+    painter.setPen( Qt::NoPen );
+    painter.setBrush( QColor(0x40, 0x80, 0xC0) );
     painter.drawRect( rect_title );
     painter.drawRect( rect_unit1 );
     painter.drawRect( rect_unit2 );
 
-	painter.setPen( color );
-	painter.setBrush( Qt::NoBrush );
+    painter.setPen( color );
+    painter.setBrush( Qt::NoBrush );
     painter.drawText( rect_title, Qt::AlignHCenter | Qt::AlignVCenter, title );
     painter.drawText( rect_unit1, Qt::AlignHCenter | Qt::AlignVCenter, unit1 );
     painter.drawText( rect_unit2, Qt::AlignHCenter | Qt::AlignVCenter, unit2 );
@@ -273,7 +273,7 @@ void VehicleMonitorWidget::drawAngleGraph( VehicleMonitorPainter& painter )
 }
 void VehicleMonitorWidget::drawPedal( VehicleMonitorPainter& painter )
 {
-	painter.setWindow(0, 0, 240, 120);
+    painter.setWindow(0, 0, 240, 120);
 
     painter.setPen(Qt::NoPen);
     painter.setBrush( QColor(0x40, 0x80, 0xC0) );
@@ -283,7 +283,7 @@ void VehicleMonitorWidget::drawPedal( VehicleMonitorPainter& painter )
     painter.drawRect(  40, 90, 60, -70 * status_brake / config_brake_limit );
     painter.drawRect( 140, 90, 60, -70 * status_accel / config_accel_limit );
 
-	painter.setPen(QColor(0xFF, 0xFF, 0xFF));
+    painter.setPen(QColor(0xFF, 0xFF, 0xFF));
     painter.setBrush(Qt::NoBrush);
     painter.drawText(  40, 90, 60, -70, Qt::AlignHCenter | Qt::AlignVCenter, QString::number(status_brake) );
     painter.drawText( 140, 90, 60, -70, Qt::AlignHCenter | Qt::AlignVCenter, QString::number(status_accel) );

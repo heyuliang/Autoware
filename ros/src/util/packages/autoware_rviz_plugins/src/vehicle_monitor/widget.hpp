@@ -8,11 +8,11 @@ namespace autoware_rviz_plugins {
 class VehicleMonitorPainter;
 class VehicleMonitorWidget final : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		VehicleMonitorWidget( QWidget* parent = 0 );
+        VehicleMonitorWidget( QWidget* parent = 0 );
 
         enum CtrlMode
         {
@@ -26,10 +26,10 @@ class VehicleMonitorWidget final : public QWidget
         };
         using GearList = std::vector<Gear>;
 
-	public Q_SLOTS:
+    public Q_SLOTS:
 
         void setCtrlMode( CtrlMode ctrl_mode );
-		void setSpeedCmd( double kph );
+        void setSpeedCmd( double kph );
         void setAngleCmd( double deg );
         void setSpeedStatus( double kph );
         void setAngleStatus( double deg );
@@ -42,7 +42,7 @@ class VehicleMonitorWidget final : public QWidget
         void configureAccelLimit( int limit );
         void configureTransmission( const GearList& gear_list );
 
-	protected:
+    protected:
 
         void paintEvent( QPaintEvent* event ) override;
 
@@ -55,7 +55,7 @@ class VehicleMonitorWidget final : public QWidget
 
         QString toString(double value, int precision);
 
-	private:
+    private:
 
         CtrlMode twist_gate_ctrl_mode;
         double cmd_speed_kph;
