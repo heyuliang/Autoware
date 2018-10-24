@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>autoware_launcher</name>
+  <version>0.0.0</version>
+  <description>The tool for easily launching Autoware</description>
+
+  <maintainer email="isamu.takagi@tier4.jp">Isamu Takagi</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>qtbase5-dev</build_depend>
+
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-gui</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
+
+  <export></export>
+
+</package>
