@@ -9,8 +9,8 @@
 #include <std_msgs/UInt8.h>
 
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -46,7 +46,7 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
   current_status_.change_flag = msg.data;
 }
 
-void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg)
+void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg)
 {
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
@@ -60,28 +60,9 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   goal_threshold_vel_ = msg.goal_threshold_vel;
 }
 
-void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event)
+void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const>& event)
 {
-#if 0
-  const autoware_msgs::traffic_light *light = event.getMessage().get();
-  //  const ros::M_string &header = event.getConnectionHeader();
-  //  std::string topic = header.at("topic");
-
-  if (!isManualLight)
-  {  // && topic.find("manage") == std::string::npos){
-    current_traffic_light_ = light->traffic_light;
-    if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
-    {
-      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-      ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-    }
-    else
-    {
-      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-      ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-    }
-  }
-#endif
+  ROS_WARN("%s is not implemented", __func__)
 }
 
 void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg)
@@ -150,13 +131,13 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           // area's
           if (area.insideLanes.empty() || wp.gid != area.insideLanes.back().waypoints.back().gid + 1)
           {
-            autoware_msgs::lane nlane;
+            autoware_msgs::Lane nlane;
             area.insideLanes.push_back(nlane);
             area.bbox.pose.orientation = wp.pose.pose.orientation;
           }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
-          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::waypoint
+          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::Waypoint
           // lane's wp
           wp.wpstate.aid = area.area_id;
         }
@@ -363,7 +344,7 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray&
   setEventFlag("received_based_lane_waypoint", true);
 }
 
-void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane& msg)
+void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane& msg)
 {
   current_status_.finalwaypoints = msg;
   setEventFlag("received_finalwaypoints", true);

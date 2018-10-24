@@ -34,14 +34,14 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <iostream>
-#include <random>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
+#include <iostream>
+#include <random>
 
 #include "autoware_msgs/VehicleCmd.h"
 #include "waypoint_follower/libwaypoint_follower.h"
@@ -147,7 +147,7 @@ void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr& msg)
   _initial_set = true;
 }
 
-void waypointCallback(const autoware_msgs::laneConstPtr& msg)
+void waypointCallback(const autoware_msgs::LaneConstPtr& msg)
 {
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);

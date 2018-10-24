@@ -1,4 +1,3 @@
-
 #include <decision_maker_node.hpp>
 
 namespace decision_maker
@@ -144,7 +143,6 @@ void DecisionMakerNode::displayMarker(void)
   stopline_target_marker.color.b = 0.0;
   stopline_target_marker.ns = "stopline_target";
   stopline_target_marker.lifetime = ros::Duration();
-  stopline_target_marker.pose.position.x = CurrentStoplineTarget_.pose.pose.position.x;
   stopline_target_marker.pose.position.y = CurrentStoplineTarget_.pose.pose.position.y;
   stopline_target_marker.pose.position.z = CurrentStoplineTarget_.pose.pose.position.z;
 

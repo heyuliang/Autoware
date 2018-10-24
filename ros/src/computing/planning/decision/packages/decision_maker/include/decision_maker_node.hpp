@@ -27,16 +27,14 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <autoware_config_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/LaneArray.h>
 #include <autoware_msgs/VehicleCmd.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/state.h>
-#include <autoware_msgs/state.h>
-#include <autoware_msgs/traffic_light.h>
-#include <autoware_msgs/waypoint.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/State.h>
+#include <autoware_msgs/TrafficLight.h>
+#include <autoware_msgs/Waypoint.h>
 #include <vector_map/vector_map.h>
 
 #include <amathutils_lib/amathutils.hpp>
@@ -141,6 +139,12 @@ private:
   jsk_rviz_plugins::OverlayText state_text_msg;
 
   // ROS Messages(Autoware)
+  autoware_msgs::Lane current_finalwaypoints_;
+  vector_map_msgs::AreaArray vMap_Areas;
+  vector_map_msgs::PointArray vMap_Points;
+  vector_map_msgs::LineArray vMap_Lines;
+  vector_map_msgs::CrossRoadArray vMap_CrossRoads;
+
   std::vector<geometry_msgs::Point> inside_points_;
 
   tf::TransformListener tflistener_baselink;
@@ -148,7 +152,7 @@ private:
   int closest_stop_waypoint_;
   int closest_stopline_waypoint_;
   int goal_waypoint_;
-  autoware_msgs::waypoint CurrentStoplineTarget_;
+  autoware_msgs::Waypoint CurrentStoplineTarget_;
 
   double average_velocity_;
   int closest_waypoint_;
@@ -210,6 +214,21 @@ private:
   void publishToVelocityArray();
   std::string createStateMessageText();
   int createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale);
+
+  // judge method
+  // in near future, these methods will be deprecate to decision_maker library
+  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
+  bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
+  bool handleStateCmd(const uint64_t _state_num);
+  // double calcIntersectWayAngle(const CrossRoadArea& area);
+  double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
+
+  void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
+
+  void setWaypointState(autoware_msgs::LaneArray& lane_array);
+  double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
+  double calcPosesAngleDiffN(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
+  double getPoseAngle(const geometry_msgs::Pose& p);
 
   /* for planning according to state*/
   void publishStoppedLaneArray(void);
