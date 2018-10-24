@@ -1,10 +1,13 @@
+#include "main_window.hpp"
+
 #include <QApplication>
-#include <QMainWindow>
 
 int main(int argc, char** argv)
 {
-    QApplication app(argc, argv);
-    QMainWindow window;
+    using namespace autoware_launcher;
+
+    QApplication application(argc, argv);
+    AwMainWindow window;
     window.show();
-    return app.exec();
+    return application.exec();
 }

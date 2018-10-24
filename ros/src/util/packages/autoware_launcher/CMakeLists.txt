@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_launcher)
-
 add_compile_options(-std=c++11)
+
 find_package(catkin REQUIRED)
 find_package(Qt5 5.3 REQUIRED Core Widgets)
 
@@ -18,10 +18,15 @@ catkin_package(
 
 include_directories(
 #  include
+#  src/common
 #  ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_main src/main.cpp)
+add_executable(${PROJECT_NAME}_main
+    src/main.cpp
+    src/main_window.cpp
+    src/launch_button.cpp
+)
 set_target_properties(${PROJECT_NAME}_main PROPERTIES OUTPUT_NAME main PREFIX "")
 target_link_libraries(${PROJECT_NAME}_main ${catkin_LIBRARIES} ${QT_LIBRARIES})
 
