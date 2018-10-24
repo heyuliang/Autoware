@@ -1,11 +1,12 @@
-#ifndef VEHICLE_MONITOR_WIDGET_H_INCLUDED
-#define VEHICLE_MONITOR_WIDGET_H_INCLUDED
+#ifndef VEHICLE_MONITOR_WIDGET_HPP_INCLUDED
+#define VEHICLE_MONITOR_WIDGET_HPP_INCLUDED
 
 #include <QWidget>
 
 namespace autoware_rviz_plugins {
 
-class VehicleMonitorWidget : public QWidget
+class VehicleMonitorPainter;
+class VehicleMonitorWidget final : public QWidget
 {
 	Q_OBJECT
 
@@ -45,12 +46,12 @@ class VehicleMonitorWidget : public QWidget
 
         void paintEvent( QPaintEvent* event ) override;
 
-		void drawControlMode  ( QPainter& painter );
-		void drawSpeedGraph   ( QPainter& painter );
-		void drawAngleGraph   ( QPainter& painter );
-		void drawDualUnitsText( QPainter& painter, const QColor& color, const QString& title, const QString& unit1, const QString& unit2 );
-		void drawPedal        ( QPainter& painter );
-		void drawShift        ( QPainter& painter );
+        void drawControlMode  ( VehicleMonitorPainter& painter );
+        void drawSpeedGraph   ( VehicleMonitorPainter& painter );
+        void drawAngleGraph   ( VehicleMonitorPainter& painter );
+        void drawDualUnitsText( VehicleMonitorPainter& painter, const QColor& color, const QString& title, const QString& unit1, const QString& unit2 );
+        void drawPedal        ( VehicleMonitorPainter& painter );
+        void drawShift        ( VehicleMonitorPainter& painter );
 
         QString toString(double value, int precision);
 
@@ -61,9 +62,9 @@ class VehicleMonitorWidget : public QWidget
         double cmd_angle_deg;
         double status_speed_kph;
         double status_angle_deg;
-        int status_shift;
         int status_accel;
         int status_brake;
+        int status_shift;
         //int status_speed_mode;
         //int status_angle_mode;
 
@@ -75,4 +76,4 @@ class VehicleMonitorWidget : public QWidget
 
 }
 
-#endif // VEHICLE_MONITOR_WIDGET_H_INCLUDED
+#endif // VEHICLE_MONITOR_WIDGET_HPP_INCLUDED

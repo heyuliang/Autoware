@@ -1,30 +1,35 @@
-#include "widget.h"
-
-#include <QPainter>
+#include "widget.hpp"
+#include "painter.hpp"
 
 #include <sstream>
 #include <iomanip>
 
 namespace autoware_rviz_plugins {
 
+const QColor color_white  = QColor(0xFF, 0xFF, 0xFF);
+const QColor color_black  = QColor(0x00, 0x00, 0x00);
+const QColor color_red    = QColor(0xFF, 0x00, 0x00);
+const QColor color_orange = QColor(0xFF, 0xCC, 0x00);
+const QColor color_blue   = QColor(0x40, 0x80, 0xC0);
+
 VehicleMonitorWidget::VehicleMonitorWidget( QWidget* parent ) : QWidget( parent )
 {
-    config_speed_limit = 60;
-    config_brake_limit = 4096;
-    config_accel_limit = 4096;
+    twist_gate_ctrl_mode = CtrlMode::UNKNOWN;
 
     cmd_speed_kph = 0.0;
     cmd_angle_deg = 0.0;
     status_speed_kph = 0.0;
     status_angle_deg = 0.0;
-
-    status_accel =  0;
-    status_brake =  0;
-    status_shift = -1;
+    status_accel = 0;
+    status_brake = 0;
+    status_shift = 0;
     //status_speed_mode = -1;
     //status_angle_mode = -1;
-}
 
+    config_speed_limit =  120;
+    config_brake_limit = 4096;
+    config_accel_limit = 4096;
+}
 
 void VehicleMonitorWidget::setCtrlMode( CtrlMode ctrl_mode )
 {
@@ -88,25 +93,11 @@ void VehicleMonitorWidget::configureTransmission( const GearList& gear_list )
 
 void VehicleMonitorWidget::paintEvent(QPaintEvent *event)
 {
+    VehicleMonitorPainter painter(this);
     const char* unit_kph = " km/h";
     const char* unit_mps = " m/s";
     const char* unit_deg = " deg";
     const char* unit_rad = " rad";
-
-    QPainter painter(this);
-    //painter.setViewport( QRect(0, 0, width(), height()) );
-    //QPoint center = this->geometry().center();
-
-    /*
-     	label_str->setStyleSheet("background:#4080C0; color:#FFCC00F; padding: 20px 5px 10px 15px;");
--       label_kph->setStyleSheet("background:#4080C0; color:#FFFFFF;");
--       label_mps->setStyleSheet("background:#4080C0; color:#FFFFFF;");
-     */
-	/*
-		QFont font = painter.font() ;
-		font.setPointSize(8);
-    	painter.setFont(font);
-    */
 
     int text_height = width() / 8;
     int curr_height = 0;
@@ -141,8 +132,8 @@ void VehicleMonitorWidget::paintEvent(QPaintEvent *event)
 
     // Angle
     {
-        painter.setViewport(0, curr_height, width(), width()*3/4);
-        curr_height += width()*3/4;
+        painter.setViewport(0, curr_height, width(), width()*5/6);
+        curr_height += width()*5/6;
         drawAngleGraph( painter );
 
         QString cmd_deg = toString(cmd_angle_deg,              0) + unit_deg;
@@ -175,7 +166,7 @@ void VehicleMonitorWidget::paintEvent(QPaintEvent *event)
 }
 
 
-void VehicleMonitorWidget::drawControlMode( QPainter& painter )
+void VehicleMonitorWidget::drawControlMode( VehicleMonitorPainter& painter )
 {
 	constexpr QRect rect_remote = QRect(  2, 0, 97, 23);
 	constexpr QRect rect_auto   = QRect(101, 0, 97, 23);
@@ -194,21 +185,30 @@ void VehicleMonitorWidget::drawControlMode( QPainter& painter )
     painter.drawText( rect_auto,   Qt::AlignHCenter | Qt::AlignVCenter, "AUTO"  );
 }
 
-void VehicleMonitorWidget::drawSpeedGraph( QPainter& painter )
+void VehicleMonitorWidget::drawSpeedGraph( VehicleMonitorPainter& painter )
 {
     painter.setWindow(-120, -130, 240, 160);
 
-    // Status
+    // Pie chart of command
     {
-        int status_arc = 180 * (status_speed_kph / config_speed_limit);
+        int ang = 180 * cmd_speed_kph / config_speed_limit;
         painter.setPen(Qt::NoPen);
-        painter.setBrush( QColor(0x40, 0x80, 0xC0) );
-        painter.drawPie(-70, -70, 140, 140, 180 * 16, -180 * 16);
-        painter.setBrush( QColor(0xFF, 0xCC, 0x00) );
-        painter.drawPie(-70, -70, 140, 140, 180 * 16, -status_arc * 16);
-        painter.setBrush( QColor(0x00, 0x00, 0x00) );
-        painter.drawPie(-50, -50, 100, 100, 180 * 16, -180 * 16);
+        painter.drawPieChart(0, 0, 85, 180, -180, color_blue  );
+        painter.drawPieChart(0, 0, 85, 180, -ang, color_white );
+        painter.drawPieChart(0, 0, 75, 180, -180, color_black );
+    }
 
+    // Pie chart of status
+    {
+        int ang = 180 * status_speed_kph / config_speed_limit;
+        painter.setPen(Qt::NoPen);
+        painter.drawPieChart(0, 0, 70, 180, -180, color_blue  );
+        painter.drawPieChart(0, 0, 70, 180, -ang, color_orange);
+        painter.drawPieChart(0, 0, 50, 180, -180, color_black );
+    }
+
+    // Speed text
+    {
         painter.setPen(QColor(0xFF, 0xFF, 0xFF));
         painter.setBrush(Qt::NoBrush);
         painter.drawText( -100 - 20,    0 - 20, 40, 40 , Qt::AlignHCenter | Qt::AlignVCenter, QString::number(config_speed_limit * 0 / 4));
@@ -217,18 +217,9 @@ void VehicleMonitorWidget::drawSpeedGraph( QPainter& painter )
         painter.drawText(   70 - 20,  -70 - 20, 40, 40 , Qt::AlignHCenter | Qt::AlignVCenter, QString::number(config_speed_limit * 3 / 4));
         painter.drawText(  100 - 20,    0 - 20, 40, 40 , Qt::AlignHCenter | Qt::AlignVCenter, QString::number(config_speed_limit * 4 / 4));
     }
-
-    // Command
-    {
-        double rx = cos(M_PI + (M_PI * cmd_speed_kph / config_speed_limit));
-        double ry = sin(M_PI + (M_PI * cmd_speed_kph / config_speed_limit));
-        painter.setPen(QPen(QColor(0xFF, 0xFF, 0xFF), 3));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawLine(rx * 40, ry * 40, rx * 80, ry * 80);
-    }
 }
 
-void VehicleMonitorWidget::drawDualUnitsText( QPainter& painter, const QColor& color, const QString& title, const QString& unit1, const QString& unit2 )
+void VehicleMonitorWidget::drawDualUnitsText( VehicleMonitorPainter& painter, const QColor& color, const QString& title, const QString& unit1, const QString& unit2 )
 {
 	constexpr QRect rect_title = QRect(  2, 0, 48, 23);
 	constexpr QRect rect_unit1 = QRect( 52, 0, 72, 23);
@@ -249,41 +240,38 @@ void VehicleMonitorWidget::drawDualUnitsText( QPainter& painter, const QColor& c
     painter.drawText( rect_unit2, Qt::AlignHCenter | Qt::AlignVCenter, unit2 );
 }
 
-void VehicleMonitorWidget::drawAngleGraph( QPainter& painter )
+void VehicleMonitorWidget::drawAngleGraph( VehicleMonitorPainter& painter )
 {
-    painter.setWindow(-120, -90, 240, 180);
+    const QColor colors_cmd[] = {color_blue, color_white,  color_red};
+    const QColor colors_sts[] = {color_blue, color_orange, color_red};
 
-    // Status
+    painter.setWindow(-120, -100, 240, 200);
+
+    // Pie chart of command
     {
-        QColor color1 = QColor(0x40, 0x80, 0xC0);
-        QColor color2 = QColor(0xFF, 0xCC, 0x00);
-        int status_arc = status_angle_deg;
-        if(status_arc > +360) { status_arc -= 360; color1 = QColor(0xFF, 0xCC, 0x00); color2 = QColor(0xFF, 0x00, 0x00); }
-        if(status_arc < -360) { status_arc += 360; color1 = QColor(0xFF, 0xCC, 0x00); color2 = QColor(0xFF, 0x00, 0x00); }
+        int ang = cmd_angle_deg;
+        int idx = 0;
+        if(ang > +360) { ang -= 360; ++idx; }
+        if(ang < -360) { ang += 360; ++idx; }
         painter.setPen(Qt::NoPen);
-        painter.setBrush(color1);
-        painter.drawPie(-70, -70, 140, 140, 0*16, 360*16);
-        painter.setBrush(color2);
-        painter.drawPie(-70, -70, 140, 140, 90*16, status_arc*16);
-        painter.setBrush(QColor(0x00, 0x00, 0x00));
-        painter.drawPie(-50, -50, 100, 100, 0*16, 360*16);
+        painter.drawPieChart(0, 0, 85, 90, 360, colors_cmd[idx] );
+        painter.drawPieChart(0, 0, 85, 90, ang, colors_cmd[idx + 1] );
+        painter.drawPieChart(0, 0, 75, 90, 360, color_black );
     }
 
-    // Command
+    // Pie chart of status
     {
-        QColor color1 = QColor(0x40, 0x80, 0xC0);
-        QColor color2 = QColor(0xFF, 0xCC, 0x00);
-        int cmd_arc = cmd_angle_deg;
-        if(cmd_arc > +360) { cmd_arc -= 360; color1 = QColor(0xFF, 0xCC, 0x00); color2 = QColor(0xFF, 0x00, 0x00); }
-        if(cmd_arc < -360) { cmd_arc += 360; color1 = QColor(0xFF, 0xCC, 0x00); color2 = QColor(0xFF, 0x00, 0x00); }
-        double rx = cos(-(cmd_arc + 90) * M_PI / 180);
-        double ry = sin(-(cmd_arc + 90) * M_PI / 180);
-        painter.setPen(QPen(QColor(0xFF, 0xFF, 0xFF), 3));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawLine(rx * 40, ry * 40, rx * 80, ry * 80);
+        int ang = status_angle_deg;
+        int idx = 0;
+        if(ang > +360) { ang -= 360; ++idx; }
+        if(ang < -360) { ang += 360; ++idx; }
+        painter.setPen(Qt::NoPen);
+        painter.drawPieChart(0, 0, 70, 90, 360, colors_sts[idx] );
+        painter.drawPieChart(0, 0, 70, 90, ang, colors_sts[idx + 1] );
+        painter.drawPieChart(0, 0, 50, 90, 360, color_black );
     }
 }
-void VehicleMonitorWidget::drawPedal( QPainter& painter )
+void VehicleMonitorWidget::drawPedal( VehicleMonitorPainter& painter )
 {
 	painter.setWindow(0, 0, 240, 120);
 
@@ -303,13 +291,8 @@ void VehicleMonitorWidget::drawPedal( QPainter& painter )
     painter.drawText( 140, 90, 60,  20, Qt::AlignHCenter | Qt::AlignVCenter, "ACCEL");
 }
 
-void VehicleMonitorWidget::drawShift( QPainter& painter )
+void VehicleMonitorWidget::drawShift( VehicleMonitorPainter& painter )
 {
-	constexpr QRect rect_p = QRect(  2, 0, 48, 23);
-	constexpr QRect rect_r = QRect( 52, 0, 48, 23);
-	constexpr QRect rect_d = QRect(102, 0, 48, 23);
-    constexpr QRect rect_n = QRect(152, 0, 48, 23);
-
     if( config_gear_list.empty() )
     {
         painter.setWindow(0, 0, 200, 25);

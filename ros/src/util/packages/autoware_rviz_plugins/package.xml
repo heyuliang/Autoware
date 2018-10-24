@@ -5,10 +5,10 @@
     <description>The autoware_rviz_plugins package</description>
 
     <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+    <maintainer email="isamu.takagi@tier4.jp">Isamu Takagi</maintainer>
     <author>Yusuke FUJII</author>
     <author>h_ohta</author>
     <author>Masaya Kataoka</author>
-    <author>Isamu Takagi</author>
 
     <license>BSD</license>
 
