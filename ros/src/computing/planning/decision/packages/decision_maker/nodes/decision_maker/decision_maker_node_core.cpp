@@ -48,8 +48,6 @@ void DecisionMakerNode::run(void)
   while (ros::ok())
   {
     update();
-    if (enableDisplayMarker)
-      displayMarker();
 
     loop_rate.sleep();
   }
