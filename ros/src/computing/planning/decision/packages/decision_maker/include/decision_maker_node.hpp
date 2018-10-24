@@ -95,7 +95,7 @@ struct AutowareStatus
   // planning status
   autoware_msgs::LaneArray using_lane_array;  // with wpstate
   autoware_msgs::LaneArray based_lane_array;
-  autoware_msgs::lane finalwaypoints;
+  autoware_msgs::Lane finalwaypoints;
   int closest_waypoint;
   int obstacle_waypoint;
   int change_flag;
@@ -215,21 +215,6 @@ private:
   std::string createStateMessageText();
   int createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale);
 
-  // judge method
-  // in near future, these methods will be deprecate to decision_maker library
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
-  bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
-  bool handleStateCmd(const uint64_t _state_num);
-  // double calcIntersectWayAngle(const CrossRoadArea& area);
-  double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
-
-  void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
-
-  void setWaypointState(autoware_msgs::LaneArray& lane_array);
-  double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
-  double calcPosesAngleDiffN(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
-  double getPoseAngle(const geometry_msgs::Pose& p);
-
   /* for planning according to state*/
   void publishStoppedLaneArray(void);
   void publishControlledLaneArray(void);
@@ -249,7 +234,7 @@ private:
   /* decision */
   void tryNextState(cstring_t& key);
   bool isArrivedGoal(void);
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
+  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
   bool handleStateCmd(const uint64_t _state_num);
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
@@ -258,7 +243,7 @@ private:
   bool waitForEvent(cstring_t& key, const bool& flag, const double& timeout);
   bool drivingMissionCheck(void);
 
-  double calcIntersectWayAngle(const autoware_msgs::lane& laneinArea);
+  double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
   double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
   double calcPosesAngleDiffN(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
   double getPoseAngle(const geometry_msgs::Pose& p);
@@ -376,13 +361,13 @@ private:
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped& msg);
   void callbackFromClosestWaypoint(const std_msgs::Int32& msg);
-  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event);
+  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const>& event);
   void callbackFromLaneChangeFlag(const std_msgs::Int32& msg);
-  void callbackFromFinalWaypoint(const autoware_msgs::lane& msg);
+  void callbackFromFinalWaypoint(const autoware_msgs::Lane& msg);
   void callbackFromLaneWaypoint(const autoware_msgs::LaneArray& msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped& msg);
-  void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
   void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);

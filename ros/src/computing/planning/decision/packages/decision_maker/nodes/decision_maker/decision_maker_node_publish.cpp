@@ -4,7 +4,7 @@ namespace decision_maker
 {
 void DecisionMakerNode::publishLampCmd(const E_Lamp& status)
 {
-  autoware_msgs::lamp_cmd lamp_msg;
+  autoware_msgs::LampCmd lamp_msg;
 
   switch (status)
   {
@@ -269,7 +269,7 @@ std::string DecisionMakerNode::createStateMessageText()
 
 void DecisionMakerNode::publishLightColor(int status)
 {
-  autoware_msgs::traffic_light msg;
+  autoware_msgs::TrafficLight msg;
   msg.traffic_light = status;
   Pubs["light_color"].publish(msg);
 }

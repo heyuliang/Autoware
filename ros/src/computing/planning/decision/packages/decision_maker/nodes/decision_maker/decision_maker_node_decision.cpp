@@ -56,7 +56,7 @@ bool DecisionMakerNode::waitForEvent(cstring_t& key, const bool& flag, const dou
   }
   return false;
 }
-double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane& laneinArea)
+double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea)
 {
   double diff = 0.0;
   if (laneinArea.waypoints.empty())

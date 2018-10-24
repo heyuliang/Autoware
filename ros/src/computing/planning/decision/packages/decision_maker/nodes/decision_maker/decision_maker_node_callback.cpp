@@ -62,7 +62,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDec
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const>& event)
 {
-  ROS_WARN("%s is not implemented", __func__)
+  ROS_WARN("%s is not implemented", __func__);
 }
 
 void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg)
@@ -231,7 +231,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
                 amathutils::getNearPtOnLine(center_point, lane.waypoints.at(wp_idx).pose.pose.position,
                                             lane.waypoints.at(wp_idx + 1).pose.pose.position);
 
-            autoware_msgs::waypoint wp = lane.waypoints.at(wp_idx);
+            autoware_msgs::Waypoint wp = lane.waypoints.at(wp_idx);
             wp.wpstate.stop_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
             wp.pose.pose.position.x = interpolation_point.x;
             wp.pose.pose.position.y = interpolation_point.y;
