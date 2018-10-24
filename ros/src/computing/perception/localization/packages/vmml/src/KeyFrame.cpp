@@ -181,7 +181,13 @@ KeyFrame::match (const KeyFrame &kf,
 
 	// Matching itself
 	vector<cv::DMatch> kf2fMatches;
-	matcher->match(kfMpDescriptors, frame.descriptor(), kf2fMatches);
+	matcher->match(frame.descriptor(), kfMpDescriptors, kf2fMatches);
+
+	// Sort descending based on distance
+	sort(kf2fMatches.begin(), kf2fMatches.end(),
+		[&](const cv::DMatch &m1, const cv::DMatch &m2) -> bool
+		{ return m1.distance < m2.distance; }
+	);
 
 	cv::Mat newColorImage;
 	if (doDebugMatch) {
@@ -202,6 +208,7 @@ KeyFrame::match (const KeyFrame &kf,
 		const cv::Point2f &frameKp = frame.keypoints[m.queryIdx].pt;
 
 		if (doDebugMatch) {
+			if (i<=100)
 			cv::line(newColorImage, kf.keypoints[keyframeKp].pt, frameKp, cv::Scalar(0,255,0));
 		}
 

@@ -205,6 +205,8 @@ public:
 	inline const mapKeyValueInfo& getAllInfo() const
 	{ return keyValueInfo; }
 
+	void fixFramePointsInv ();
+
 protected:
 
 	friend class KeyFrame;

@@ -127,6 +127,7 @@ void
 MapBuilder2::build ()
 {
 	mapPointCulling();
+	cMap->fixFramePointsInv();
 
 	thread ba([this] {
 				cout << "Bundling...";
@@ -166,6 +167,8 @@ MapBuilder2::runFromDataset(GenericDataset *ds)
 void
 MapBuilder2::mapPointCulling()
 {
+	cout << "Culling points...";
+
 	vector<mpid> mpToRemove;
 	const int minKfRelatedFromMP = 3;
 	auto allMapPoints = cMap->allMapPoints();

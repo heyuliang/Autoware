@@ -69,7 +69,7 @@ Localizer::detect (cv::Mat &frmImg)
  *  XXX: need alternative, ie. using brute force matching from OpenCV, and check using projection
  */
 
-	auto bfMatch = cv::BFMatcher::create();
+//	auto bfMatch = cv::BFMatcher::create();
 
 	size_t bestKfScore=0;
 	kfid bestKfId;
@@ -78,7 +78,7 @@ Localizer::detect (cv::Mat &frmImg)
 
 		const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[i]);
 		vector<FeaturePair> kfMatches;
-		KeyFrame::match(kf, frame, kfMatches, bfMatch);
+		KeyFrame::match(kf, frame, kfMatches, sourceMap->getDescriptorMatcher());
 
 		size_t curScore = kfMatches.size();
 		if (curScore < 15) {

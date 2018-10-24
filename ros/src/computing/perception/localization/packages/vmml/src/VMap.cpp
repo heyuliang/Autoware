@@ -525,7 +525,7 @@ VMap::createDescriptorMatcher(DescriptorMatcherT dm)
 {
 	switch (dm) {
 	case DescriptorMatcherT::BruteForce:
-		return cv::BFMatcher::create(cv::NORM_HAMMING2);
+		return cv::BFMatcher::create(cv::NORM_HAMMING2, true);
 		break;
 	}
 }
@@ -664,7 +664,7 @@ VMap::removeMapPoint (const mpid &i)
 	for (auto k: ptAppears) {
 		const kpid kp = framePoints[k].at(i);
 		framePoints[k].erase(i);
-		framePointsInv[k].erase(kp);
+//		framePointsInv[k].erase(kp);
 	}
 
 	pointAppearances.erase(i);
@@ -675,4 +675,17 @@ VMap::removeMapPoint (const mpid &i)
 	}
 
 	return true;
+}
+
+
+void
+VMap::fixFramePointsInv ()
+{
+	framePointsInv.clear();
+
+	for (auto &mpPtr: framePoints) {
+		const kfid &kf = mpPtr.first;
+		framePointsInv[kf] = reverseMap(framePoints[kf]);
+	}
+
 }
