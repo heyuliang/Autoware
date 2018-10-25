@@ -149,7 +149,7 @@ void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg)
   _initial_set = true;
 }
 
-void waypointCallback(const autoware_msgs::laneConstPtr &msg)
+void waypointCallback(const autoware_msgs::LaneConstPtr &msg)
 {
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 
   private_nh.param("position_error", g_position_error, double(0.0));
   private_nh.param("angle_error", g_angle_error, double(0.0));
-  private_nh.param("vehicle_info/wheel_base", g_wheel_base_m, double(2.7));
+  nh.param("vehicle_info/wheel_base", g_wheel_base_m, double(2.7));
 
   private_nh.param("use_ctrl_cmd", _use_ctrl_cmd, false);
   // publish topic
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
   {
     initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
   }
-  else if (initialize_source == "ndt_localizer")
+  else if (initialize_source == "lidar_localizer")
   {
     initialpose_subscriber = nh.subscribe("ndt_pose", 10, callbackFromPoseStamped);
   }
