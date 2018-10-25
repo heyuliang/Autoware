@@ -165,23 +165,13 @@ KeyFrame::match (const KeyFrame &kf,
 		cv::Ptr<cv::DescriptorMatcher> matcher)
 {
 	static bool doDebugMatch = false;
+	const int maxDebugMatchPair = 80;
 
-	// Select all map points and their keypoints in the keyframe
-	auto mapPtList = kf.parentMap->allMapPointsAtKeyFrame(kf.id);
-	cv::Mat kfMpDescriptors (mapPtList.size(), kf.descriptors.cols, kf.descriptors.type());
-	vector<kpid> kpToMatchList (mapPtList.size());
 	featurePairs.clear();
-
-	int i = 0;
-	for (auto &p: mapPtList) {
-		kfMpDescriptors.row(i) = kf.getDescriptorAt(p.second);
-		kpToMatchList[i] = p.second;
-		i++;
-	}
 
 	// Matching itself
 	vector<cv::DMatch> kf2fMatches;
-	matcher->match(frame.descriptor(), kfMpDescriptors, kf2fMatches);
+	matcher->match(frame.descriptor(), kf.descriptors, kf2fMatches);
 
 	// Sort descending based on distance
 	sort(kf2fMatches.begin(), kf2fMatches.end(),
@@ -196,27 +186,27 @@ KeyFrame::match (const KeyFrame &kf,
 
 	// Projection check
 	int correctProjection = 0;
-	for (i=0; i<kf2fMatches.size(); ++i) {
+	for (int i=0; i<kf2fMatches.size(); ++i) {
 		auto &m = kf2fMatches[i];
 
-		if (m.trainIdx >= mapPtList.size() or m.queryIdx >= frame.keypoints.size())
+		if (m.trainIdx >= kf.keypoints.size() or m.queryIdx >= frame.keypoints.size())
 			continue;
 
-		kpid keyframeKp = kpToMatchList[m.trainIdx];
-		const MapPoint &mp = *kf.parentMap->mappoint(kf.parentMap->getMapPointByKeypoint(kf.id, keyframeKp));
-		const Vector2d keypointProj = kf.project(mp);
 		const cv::Point2f &frameKp = frame.keypoints[m.queryIdx].pt;
 
 		if (doDebugMatch) {
-			if (i<=100)
-			cv::line(newColorImage, kf.keypoints[keyframeKp].pt, frameKp, cv::Scalar(0,255,0));
+			if (i<=maxDebugMatchPair)
+			cv::line(newColorImage, kf.keypoints[m.trainIdx].pt, frameKp, cv::Scalar(0,255,0));
 		}
 
-		float projDev = (convertToEigen(frameKp) - keypointProj.cast<float>()).norm();
+		/*
+		 * XXX: We need an implementation of semi optical flow here
+		 */
+		float projDev = (convertToEigen(frameKp) - convertToEigen(kf.keypoints[m.trainIdx].pt)).norm();
 		if (projDev >= pixelReprojectionError)
 			continue;
 
-		FeaturePair fp = {keyframeKp, kf.keypoints[keyframeKp].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
+		FeaturePair fp = {m.trainIdx, kf.keypoints[m.trainIdx].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
 		featurePairs.push_back(fp);
 
 	}
