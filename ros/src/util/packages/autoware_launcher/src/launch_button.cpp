@@ -6,22 +6,33 @@ namespace autoware_launcher {
 
 AwLaunchButton::AwLaunchButton(const QString& text, QWidget* parent) : QPushButton(text, parent)
 {
-    process = new QProcess(this);
+    process_ = new QProcess(this);
 
     setCheckable(true);
     connect(this, &AwLaunchButton::toggled, this, &AwLaunchButton::onToggled);
-    connect(process, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &AwLaunchButton::onFinished);
+    connect(process_, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &AwLaunchButton::onFinished);
+}
+
+void AwLaunchButton::setProgram(const QString& program)
+{
+    process_->setProgram(program);
+}
+
+void AwLaunchButton::setNativeArguments(const QString& arguments)
+{
+
+    process_->setArguments(QStringList(arguments));
 }
 
 void AwLaunchButton::onToggled(bool checked)
 {
     if(checked)
     {
-        process->start("rosrun rviz rviz");
+        process_->start();
     }
     else
     {
-        process->terminate();
+        process_->terminate();
     }
 }
 

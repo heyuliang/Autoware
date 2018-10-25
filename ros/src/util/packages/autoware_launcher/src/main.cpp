@@ -4,10 +4,8 @@
 
 int main(int argc, char** argv)
 {
-    using namespace autoware_launcher;
-
     QApplication application(argc, argv);
-    AwMainWindow window;
+    autoware_launcher::AwMainWindow window;
     window.show();
     return application.exec();
 }

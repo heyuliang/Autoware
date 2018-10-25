@@ -1,5 +1,5 @@
-#ifndef AUTOWARE_LAUNCHER_LAUNCH_BUTTON_HPP_INCLUDED
-#define AUTOWARE_LAUNCHER_LAUNCH_BUTTON_HPP_INCLUDED
+#ifndef AUTOWARE_LAUNCHER_LAUNCH_BUTTON_HPP_
+#define AUTOWARE_LAUNCHER_LAUNCH_BUTTON_HPP_
 
 #include <QPushButton>
 class QProcess;
@@ -12,8 +12,13 @@ class AwLaunchButton : public QPushButton
 
     public:
 
-        AwLaunchButton(const QString& text, QWidget* parent = 0);
-        ~AwLaunchButton() = default;
+        AwLaunchButton(const QString& text, QWidget* parent = nullptr);
+        virtual ~AwLaunchButton() = default;
+
+    public Q_SLOTS:
+
+        void setProgram(const QString& program);
+        void setNativeArguments(const QString& arguments);
 
     private Q_SLOTS:
 
@@ -22,7 +27,7 @@ class AwLaunchButton : public QPushButton
 
     private:
 
-        QProcess* process;
+        QProcess* process_;
 };
 
 }

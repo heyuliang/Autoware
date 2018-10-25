@@ -1,18 +1,22 @@
-#ifndef AUTOWARE_LAUNCHER_MAIN_WINDOW_HPP_INCLUDED
-#define AUTOWARE_LAUNCHER_MAIN_WINDOW_HPP_INCLUDED
+#ifndef AUTOWARE_LAUNCHER_MAIN_WINDOW_HPP_
+#define AUTOWARE_LAUNCHER_MAIN_WINDOW_HPP_
 
+#include "util/config.hpp"
 #include <QMainWindow>
 
 namespace autoware_launcher {
 
-class AwMainWindow : public QMainWindow
+class AwMainWindow : public QMainWindow, public AwConfigMixin
 {
     Q_OBJECT
 
     public:
 
         AwMainWindow();
-        ~AwMainWindow() = default;
+        virtual ~AwMainWindow() = default;
+
+        void saveConfig(AwConfig &config) override;
+        void loadConfig(AwConfig &config) override;
 };
 
 }
