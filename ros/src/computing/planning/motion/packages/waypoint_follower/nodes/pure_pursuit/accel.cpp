@@ -34,19 +34,16 @@
 
 static double limit(double val, double max_limit, double min_limit)
 {
-    double ret = val;
-    if(val > max_limit)
-      ret = max_limit;
-    else if(val < min_limit)
-      ret = min_limit;
-    return ret;
+  double ret = val;
+  if (val > max_limit)
+    ret = max_limit;
+  else if (val < min_limit)
+    ret = min_limit;
+  return ret;
 }
 
-Accel::Accel()
-    : target_velocity(0)
-    , current_velocity(0)
+Accel::Accel() : target_velocity(0), current_velocity(0), jerk_limit(0.2), accel_limit(2.0)
 {
-
 }
 
 void Accel::setTargetVelocity(const double target_velocity)
@@ -61,61 +58,61 @@ void Accel::setCurrentVelocity(const double current_velocity)
 
 double Accel::computeAccel() const
 {
-  const double jerk_limit = 0.2;
-  const double accel_limit = 2.0;
-  const double dt = 0.3;
+  static ros::Time prev_time = ros::Time::now();
+
+  const double dt = (ros::Time::now() - prev_time).toSec() /*0.3*/;
   static double accel = 0;
 
   double v = current_velocity;
   double a = accel;
-  if(target_velocity - current_velocity > 0)
+  if (target_velocity - current_velocity > 0)
   {
-      bool is_acceleration = false;
+    bool is_acceleration = false;
 
-      while(1)
+    while (1)
+    {
+      v += a;
+      if (v > target_velocity)
       {
-          v += a;
-          if(v > target_velocity)
-          {
-            is_acceleration = false;
-            break;
-          }
-          a -= jerk_limit;
-          if(a <= 0)
-          {
-            is_acceleration = true;
-            break;
-          }
+        is_acceleration = false;
+        break;
       }
-      if(is_acceleration)
-         accel += jerk_limit*dt;
-      else
-        accel -= jerk_limit*dt;
+      a -= jerk_limit;
+      if (a <= 0)
+      {
+        is_acceleration = true;
+        break;
+      }
+    }
+    if (is_acceleration)
+      accel += jerk_limit * dt;
+    else
+      accel -= jerk_limit * dt;
   }
   else
   {
-      bool is_deceleration = false;
-      while(1)
+    bool is_deceleration = false;
+    while (1)
+    {
+      v += a;
+      if (v < target_velocity)
       {
-          v += a;
-          if(v < target_velocity)
-          {
-            is_deceleration = false;
-            break;
-          }
-          a += jerk_limit;
-          if(a >= 0)
-          {
-            is_deceleration = true;
-            break;
-          }
+        is_deceleration = false;
+        break;
       }
-      if(is_deceleration)
-         accel -= jerk_limit*dt;
-      else
-        accel += jerk_limit*dt;
+      a += jerk_limit;
+      if (a >= 0)
+      {
+        is_deceleration = true;
+        break;
+      }
+    }
+    if (is_deceleration)
+      accel -= jerk_limit * dt;
+    else
+      accel += jerk_limit * dt;
   }
   accel = limit(accel, accel_limit, -accel_limit);
-  std::cout << current_velocity << " " << target_velocity << " " << accel << std::endl;
+  prev_time = ros::Time::now();
   return accel;
 }

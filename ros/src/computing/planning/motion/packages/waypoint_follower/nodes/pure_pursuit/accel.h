@@ -28,13 +28,24 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class Accel{
-    public:
-        Accel();
-        void setTargetVelocity(const double current_velocity);
-        void setCurrentVelocity(const double targe_velocity);
-        double computeAccel() const;
-    private:
-        double target_velocity;
-        double current_velocity;
+#include <ros/ros.h>
+
+class Accel
+{
+private:
+  double jerk_limit;
+  double accel_limit;
+  double target_velocity;
+  double current_velocity;
+
+public:
+  Accel();
+  void setTargetVelocity(const double current_velocity);
+  void setCurrentVelocity(const double targe_velocity);
+  double computeAccel() const;
+  void setParam(const double _jerk_limit, const double _accel_limit)
+  {
+    jerk_limit = _jerk_limit;
+    accel_limit = _accel_limit;
+  }
 };

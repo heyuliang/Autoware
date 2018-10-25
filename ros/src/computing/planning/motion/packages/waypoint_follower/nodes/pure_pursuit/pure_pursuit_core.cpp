@@ -34,14 +34,25 @@
 
 #include "pure_pursuit_core.h"
 
-namespace waypoint_follower {
+namespace waypoint_follower
+{
 // Constructor
 PurePursuitNode::PurePursuitNode()
-    : private_nh_("~"), pp_(), LOOP_RATE_(30), is_waypoint_set_(false),
-      is_pose_set_(false), is_velocity_set_(false), is_config_set_(false),
-      current_linear_velocity_(0), command_linear_velocity_(0), param_flag_(-1),
-      const_lookahead_distance_(4.0), const_velocity_(5.0),
-      lookahead_distance_ratio_(2.0), minimum_lookahead_distance_(6.0) {
+  : private_nh_("~")
+  , pp_()
+  , LOOP_RATE_(30)
+  , is_waypoint_set_(false)
+  , is_pose_set_(false)
+  , is_velocity_set_(false)
+  , is_config_set_(false)
+  , current_linear_velocity_(0)
+  , command_linear_velocity_(0)
+  , param_flag_(-1)
+  , const_lookahead_distance_(4.0)
+  , const_velocity_(5.0)
+  , lookahead_distance_ratio_(2.0)
+  , minimum_lookahead_distance_(6.0)
+{
   initForROS();
 
   // initialize for PurePursuit
@@ -49,26 +60,30 @@ PurePursuitNode::PurePursuitNode()
 }
 
 // Destructor
-PurePursuitNode::~PurePursuitNode() {}
+PurePursuitNode::~PurePursuitNode()
+{
+}
 
-void PurePursuitNode::initForROS() {
+void PurePursuitNode::initForROS()
+{
   // ros parameter settings
-  private_nh_.param("is_linear_interpolation", is_linear_interpolation_,
-                    bool(true));
+  private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
   // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
-  private_nh_.param("publishes_for_steering_robot",
-                    publishes_for_steering_robot_, bool(false));
+  private_nh_.param("publishes_for_steering_robot", publishes_for_steering_robot_, bool(false));
   nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
 
+  double accel_jerk_limit;
+  double accel_limit;
+  private_nh_.param("accel_jerk_limit", accel_jerk_limit, double(0.2));
+  private_nh_.param("accel_limit", accel_limit, double(2.0));
+  accel_.setParam(accel_jerk_limit, accel_limit);
+
+  private_nh_.param("publishes_for_steering_robot", publishes_for_steering_robot_, bool(false));
   // setup subscriber
-  sub1_ = nh_.subscribe("final_waypoints", 10,
-                        &PurePursuitNode::callbackFromWayPoints, this);
-  sub2_ = nh_.subscribe("current_pose", 10,
-                        &PurePursuitNode::callbackFromCurrentPose, this);
-  sub3_ = nh_.subscribe("config/waypoint_follower", 10,
-                        &PurePursuitNode::callbackFromConfig, this);
-  sub4_ = nh_.subscribe("current_velocity", 10,
-                        &PurePursuitNode::callbackFromCurrentVelocity, this);
+  sub1_ = nh_.subscribe("final_waypoints", 10, &PurePursuitNode::callbackFromWayPoints, this);
+  sub2_ = nh_.subscribe("current_pose", 10, &PurePursuitNode::callbackFromCurrentPose, this);
+  sub3_ = nh_.subscribe("config/waypoint_follower", 10, &PurePursuitNode::callbackFromConfig, this);
+  sub4_ = nh_.subscribe("current_velocity", 10, &PurePursuitNode::callbackFromCurrentVelocity, this);
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
@@ -76,22 +91,23 @@ void PurePursuitNode::initForROS() {
   pub11_ = nh_.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   pub12_ = nh_.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
-  pub14_ = nh_.advertise<visualization_msgs::Marker>("line_point_mark",
-                                                     0); // debug tool
-  pub15_ =
-      nh_.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
+  pub14_ = nh_.advertise<visualization_msgs::Marker>("line_point_mark", 0);  // debug tool
+  pub15_ = nh_.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
   pub16_ = nh_.advertise<std_msgs::Float32>("angular_gravity", 0);
   pub17_ = nh_.advertise<std_msgs::Float32>("deviation_of_current_position", 0);
+  virtual_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>(ros::this_node::getName() + "/virtual_current_pose", 0);
   // pub7_ = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 }
 
-void PurePursuitNode::run() {
+void PurePursuitNode::run()
+{
   ROS_INFO_STREAM("pure pursuit start");
   ros::Rate loop_rate(LOOP_RATE_);
-  while (ros::ok()) {
+  while (ros::ok())
+  {
     ros::spinOnce();
-    if (!is_pose_set_ || !is_waypoint_set_ || !is_velocity_set_ ||
-        !is_config_set_) {
+    if (!is_pose_set_ || !is_waypoint_set_ || !is_velocity_set_ || !is_config_set_)
+    {
       ROS_WARN("Necessary topics are not subscribed yet ... ");
       loop_rate.sleep();
       continue;
@@ -107,19 +123,15 @@ void PurePursuitNode::run() {
 
     // for visualization with Rviz
     pub11_.publish(displayNextWaypoint(pp_.getPoseOfNextWaypoint()));
-    pub13_.publish(displaySearchRadius(pp_.getCurrentPose().position,
-                                       pp_.getLookaheadDistance()));
+    pub13_.publish(displaySearchRadius(pp_.getCurrentPose().position, pp_.getLookaheadDistance()));
     pub12_.publish(displayNextTarget(pp_.getPoseOfNextTarget()));
-    pub15_.publish(
-        displayTrajectoryCircle(waypoint_follower::generateTrajectoryCircle(
-            pp_.getPoseOfNextTarget(), pp_.getCurrentPose())));
+    pub15_.publish(displayTrajectoryCircle(
+        waypoint_follower::generateTrajectoryCircle(pp_.getPoseOfNextTarget(), pp_.getCurrentPose())));
     std_msgs::Float32 angular_gravity_msg;
-    angular_gravity_msg.data =
-        computeAngularGravity(computeCommandVelocity(), kappa);
+    angular_gravity_msg.data = computeAngularGravity(computeCommandVelocity(), kappa);
     pub16_.publish(angular_gravity_msg);
 
-    publishDeviationCurrentPosition(pp_.getCurrentPose().position,
-                                    pp_.getCurrentWaypoints());
+    publishDeviationCurrentPosition(pp_.getCurrentPose().position, pp_.getCurrentWaypoints());
 
     is_pose_set_ = false;
     is_velocity_set_ = false;
@@ -129,8 +141,8 @@ void PurePursuitNode::run() {
   }
 }
 
-void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature,
-                                          const double &kappa) const {
+void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const double &kappa) const
+{
   geometry_msgs::TwistStamped ts;
   ts.header.stamp = ros::Time::now();
   ts.twist.linear.x = can_get_curvature ? computeCommandVelocity() : 0;
@@ -138,8 +150,8 @@ void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature,
   pub1_.publish(ts);
 }
 
-void PurePursuitNode::publishControlCommandStamped(
-    const bool &can_get_curvature, const double &kappa) const {
+void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const
+{
   if (!publishes_for_steering_robot_)
     return;
 
@@ -147,86 +159,122 @@ void PurePursuitNode::publishControlCommandStamped(
   ccs.header.stamp = ros::Time::now();
   ccs.cmd.linear_velocity = can_get_curvature ? computeCommandVelocity() : 0;
   ccs.cmd.linear_acceleration = can_get_curvature ? accel_.computeAccel() : 0;
-  ccs.cmd.steering_angle =
-      can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa)
-                        : 0;
+  ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
 
   pub2_.publish(ccs);
 }
 
-double PurePursuitNode::computeLookaheadDistance() const {
+double PurePursuitNode::computeLookaheadDistance() const
+{
   if (param_flag_ == enumToInteger(Mode::dialog))
     return const_lookahead_distance_;
 
   double maximum_lookahead_distance = current_linear_velocity_ * 10;
   double ld = current_linear_velocity_ * lookahead_distance_ratio_;
 
-  return ld < minimum_lookahead_distance_
-             ? minimum_lookahead_distance_
-             : ld > maximum_lookahead_distance ? maximum_lookahead_distance
-                                               : ld;
+  return ld < minimum_lookahead_distance_ ? minimum_lookahead_distance_ :
+                                            ld > maximum_lookahead_distance ? maximum_lookahead_distance : ld;
 }
 
-double PurePursuitNode::computeCommandVelocity() const {
+double PurePursuitNode::computeCommandVelocity() const
+{
   if (param_flag_ == enumToInteger(Mode::dialog))
     return kmph2mps(const_velocity_);
 
   return command_linear_velocity_;
 }
 
-double PurePursuitNode::computeAngularGravity(double velocity,
-                                              double kappa) const {
+double PurePursuitNode::computeAngularGravity(double velocity, double kappa) const
+{
   const double gravity = 9.80665;
   return (velocity * velocity) / (1.0 / kappa * gravity);
 }
 
-void PurePursuitNode::callbackFromConfig(
-    const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config) {
+void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config)
+{
   param_flag_ = config->param_flag;
   const_lookahead_distance_ = config->lookahead_distance;
   const_velocity_ = config->velocity;
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
   is_config_set_ = true;
+  delay_ = config->delay;
 }
 
-void PurePursuitNode::publishDeviationCurrentPosition(
-    const geometry_msgs::Point &point,
-    const std::vector<autoware_msgs::Waypoint> &waypoints) const {
+void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
+                                                      const std::vector<autoware_msgs::Waypoint> &waypoints) const
+{
   // Calculate the deviation of current position from the waypoint approximate
   // line
 
-  if (waypoints.size() < 3) {
+  if (waypoints.size() < 3)
+  {
     return;
   }
 
   double a, b, c;
   double linear_flag_in =
-      getLinearEquation(waypoints.at(2).pose.pose.position,
-                        waypoints.at(1).pose.pose.position, &a, &b, &c);
+      getLinearEquation(waypoints.at(2).pose.pose.position, waypoints.at(1).pose.pose.position, &a, &b, &c);
 
   std_msgs::Float32 msg;
   msg.data = getDistanceBetweenLineAndPoint(point, a, b, c);
 
   pub17_.publish(msg);
+  return;
 }
 
-void PurePursuitNode::callbackFromCurrentPose(
-    const geometry_msgs::PoseStampedConstPtr &msg) {
-  pp_.setCurrentPose(msg);
+void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+{
+  geometry_msgs::PoseStamped current_pose = *msg;
+  if (current_angular_velocity_ != 0)
+  {
+    double r = current_linear_velocity_ / current_angular_velocity_;
+    double theta = current_angular_velocity_ * delay_;
+    tf::Quaternion current_quat(current_pose.pose.orientation.x, current_pose.pose.orientation.y,
+                                current_pose.pose.orientation.z, current_pose.pose.orientation.w);
+    double current_roll, current_pitch, current_yaw;
+    tf::Matrix3x3(current_quat).getRPY(current_roll, current_pitch, current_yaw);
+    double dx = 2 * r * std::sin(0.5 * theta) * std::sin(theta + current_yaw);
+    double dy = 2 * r * std::sin(0.5 * theta) * std::cos(theta + current_yaw);
+    current_pose.pose.position.x = current_pose.pose.position.x + dx;
+    current_pose.pose.position.y = current_pose.pose.position.y + dy;
+    tf::Quaternion virtual_quat = tf::createQuaternionFromRPY(current_roll, current_pitch, current_yaw + theta);
+    geometry_msgs::Quaternion quat;
+    quaternionTFToMsg(virtual_quat, quat);
+    current_pose.pose.orientation = quat;
+    pp_.setCurrentPose(current_pose);
+  }
+  else
+  {
+    double l = current_linear_velocity_ * delay_;
+    tf::Quaternion current_quat(current_pose.pose.orientation.x, current_pose.pose.orientation.y,
+                                current_pose.pose.orientation.z, current_pose.pose.orientation.w);
+    double current_roll, current_pitch, current_yaw;
+    tf::Matrix3x3(current_quat).getRPY(current_roll, current_pitch, current_yaw);
+    double dx = l * std::sin(current_yaw);
+    double dy = l * std::cos(current_yaw);
+    current_pose.pose.position.x = msg->pose.position.x + dx;
+    current_pose.pose.position.y = msg->pose.position.y + dy;
+    current_pose.pose.orientation = current_pose.pose.orientation;
+    pp_.setCurrentPose(current_pose);
+  }
+  virtual_pose_pub_.publish(current_pose);
   is_pose_set_ = true;
+  return;
 }
 
-void PurePursuitNode::callbackFromCurrentVelocity(
-    const geometry_msgs::TwistStampedConstPtr &msg) {
+void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
+{
   current_linear_velocity_ = msg->twist.linear.x;
+  current_angular_velocity_ = msg->twist.angular.z;
   pp_.setCurrentVelocity(current_linear_velocity_);
   accel_.setCurrentVelocity(current_linear_velocity_);
   is_velocity_set_ = true;
+  return;
 }
 
-void PurePursuitNode::callbackFromWayPoints(
-    const autoware_msgs::LaneConstPtr &msg) {
+void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg)
+{
   if (!msg->waypoints.empty())
     command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
   else
@@ -235,11 +283,12 @@ void PurePursuitNode::callbackFromWayPoints(
   pp_.setCurrentWaypoints(msg->waypoints);
   accel_.setTargetVelocity(command_linear_velocity_);
   is_waypoint_set_ = true;
+  return;
 }
 
-double convertCurvatureToSteeringAngle(const double &wheel_base,
-                                       const double &kappa) {
+double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
+{
   return atan(wheel_base * kappa);
 }
 
-} // waypoint_follower
+}  // waypoint_follower
