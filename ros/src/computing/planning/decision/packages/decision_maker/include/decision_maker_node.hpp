@@ -181,6 +181,7 @@ private:
   bool enableDisplayMarker;
   bool auto_mission_reload_;
   bool use_management_system_;
+  bool disuse_vector_map_;
   uint32_t param_num_of_steer_behind_;
   double change_threshold_dist_;
   double change_threshold_angle_;

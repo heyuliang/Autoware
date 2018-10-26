@@ -2064,72 +2064,88 @@ params :
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
-    - name : enable_display_marker
-      desc : enable display marker flag
-      label: enable_display_marker
-      kind : checkbox
-      v    : False
-    - name : num_of_steer_behind
-      desc : e
-      label: num_of_steer_behind
-      min  : 0
-      max  : 50
-      v    : 20
-    - name : goal_threshold_dist
-      desc : Threshold for transitioning to the MissionComplete state(distance between the vehicle and the end of waypoints).[m]
-      label: goal_threshold_dist
-      min  : 0.1
-      max  : 5.0
-      v    : 3.0
-    - name : goal_threshold_vel
-      desc : Threshold for transitioning to the MissionComplete state(velocity of the vehicle).[km/h]
-      label: goal_threshold_vel
-      min  : 0.0
-      max  : 0.1
-      v    : 0.1
-    - name : change_threshold_dist
-      desc : Distance threashold for DrivingMissionChange state, between current pose and new closest waypoit.[m]
-      label: change_threshold_dist
-      min  : 0.0
-      max  : 10.0
-      v    : 1.0
-    - name : change_threshold_angle
-      desc : Angle threashold for DrivingMissionChange state, between current pose and new closest waypoint.[deg]
-      label: change_threshold_angle
-      min  : 0.0
-      max  : 90.0
-      v    : 15.0
-    - name : time_to_avoidance
-      desc : The stop time until the state transitions to Avoidance state after the vehicle stops due to the obstacle.[s]
-      label: time_to_avoidance
-      min  : 0.0
-      max  : 60.0
-      v    : 3.0
-    - name : points_topic
-      desc : points_topic
-      kind  : topic
-      topic_type : sensor_msgs/PointCloud2
-      v    : /points_lanes
-      cmd_param:
+    - name  : enable_display_marker
+      desc  : enable display marker flag
+      label : enable_display_marker
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : disuse_vector_map
+      desc  : If this is enabled, the state passes through the MapInit state without vectormap.
+      label : disuse_vector_map
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : num_of_steer_behind
+      desc  : e
+      label : num_of_steer_behind
+      min   : 0
+      max   : 50
+      v     : 20
+    - name  : goal_threshold_dist
+      desc  : Threshold for transitioning to the MissionComplete state(distance between the vehicle and the end of waypoints).
+      label : goal_threshold_dist[m]
+      min   : 0.1
+      max   : 5.0
+      v     : 3.0
+    - name  : goal_threshold_vel
+      desc  : Threshold for transitioning to the MissionComplete state(velocity of the vehicle).
+      label : goal_threshold_vel[km/h]
+      min   : 0.0
+      max   : 0.1
+      v     : 0.1
+    - name  : change_threshold_dist
+      desc  : Distance threashold for DrivingMissionChange state, between current pose and new closest waypoit.
+      label : change_threshold_dist[m]
+      min   : 0.0
+      max   : 10.0
+      v     : 1.0
+    - name  : change_threshold_angle
+      desc  : Angle threashold for DrivingMissionChange state, between current pose and new closest waypoint.
+      label : change_threshold_angle[deg]
+      min   : 0.0
+      max   : 90.0
+      v     : 15.0
+    - name  : time_to_avoidance
+      desc  : The stop time until the state transitions to Avoidance state after the vehicle stops due to the obstacle.
+      label : time_to_avoidance[s]
+      min   : 0.0
+      max   : 60.0
+      v     : 3.0
+    - name  : points_topic
+      desc  : points_topic
+      kind  : str
+      v     : /points_lanes
+      cmd_param :
               dash : ''
               delim: ':='
-    - name : baselink_tf
-      desc : baselnk_tf
-      kind : str
-      v    : base_link
-      cmd_param:
+    - name  : baselink_tf
+      desc  : baselnk_tf
+      kind  : str
+      v     : base_link
+      cmd_param :
               dash : ''
               delim: ':='
-    - name : use_management_system
-      desc : If this is disbled, part of the state transition is automatically executed.
-      label: use_management_system
-      kind : checkbox
-      v    : False
-    - name : auto_mission_reload
-      desc : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
-      label: auto_mission_reload
-      kind : checkbox
-      v    : False
+    - name  : use_management_system
+      desc  : If this is disbled, part of state transitions are automatically executed.
+      label : use_management_system
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_mission_reload
+      desc  : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
+      label : auto_mission_reload
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
 
   - name  : car_kf
