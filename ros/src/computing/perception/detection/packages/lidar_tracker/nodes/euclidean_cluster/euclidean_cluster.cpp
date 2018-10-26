@@ -401,7 +401,7 @@ std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>:
 	std::cout << "Set input = " << timeDiff(start, end) << std::endl;
 
 	gettimeofday(&start, NULL);
-	gecl_cluster.extractClusters4();
+	gecl_cluster.extractClusters2();
 	std::cout << "End of extraction " << std::endl;
 	std::vector<GpuEuclideanCluster2::GClusterIndex> cluster_indices = gecl_cluster.getOutput();
 	gettimeofday(&end, NULL);
@@ -612,22 +612,27 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
 		struct timeval start, end;
-
+#ifndef timeDiff
 #define timeDiff(s, e) ((e.tv_sec - s.tv_sec) * 1000000 + (e.tv_usec - s.tv_usec))
+#endif
 #ifdef GPU_CLUSTERING
     std::vector<ClusterPtr> local_clusters;
     std::cout << "Size of segment array = " << cloud_segments_array[i]->points.size() << std::endl;
-//#ifdef RUN_GPU_
+#ifdef RUN_GPU_
 		//if (_use_gpu) {
-			gettimeofday(&start, NULL);
+	gettimeofday(&start, NULL);
+    if (cloud_segments_array[i]->points.size() > 500) {
 			local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
-			gettimeofday(&end, NULL);
+    } else {
+		local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
+    }
+	gettimeofday(&end, NULL);
 
-			std::cout << "GPU num clusters = " << local_clusters.size() << std::endl;
-			std::cout << "GPU Execution time = " << timeDiff(start, end) << std::endl;
+	std::cout << "GPU num clusters = " << local_clusters.size() << std::endl;
+	std::cout << "GPU-CPU co-execution time = " << timeDiff(start, end) << std::endl << std::endl;
 
 			out_file << cloud_segments_array[i]->points.size() << "," << timeDiff(start, end) << ",";
-//#else		//} else {
+#else		//} else {
 			gettimeofday(&start, NULL);
 			local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
 			gettimeofday(&end, NULL);
@@ -637,7 +642,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 			out_file << timeDiff(start, end) << std::endl;
 		//}
-//#endif
+#endif
 #else
 		std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
 #endif
