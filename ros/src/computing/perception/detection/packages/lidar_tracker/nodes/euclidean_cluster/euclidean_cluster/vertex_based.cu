@@ -320,6 +320,9 @@ void GpuEuclideanCluster2::extractClusters2()
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	gettimeofday(&start, NULL);
+
+	int itr = 0;
+
 	do {
 #ifndef HOST_ALLOC_
 		hchanged = false;
@@ -341,12 +344,14 @@ void GpuEuclideanCluster2::extractClusters2()
 		checkCudaErrors(cudaMemcpy(&hchanged, changed, sizeof(bool), cudaMemcpyDeviceToHost));
 	} while (hchanged);
 #else
-} while (*changed);
+		itr++;
+	} while (*changed);
 #endif
 
-gettimeofday(&end, NULL);
+	gettimeofday(&end, NULL);
 
-std::cout << "Iteration = " << timeDiff(start, end) << std::endl;
+	std::cout << "Iteration = " << timeDiff(start, end) << std::endl;
+	std::cout << "Iteration num = " << itr << std::endl;
 
 	// renaming clusters
 	int *cluster_location;

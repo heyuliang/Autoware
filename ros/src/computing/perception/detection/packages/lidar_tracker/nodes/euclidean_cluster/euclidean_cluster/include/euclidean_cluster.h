@@ -75,7 +75,7 @@ inline void gassert(cudaError_t err_code, const char *file, int line)
 
 #define checkCudaErrors(err_code) gassert(err_code, __FILE__, __LINE__)
 
-#ifndef timeDiff(start, end)
+#ifndef timeDiff
 #define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec))
 #endif
 

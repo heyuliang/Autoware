@@ -188,10 +188,10 @@ __global__ void mergeLocalClustersM4(int *cluster_list, int *matrix, int cluster
 {
 	__shared__ int local_cluster_idx[BLOCK_SIZE_X];
 	__shared__ int local_cluster_changed[BLOCK_SIZE_X];
-	bool lchanged = false;
-	__shared__ bool schanged;
+	bool tchanged = false;
+	__shared__ bool bchanged;
 
-	schanged = false;
+	bchanged = false;
 	__syncthreads();
 
 	if (blockIdx.x < sample_mat_size && sample_matrix[blockIdx.x + blockIdx.x * sample_mat_size] != 0) {
@@ -220,7 +220,7 @@ __global__ void mergeLocalClustersM4(int *cluster_list, int *matrix, int cluster
 				 */
 				if (local_row < local_col && col_cluster != row_cluster && sub_mat[local_col + local_row * BLOCK_SIZE_X] == 1) {
 					local_cluster_changed[col_cluster] = 1;
-					lchanged = true;
+					tchanged = true;
 				}
 				__syncthreads();
 
@@ -237,12 +237,12 @@ __global__ void mergeLocalClustersM4(int *cluster_list, int *matrix, int cluster
 
 			cluster_list[global_col] = new_cluster_label;
 
-			if (lchanged) {
-				schanged = true;
+			if (tchanged) {
+				bchanged = true;
 			}
 			__syncthreads();
 
-			if (schanged && threadIdx.x == 0) {
+			if (threadIdx.x == 0 && bchanged) {
 				*changed = true;
 			}
 		}
@@ -263,14 +263,14 @@ __global__ void mergeForeignClustersM4(int *matrix, int *cluster_list,
 	int sub_mat_id = blockIdx.x / sub_mat_size;
 	int sub_mat_idx = sub_mat_size + sub_mat_id * sub_mat_offset + (shift_level + blockIdx.x) % sub_mat_size;
 	int sub_mat_idy = sub_mat_id * sub_mat_offset + blockIdx.x % sub_mat_size;
-	bool lchanged = false;
-	__shared__ bool schanged;
+	bool tchanged = false;
+	__shared__ bool bchanged;
 
-	__shared__ int cluster_changed[BLOCK_SIZE_X];
-	__shared__ int local_clusters[BLOCK_SIZE_X];
+	__shared__ int tmp[BLOCK_SIZE_X * 2];
+	int col_cluster;
 
 	if (threadIdx.x == 0)
-		schanged = false;
+		bchanged = false;
 	__syncthreads();
 
 	if (sub_mat_idx < sample_mat_size && sub_mat_idy < sample_mat_size && sample_matrix[sub_mat_idx + sub_mat_idy * sample_mat_size] == 1) {
@@ -278,53 +278,43 @@ __global__ void mergeForeignClustersM4(int *matrix, int *cluster_list,
 		int global_col = local_col + sub_mat_idx * BLOCK_SIZE_X;
 		int row_end = (sub_mat_idy * BLOCK_SIZE_X + BLOCK_SIZE_X < cluster_num) ? BLOCK_SIZE_X : cluster_num - sub_mat_idy * BLOCK_SIZE_X;
 
-		if (global_col < cluster_num)
-			local_clusters[threadIdx.x] = threadIdx.x;
-		__syncthreads();
+		if (global_col < cluster_num) {
+			col_cluster = threadIdx.x;
 
-		int *sub_mat = matrix + sub_mat_location[sub_mat_idx + sub_mat_idy * sample_mat_size] * BLOCK_SIZE_X * BLOCK_SIZE_X;
+			int *sub_mat = matrix + sub_mat_location[sub_mat_idx + sub_mat_idy * sample_mat_size] * BLOCK_SIZE_X * BLOCK_SIZE_X;
 
-		for (int local_row = 0; local_row < row_end; local_row++) {
-			int col_cluster = local_clusters[threadIdx.x];
+			for (int local_row = 0; local_row < row_end; local_row++) {
+				tmp[threadIdx.x] = 0;
+				tmp[threadIdx.x + BLOCK_SIZE_X] = 0;
+				__syncthreads();
 
-			cluster_changed[threadIdx.x] = 0;
+				if (sub_mat[local_row * BLOCK_SIZE_X + local_col] == 1) {
+					tmp[col_cluster] = 1;
+					tchanged = true;
+				}
+				__syncthreads();
+
+				col_cluster = (tmp[col_cluster] == 1) ? local_row + BLOCK_SIZE_X : col_cluster;
+				__syncthreads();
+			}
+
 			__syncthreads();
 
-			if (sub_mat[local_row * BLOCK_SIZE_X + local_col] == 1) {
-				cluster_changed[col_cluster % BLOCK_SIZE_X] = (col_cluster < BLOCK_SIZE_X) ? 1 : 2;
-				lchanged = true;
+			int global_row = threadIdx.x + sub_mat_idy * BLOCK_SIZE_X;
+
+			if (global_row < cluster_num)
+				tmp[threadIdx.x] = cluster_list[global_row];
+			__syncthreads();
+
+			if (tchanged) {
+				cluster_list[global_col] = tmp[col_cluster - BLOCK_SIZE_X];
+				bchanged = true;
 			}
 			__syncthreads();
 
-			if ((col_cluster < BLOCK_SIZE_X && cluster_changed[col_cluster] == 1) ||
-					(col_cluster >= BLOCK_SIZE_X && cluster_changed[col_cluster - BLOCK_SIZE_X] == 2)) {
-				local_clusters[local_col] = local_row + BLOCK_SIZE_X;
-			}
-			__syncthreads();
+			if (threadIdx.x == 0 && bchanged)
+				*changed = true;
 		}
-
-		__syncthreads();
-
-		int new_cluster_id = local_clusters[local_col];
-		int global_row = threadIdx.x + sub_mat_idy * BLOCK_SIZE_X;
-
-		if (global_row < cluster_num)
-			local_clusters[threadIdx.x] = cluster_list[global_row];
-		__syncthreads();
-
-		if (new_cluster_id >= BLOCK_SIZE_X) {
-			cluster_list[global_col] = local_clusters[new_cluster_id - BLOCK_SIZE_X];
-		}
-
-		__syncthreads();
-
-		if (lchanged)
-			schanged = true;
-
-		__syncthreads();
-
-		if (threadIdx.x == 0 && schanged)
-			*changed = true;
 	}
 }
 
@@ -462,6 +452,9 @@ void GpuEuclideanCluster2::extractClusters4()
 	clusterCollectorM4<<<grid_x, block_x>>>(cluster_name_, cluster_list, cluster_location, point_num_);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
+	gettimeofday(&end, NULL);
+
+	std::cout << "Collect remaining clusters: " << timeDiff(start, end) << std::endl;
 
 	cluster_num_ = current_cluster_num;
 
@@ -473,7 +466,9 @@ void GpuEuclideanCluster2::extractClusters4()
 	grid_size.y = (cluster_num_ > GRID_SIZE_Y) ? GRID_SIZE_Y : cluster_num_;
 	grid_size.z = 1;
 
-	// Sample matrix to record the status of each sub-matrix in the big adjacency matrix
+	// Build the sample matrix to record the status of each sub-matrix in the big adjacency matrix
+
+	gettimeofday(&start, NULL);
 	int *sample_matrix;
 	int sample_size;
 
@@ -518,22 +513,7 @@ void GpuEuclideanCluster2::extractClusters4()
 	int itr = 0;
 
 	std::cout << "Cluster num = " << cluster_num_ << std::endl;
-	int *matrix_test = (int*)malloc(sizeof(int) * sub_mat_num * BLOCK_SIZE_X * BLOCK_SIZE_X);
 
-	checkCudaErrors(cudaMemcpy(matrix_test, matrix, sizeof(int) * sub_mat_num * BLOCK_SIZE_X * BLOCK_SIZE_X, cudaMemcpyDeviceToHost));
-
-	for (int i = 0; i < sub_mat_num; i++) {
-		for (int j = 0; j < BLOCK_SIZE_X; j++) {
-			for (int k = 0; k < BLOCK_SIZE_X; k++) {
-				if (matrix_test[i * BLOCK_SIZE_X * BLOCK_SIZE_X + j * BLOCK_SIZE_X + k] != 0)
-					std::cout << "(" << j << "," << k << ") ";
-			}
-		}
-
-		std::cout << std::endl << std::endl;
-	}
-
-	free(matrix_test);
 
 	do {
 		hcheck = false;

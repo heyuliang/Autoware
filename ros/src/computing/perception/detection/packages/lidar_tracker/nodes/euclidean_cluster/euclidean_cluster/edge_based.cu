@@ -256,6 +256,8 @@ void GpuEuclideanCluster2::extractClusters3()
 	block_x = (edge_num > BLOCK_SIZE_X) ? BLOCK_SIZE_X : edge_num;
 	grid_x = (edge_num - 1) / block_x + 1;
 
+	int itr = 0;
+
 	do {
 		hchanged = false;
 
@@ -266,9 +268,12 @@ void GpuEuclideanCluster2::extractClusters3()
 		checkCudaErrors(cudaDeviceSynchronize());
 
 		checkCudaErrors(cudaMemcpy(&hchanged, changed, sizeof(bool), cudaMemcpyDeviceToHost));
+		itr++;
 	} while (hchanged);
 
 	int *count;
+
+	std::cout << "Iteration num = " << itr << std::endl;
 
 	checkCudaErrors(cudaMalloc(&count, sizeof(int) * (point_num_ + 1)));
 	checkCudaErrors(cudaMemset(count, 0, sizeof(int) * (point_num_ + 1)));

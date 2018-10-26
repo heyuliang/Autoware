@@ -94,8 +94,8 @@ __global__ void blockClustering(float *x, float *y, float *z, int point_num, int
 	}
 }
 
-/* Iterate through the list of remaining clusters and mark the corresponding
- * location on cluster location array by 1
+/* Iterate through the list of remaining clusters and mark
+ * the corresponding location on cluster location array by 1
  */
 __global__ void clusterMark(int *cluster_list, int *cluster_location, int cluster_num)
 {
@@ -116,54 +116,10 @@ __global__ void clusterCollector(int *old_cluster_list, int *new_cluster_list, i
 	}
 }
 
-__global__ void buildClusterMatrix(float *x, float *y, float *z, int *cluster_name, int *cluster_location, int *matrix, int point_num, int cluster_num, float threshold, bool *non_zero)
+__global__ void buildClusterMatrix(float *x, float *y, float *z, int *cluster_name, int *cluster_location, int *matrix, int point_num, int cluster_num, float threshold)
 {
 	int idx = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
-	__shared__ bool snon_zero;
-
-	if (threadIdx.x == 0)
-		snon_zero = false;
-	__syncthreads();
-
-	for (int pid = idx; pid < point_num; pid += stride) {
-		float tmp_x = x[pid];
-		float tmp_y = y[pid];
-		float tmp_z = z[pid];
-		int col_cluster = cluster_name[pid];
-		int col = cluster_location[col_cluster];
-
-		for (int pid2 = 0; pid2 < pid; pid2++) {
-			float tmp_x2 = tmp_x - x[pid2];
-			float tmp_y2 = tmp_y - y[pid2];
-			float tmp_z2 = tmp_z - z[pid2];
-			int row_cluster = cluster_name[pid2];
-			int row = cluster_location[row_cluster];
-
-			if (row_cluster != col_cluster && norm3df(tmp_x2, tmp_y2, tmp_z2) < threshold) {
-				matrix[row * cluster_num + col] = 1;
-				snon_zero = true;
-			}
-			__syncthreads();
-		}
-		__syncthreads();
-	}
-
-	__syncthreads();
-
-	if (threadIdx.x == 0 && snon_zero)
-		*non_zero = true;
-}
-
-__global__ void buildClusterMatrix2(float *x, float *y, float *z, int *cluster_name, int *cluster_location, int *matrix, int point_num, int cluster_num, float threshold, bool *non_zero)
-{
-	int idx = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-	__shared__ bool snon_zero;
-
-	if (threadIdx.x == 0)
-		snon_zero = false;
-	__syncthreads();
 
 	for (int pid = idx; pid < point_num; pid += stride) {
 		float tmp_x = x[pid];
@@ -181,17 +137,11 @@ __global__ void buildClusterMatrix2(float *x, float *y, float *z, int *cluster_n
 
 			if (row_cluster != col_cluster && norm3df(tmp_x2, tmp_y2, tmp_z2) < threshold) {
 				matrix[row * cluster_num + col] = 1;
-				snon_zero = true;
 			}
 			__syncthreads();
 		}
 		__syncthreads();
 	}
-
-	__syncthreads();
-
-	if (threadIdx.x == 0 && snon_zero)
-		*non_zero = true;
 }
 
 
@@ -203,11 +153,11 @@ __global__ void mergeLocalClusters(int *cluster_list, int *matrix, int cluster_n
 	int col = row_start + threadIdx.x;
 	__shared__ int local_cluster_idx[BLOCK_SIZE_X];
 	__shared__ int cluster_changed[BLOCK_SIZE_X];
-	bool block_changed = false;
-	__shared__ bool schanged;
+	bool tchanged = false;
+	__shared__ bool bchanged;
 
 	if (threadIdx.x == 0)
-		schanged = false;
+		bchanged = false;
 	__syncthreads();
 
 	if(col < cluster_num && row_start < row_end) {
@@ -223,7 +173,7 @@ __global__ void mergeLocalClusters(int *cluster_list, int *matrix, int cluster_n
 
 			if (row - row_start < threadIdx.x && row_cluster != col_cluster && matrix[row * cluster_num + col] == 1) {
 				cluster_changed[col_cluster] = 1;
-				block_changed = true;
+				tchanged = true;
 			}
 			__syncthreads();
 
@@ -237,78 +187,74 @@ __global__ void mergeLocalClusters(int *cluster_list, int *matrix, int cluster_n
 
 		cluster_list[col] = new_cluster;
 
-		if (block_changed)
-			schanged = true;
+		if (tchanged)
+			bchanged = true;
 	}
 
 	__syncthreads();
-	if (threadIdx.x == 0 && schanged)
+	if (threadIdx.x == 0 && bchanged)
 		*changed = true;
 }
 
-/* Merge clusters that belong to different block of threads*/
+
+/* Merge clusters that belong to different block of threads */
 __global__ void mergeForeignClusters(int *matrix, int *cluster_list,
 										int shift_level,
 										int sub_mat_size,
 										int sub_mat_offset,
 										int cluster_num, bool *changed)
 {
-	// sub_mat_col_base = sub_matrix_size
-	// sub_mat_row_base = 0
 	int sub_mat_idx = blockIdx.x / sub_mat_size;
-//	int local_col = (shift_level + blockIdx.x) % sub_mat_size;		// block column that the thread is in charged of
-//	int local_row = blockIdx.x % sub_mat_size;
-//	int sub_mat_row = sub_mat_idx * sub_mat_offset;	// First row on the left of the sub matrix
-//	int sub_mat_col = sub_mat_size + sub_mat_idx * sub_mat_offset;
-
 	int col_start = (sub_mat_size + sub_mat_idx * sub_mat_offset + (shift_level + blockIdx.x) % sub_mat_size) * blockDim.x;
 	int col_end = (col_start + blockDim.x <= cluster_num) ? col_start + blockDim.x : cluster_num;
 	int row_start = (sub_mat_idx * sub_mat_offset + blockIdx.x % sub_mat_size) * blockDim.x;
 	int row_end = (row_start + blockDim.x <= cluster_num) ? row_start + blockDim.x : cluster_num;
 	int col = col_start + threadIdx.x;
-	bool block_changed = false;
-	__shared__ bool schanged;
+	bool tchanged = false;
+	__shared__ bool bchanged;
 
-	__shared__ int cluster_changed[BLOCK_SIZE_X];
-	__shared__ int local_cluster_idx[BLOCK_SIZE_X];
+	__shared__ int tmp[BLOCK_SIZE_X * 2];
+	int col_cluster = threadIdx.x;
 
 	if (threadIdx.x == 0)
-		schanged = false;
+		bchanged = false;
 	__syncthreads();
 
 	if (col < col_end && row_start < row_end) {
-		local_cluster_idx[threadIdx.x] = threadIdx.x;
 		__syncthreads();
 
 		for (int row = row_start; row < row_end; row++) {
-			int col_cluster = local_cluster_idx[threadIdx.x];
-			int row_cluster = local_cluster_idx[row - row_start];
+			int row_cluster = row - row_start;
 
-			cluster_changed[threadIdx.x] = 0;
+			tmp[threadIdx.x] = 0;
+			tmp[threadIdx.x + BLOCK_SIZE_X] = 0;
 			__syncthreads();
 
-			if (row_cluster != col_cluster && matrix[row * cluster_num + col] == 1) {
-				cluster_changed[col_cluster] = 1;
-				block_changed = true;
+			if (matrix[row * cluster_num + col] == 1) {
+				tmp[col_cluster] = 1;
+				tchanged = true;
 			}
 			__syncthreads();
 
-			local_cluster_idx[threadIdx.x] = (cluster_changed[col_cluster] == 1) ? row_cluster : col_cluster;
+			col_cluster = (tmp[col_cluster] == 1) ? row_cluster + BLOCK_SIZE_X : col_cluster;
 			__syncthreads();
 		}
 
 		__syncthreads();
-		int new_cluster = cluster_list[row_start + local_cluster_idx[threadIdx.x]];
-		__syncthreads();
 
-		cluster_list[col] = new_cluster;
 
-		if (block_changed)
-			schanged = true;
+		if (tchanged) {
+			int new_cluster = cluster_list[row_start + col_cluster - BLOCK_SIZE_X];
+			__syncthreads();
+			cluster_list[col] = new_cluster;
+		}
+
+		if (tchanged)
+			bchanged = true;
 	}
 
 	__syncthreads();
-	if (threadIdx.x == 0 && schanged)
+	if (threadIdx.x == 0 && bchanged)
 		*changed = true;
 }
 
@@ -360,20 +306,6 @@ __global__ void applyClusterChanged(int *cluster_name, int *cluster_list, int *c
 
 /* Rebuild the adjacency matrix after some clusters are joined together */
 __global__ void rebuildMatrix(int *old_matrix, int *updated_cluster_list, int *new_matrix, int *new_cluster_location, int old_cluster_num, int new_cluster_num)
-{
-	for (int col = threadIdx.x + blockIdx.x * blockDim.x; col < old_cluster_num; col += blockDim.x * gridDim.x) {
-		int new_col = new_cluster_location[updated_cluster_list[col]];
-		for (int row = 0; row < col; row++) {
-			int new_row = new_cluster_location[updated_cluster_list[row]];
-
-			if (old_matrix[row * old_cluster_num + col] != 0) {
-				new_matrix[new_row * new_cluster_num + new_col] = 1;
-			}
-		}
-	}
-}
-
-__global__ void rebuildMatrix2(int *old_matrix, int *updated_cluster_list, int *new_matrix, int *new_cluster_location, int old_cluster_num, int new_cluster_num)
 {
 	for (int col = threadIdx.x + blockIdx.x * blockDim.x; col < old_cluster_num; col += blockDim.x * gridDim.x) {
 		int new_col = new_cluster_location[updated_cluster_list[col]];
@@ -437,8 +369,13 @@ void GpuEuclideanCluster2::extractClusters()
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
+	gettimeofday(&end, NULL);
+
+	std::cout << "Collect remaining clusters: " << timeDiff(start, end) << std::endl;
+
 	cluster_num_ = current_cluster_num;
 
+	gettimeofday(&start, NULL);
 	// Build relation matrix which describe the current relationship between clusters
 	int *matrix;
 
@@ -454,10 +391,10 @@ void GpuEuclideanCluster2::extractClusters()
 	grid_size.z = 1;
 	//grid_size.y = 1;
 
-	buildClusterMatrix2<<<grid_size, block_size>>>(x_, y_, z_, cluster_name_,
+	buildClusterMatrix<<<grid_size, block_size>>>(x_, y_, z_, cluster_name_,
 													cluster_location, matrix,
 													point_num_, cluster_num_,
-													threshold_, check);
+													threshold_);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 	gettimeofday(&end, NULL);
@@ -476,17 +413,6 @@ void GpuEuclideanCluster2::extractClusters()
 
 	std::cout << "Cluster num = " << cluster_num_ << std::endl;
 
-	int *matrix_test = (int*)malloc(sizeof(int) * cluster_num_ * cluster_num_);
-
-	checkCudaErrors(cudaMemcpy(matrix_test, matrix, sizeof(int) * cluster_num_ * cluster_num_, cudaMemcpyDeviceToHost));
-
-	for (int j = 0; j < cluster_num_; j++) {
-		for (int k = 0; k < cluster_num_; k++) {
-			if (matrix_test[j * cluster_num_ + k] != 0)
-				std::cout << "(" << j << "," << k << ") ";
-		}
-	}
-	std::cout << std::endl;
 
 	do {
 		hcheck = false;
@@ -588,8 +514,7 @@ void GpuEuclideanCluster2::extractClusters()
 			grid_size.y = (old_cluster_num > GRID_SIZE_Y) ? GRID_SIZE_Y : old_cluster_num;
 			grid_size.z = 1;
 
-			//rebuildMatrix<<<grid_x2, block_x2>>>(matrix, cluster_list, new_matrix, cluster_location, old_cluster_num, cluster_num_);
-			rebuildMatrix2<<<grid_x2, block_x2>>>(matrix, cluster_list, new_matrix, cluster_location, old_cluster_num, cluster_num_);
+			rebuildMatrix<<<grid_x2, block_x2>>>(matrix, cluster_list, new_matrix, cluster_location, old_cluster_num, cluster_num_);
 			checkCudaErrors(cudaGetLastError());
 			checkCudaErrors(cudaDeviceSynchronize());
 
