@@ -25,11 +25,11 @@ include_directories(
 add_executable(${PROJECT_NAME}_main
     src/main.cpp
     src/main_window.cpp
-    src/main_menu.cpp
+    src/main_config.cpp
+    src/main_tool.cpp
     src/browse_launcher.cpp
     src/browse_button.cpp
     src/launch_button.cpp
-    src/util/config.hpp
 )
 set_target_properties(${PROJECT_NAME}_main PROPERTIES OUTPUT_NAME main PREFIX "")
 target_link_libraries(${PROJECT_NAME}_main ${catkin_LIBRARIES} ${QT_LIBRARIES})

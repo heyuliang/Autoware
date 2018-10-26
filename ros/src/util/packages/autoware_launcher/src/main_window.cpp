@@ -1,9 +1,14 @@
 #include "main_window.hpp"
-#include "main_menu.hpp"
 
 // Temporary
-#include "browse_launcher.hpp"
 #include <QGroupBox>
+#include <QMenuBar>
+#include <QAction>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSettings>
+#include "main_tool.hpp"
+#include "main_config.hpp"
 
 namespace autoware_launcher {
 
@@ -11,30 +16,80 @@ AwMainWindow::AwMainWindow()
 {
     setWindowTitle("Autoware Launcher");
 
-    setMenuBar(new AwMainMenu);
+    auto main_menu = new QMenuBar;
+    setMenuBar(main_menu);
 
-    auto layout = new QVBoxLayout;
-    auto widget = new QWidget;
-    for(auto title : {"Vehicle", "Map", "Sensors", "Rviz"})
-    {
-        auto group = new QGroupBox(title);
-        group->setLayout(new AwBrowseLauncher);
-        group->setStyleSheet("QGroupBox { border: 1px solid gray; margin-top: 0.5em; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 3px 0 3px; }");
+    auto file_menu = main_menu->addMenu("File");
+    auto load    = file_menu->addAction("Open Config");
+    auto save    = file_menu->addAction("Save Config");
+    auto save_as = file_menu->addAction("Save Config As");
+    connect(load,    &QAction::triggered, this, &AwMainWindow::onLoad);
+    connect(save,    &QAction::triggered, this, &AwMainWindow::onSave);
+    connect(save_as, &QAction::triggered, this, &AwMainWindow::onSaveAs);
 
-        layout->addWidget(group);
-    }
-    widget->setLayout(layout);
+    auto widget = new AwMainTool;
+    config_tool_ = widget;
     setCentralWidget(widget);
 }
 
-void AwMainWindow::saveConfig(AwConfig &config)
+
+void AwMainWindow::onLoad()
+{
+    QString path = QFileDialog::getOpenFileName(this, tr("Load Config"), QDir::currentPath());
+    if( path.isEmpty() )
+    {
+        return;
+    }
+
+    if( !config_file_.load(path, config_tool_) )
+    {
+        QMessageBox alert;
+        alert.setText("Failed to load config");
+        alert.exec();
+    }
+}
+
+void AwMainWindow::onSave()
 {
 
 }
 
-void AwMainWindow::loadConfig(AwConfig &config)
+void AwMainWindow::onSaveAs()
 {
+    QString path = QFileDialog::getSaveFileName(this, tr("Save Config"), QDir::currentPath());
+    if( path.isEmpty() )
+    {
+        return;
+    }
 
+    if( !config_file_.save(path, config_tool_) )
+    {
+        QMessageBox alert;
+        alert.setText("Failed to save config");
+        alert.exec();
+    }
 }
+
+
+void AwMainWindow::closeEvent(QCloseEvent *event)
+{
+    saveSettings();
+    QMainWindow::closeEvent(event);
+}
+
+void AwMainWindow::saveSettings()
+{
+    QSettings settings("Autoware", "AutowareLauncher");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
+}
+
+void AwMainWindow::loadSettings()
+{
+    QSettings settings("Autoware", "AutowareLauncher");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("windowState").toByteArray());
+}
+
 
 }

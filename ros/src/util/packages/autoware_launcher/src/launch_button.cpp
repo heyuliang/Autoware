@@ -20,7 +20,6 @@ void AwLaunchButton::setProgram(const QString& program)
 
 void AwLaunchButton::setNativeArguments(const QString& arguments)
 {
-
     process_->setArguments(QStringList(arguments));
 }
 

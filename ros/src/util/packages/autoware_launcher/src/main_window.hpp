@@ -1,12 +1,12 @@
 #ifndef AUTOWARE_LAUNCHER_MAIN_WINDOW_HPP_
 #define AUTOWARE_LAUNCHER_MAIN_WINDOW_HPP_
 
-#include "util/config.hpp"
+#include "main_config.hpp"
 #include <QMainWindow>
 
 namespace autoware_launcher {
 
-class AwMainWindow : public QMainWindow, public AwConfigMixin
+class AwMainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -15,8 +15,23 @@ class AwMainWindow : public QMainWindow, public AwConfigMixin
         AwMainWindow();
         virtual ~AwMainWindow() = default;
 
-        void saveConfig(AwConfig &config) override;
-        void loadConfig(AwConfig &config) override;
+        void saveSettings();
+        void loadSettings();
+
+    public Q_SLOTS:
+
+        void onLoad();
+        void onSave();
+        void onSaveAs();
+
+    protected:
+
+        void closeEvent(QCloseEvent *event) override;
+
+    private:
+
+        AwConfigFile config_file_;
+        AwConfigInterface* config_tool_;
 };
 
 }
