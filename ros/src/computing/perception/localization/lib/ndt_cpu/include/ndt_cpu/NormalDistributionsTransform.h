@@ -28,6 +28,9 @@ public:
 
 	double getTransformationProbability() const;
 
+	// Get transformation probability
+	double getTransformationProbability(typename pcl::PointCloud<PointSourceType>::Ptr source_cloud, typename pcl::PointCloud<PointTargetType>::Ptr trans_cloud);
+
 	int getRealIterations();
 
 	/* Set the input map points */

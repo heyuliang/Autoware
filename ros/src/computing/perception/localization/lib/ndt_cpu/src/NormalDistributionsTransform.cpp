@@ -41,12 +41,28 @@ template <typename PointSourceType, typename PointTargetType>
 void NormalDistributionsTransform<PointSourceType, PointTargetType>::setResolution(float resolution)
 {
 	resolution_ = resolution;
+
+	double gauss_c1, gauss_c2, gauss_d3;
+
+	gauss_c1 = 10.0 * (1 - outlier_ratio_);
+	gauss_c2 = outlier_ratio_ / pow (resolution_, 3);
+	gauss_d3 = -log (gauss_c2);
+	gauss_d1_ = -log ( gauss_c1 + gauss_c2 ) - gauss_d3;
+	gauss_d2_ = -2 * log ((-log ( gauss_c1 * exp ( -0.5 ) + gauss_c2 ) - gauss_d3) / gauss_d1_);
 }
 
 template <typename PointSourceType, typename PointTargetType>
 void NormalDistributionsTransform<PointSourceType, PointTargetType>::setOutlierRatio(double olr)
 {
 	outlier_ratio_ = olr;
+
+	double gauss_c1, gauss_c2, gauss_d3;
+
+	gauss_c1 = 10.0 * (1 - outlier_ratio_);
+	gauss_c2 = outlier_ratio_ / pow (resolution_, 3);
+	gauss_d3 = -log (gauss_c2);
+	gauss_d1_ = -log ( gauss_c1 + gauss_c2 ) - gauss_d3;
+	gauss_d2_ = -2 * log ((-log ( gauss_c1 * exp ( -0.5 ) + gauss_c2 ) - gauss_d3) / gauss_d1_);
 }
 
 template <typename PointSourceType, typename PointTargetType>
@@ -752,6 +768,53 @@ void NormalDistributionsTransform<PointSourceType, PointTargetType>::updateVoxel
 {
 	// Update voxel grid
 	voxel_grid_.update(new_cloud);
+}
+
+template <typename PointSourceType, typename PointTargetType>
+double NormalDistributionsTransform<PointSourceType, PointTargetType>::getTransformationProbability(typename pcl::PointCloud<PointSourceType>::Ptr source_cloud,
+																											typename pcl::PointCloud<PointTargetType>::Ptr trans_cloud)
+{
+	if (source_cloud->points.size() == 0 ||  trans_cloud->points.size() == 0)
+		return DBL_MAX;
+
+	// Build voxel grid
+	VoxelGrid<PointSourceType> voxel_grid;
+
+	// Build the voxel grid
+	if (source_cloud->points.size() > 0) {
+		voxel_grid.setLeafSize(resolution_, resolution_, resolution_);
+		voxel_grid.setInput(source_cloud);
+	}
+
+	// Compute score
+	PointSourceType x_trans_pt;
+	Eigen::Vector3d x_trans;
+	Eigen::Matrix3d c_inv;
+
+	std::vector<int> neighbor_ids;
+
+	double score = 0;
+
+	for (int idx = 0; idx < trans_cloud->points.size(); idx++) {
+		neighbor_ids.clear();
+		x_trans_pt = trans_cloud->points[idx];
+
+		voxel_grid.radiusSearch(x_trans_pt, resolution_, neighbor_ids);
+
+		for (int i = 0; i < neighbor_ids.size(); i++) {
+			int vid = neighbor_ids[i];
+
+			x_trans = Eigen::Vector3d(x_trans_pt.x, x_trans_pt.y, x_trans_pt.z);
+
+			x_trans -= voxel_grid.getCentroid(vid);
+			c_inv = voxel_grid.getInverseCovariance(vid);
+
+			score += (-gauss_d1_ * exp(-gauss_d2_ * x_trans.dot(c_inv * x_trans) / 2));
+		}
+	}
+
+
+	return score / static_cast<double>(source_cloud->points.size());
 }
 
 template class NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>;
