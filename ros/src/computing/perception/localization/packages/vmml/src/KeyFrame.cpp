@@ -166,6 +166,8 @@ KeyFrame::match (const KeyFrame &kf,
 {
 	static bool doDebugMatch = false;
 	const int maxDebugMatchPair = 80;
+	const cv::Scalar objColor (0,255,0);
+	const int circleDiameter = 1;
 
 	featurePairs.clear();
 
@@ -196,7 +198,8 @@ KeyFrame::match (const KeyFrame &kf,
 
 		if (doDebugMatch) {
 			if (i<=maxDebugMatchPair)
-			cv::line(newColorImage, kf.keypoints[m.trainIdx].pt, frameKp, cv::Scalar(0,255,0));
+			cv::line(newColorImage, kf.keypoints[m.trainIdx].pt, frameKp, objColor);
+			cv::circle(newColorImage, kf.keypoints[m.trainIdx].pt, circleDiameter, objColor);
 		}
 
 		/*
