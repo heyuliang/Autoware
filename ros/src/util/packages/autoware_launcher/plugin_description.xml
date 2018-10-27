@@ -1,0 +1,7 @@
+<library path="lib/libautoware_launcher_rviz">
+
+    <class name="autoware_launcher/Rviz Panel" type="autoware_launcher::RvizPanel" base_class_type="rviz::Panel">
+        <description>The rviz panel of Autoware Launcher</description>
+    </class>
+
+</library>

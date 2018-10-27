@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(autoware_launcher)
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED)
-find_package(Qt5 5.3 REQUIRED Core Widgets)
+find_package(catkin REQUIRED COMPONENTS rviz)
+find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
 
 set(CMAKE_AUTOMOC ON)
 set(QT_LIBRARIES Qt5::Widgets)
@@ -11,15 +11,15 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES autoware_launcher
+#  LIBRARIES ${PROJECT_NAME}
 #  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  DEPENDS rviz
 )
 
 include_directories(
 #  include
 #  src/common
-#  ${catkin_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(${PROJECT_NAME}_main
@@ -33,6 +33,13 @@ add_executable(${PROJECT_NAME}_main
 )
 set_target_properties(${PROJECT_NAME}_main PROPERTIES OUTPUT_NAME main PREFIX "")
 target_link_libraries(${PROJECT_NAME}_main ${catkin_LIBRARIES} ${QT_LIBRARIES})
+
+add_library(${PROJECT_NAME}_rviz
+    src/rviz_panel.cpp
+    src/browse_button.cpp
+    src/launch_button.cpp
+)
+target_link_libraries(${PROJECT_NAME}_rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 
 # Add header files as custom target to be listed by IDE
 FILE(GLOB_RECURSE HEADERS_FOR_IDE "./*.hpp")
