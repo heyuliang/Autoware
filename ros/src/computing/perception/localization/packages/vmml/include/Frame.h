@@ -48,7 +48,7 @@ public:
 	cv::Mat descriptor(const int r)
 	{ return mDescriptors.row(r); }
 
-	const cv::KeyPoint &keypoint(const kpid kp)
+	const cv::KeyPoint &keypoint(const kpid kp) const
 	{ return keypoints.at(kp); }
 
 	const vector<cv::KeyPoint> &getAllKeyPoints() const

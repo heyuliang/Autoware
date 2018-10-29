@@ -60,7 +60,9 @@ protected:
 
 	float projectionCheck (const Frame &frame, const kfid &keyframe) const;
 
-	int SearchBoW (const kfid &k, Frame &f, std::set<mpid> &vpMapPts, const float matchNNRatio=0.6);
+	int SearchBoW (const KeyFrame &kf, Frame &fi, vector<pair<mpid,kpid>> &mapPtMatchPairs, const float matchNNRatio=0.6);
+
+	void debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, const vector<pair<mpid,kpid>> &mapPtMatchPairs);
 };
 
 #endif /* LOCALIZER_H_ */

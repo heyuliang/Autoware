@@ -44,6 +44,29 @@ Localizer::setCameraParameterFromId (int cameraId)
 }
 
 
+void
+Localizer::debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, const vector<pair<mpid,kpid>> &mapPtMatchPairs)
+{
+	const cv::Scalar
+		colorGreen(0, 255, 0),
+		colorRed(0, 0, 255);
+
+	cv::Mat img = frame.getImage().clone();
+	cv::cvtColor(img, img, CV_GRAY2BGR);
+	string dpath = "/tmp/frame-" + to_string(keyframe.getSourceItemId()) + ".png";
+
+	for (auto &mpair: mapPtMatchPairs) {
+		const kpid _kp = sourceMap->getKeyPointId(keyframe.getId(), mpair.first);
+		const cv::KeyPoint k_in_kf = keyframe.getKeyPointAt(_kp);
+		const cv::KeyPoint k_in_f = frame.keypoint(mpair.second);
+		cv::line(img, k_in_kf.pt, k_in_f.pt, colorGreen, 1);
+		cv::circle(img, k_in_kf.pt, 2, colorRed);
+	}
+
+	cv::imwrite(dpath, img);
+}
+
+
 kfid
 Localizer::detect (cv::Mat &frmImg)
 {
@@ -64,31 +87,26 @@ Localizer::detect (cv::Mat &frmImg)
 		srcInfo[i] = sourceMap->keyframe(placeCandidates[i])->getSourceItemId();
 	}
 
-/*
- *  We need this section to match keypoint from Candidate KeyFrame and (corresponding map point) to keypoint in Frame
- *  XXX: need alternative, ie. using brute force matching from OpenCV, and check using projection
- */
-
-//	auto bfMatch = cv::BFMatcher::create();
-
 	size_t bestKfScore=0;
 	kfid bestKfId;
+	vector<bool> isValidKfs (placeCandidates.size(), false);
 
 	for (int i=0; i<placeCandidates.size(); i++) {
 
 		const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[i]);
-		vector<FeaturePair> kfMatches;
-		KeyFrame::match(kf, frame, kfMatches, sourceMap->getDescriptorMatcher());
+		/*
+		 * Some notes on this vector:
+		 * This is a pair of mappoint ID to its reflection (as keypoint) in
+		 * currently investigated frame
+		 */
+		vector<pair<mpid,kpid>> mapPointMatches;
 
-		size_t curScore = kfMatches.size();
-		if (curScore < 15) {
-			continue;
+		int numMatches = SearchBoW (kf, frame, mapPointMatches);
+		if (numMatches >= 15) {
+			isValidKfs[i] = true;
+			debug_KF_F_Matching(kf, frame, mapPointMatches);
 		}
 
-		else if (curScore > bestKfScore) {
-			bestKfScore = curScore;
-			bestKfId = kf.getId();
-		}
 	}
 
 	return bestKfId;
@@ -123,19 +141,27 @@ const
 */
 
 
+/*
+ * Match the map points in kf to keypoints in frame
+ */
 int
-Localizer::SearchBoW (const kfid &k, Frame &frame, set<mpid> &vpMapPts, const float matchNNRatio)
+Localizer::SearchBoW (const KeyFrame &kf, Frame &frame, vector<pair<mpid,kpid>> &mapPtMatchPairs, const float matchNNRatio)
 {
-	auto mapPtsInKF = sourceMap->allMapPointsAtKeyFrame(k);
-	auto KeyFrameFeatureVec = imgDb->getFeatureVectorFromKeyFrame(k);
+	auto mapPtsInKF = sourceMap->allMapPointsAtKeyFrame(kf.getId());
+	auto KeyFrameFeatureVec = imgDb->getFeatureVectorFromKeyFrame(kf.getId());
 	auto keyPtMapPoint = reverseMap(mapPtsInKF);
 	int matches = 0;
-	vpMapPts.clear();
+
+	set<mpid> vpMapPts;
+	set<kpid> vFrameKp;
+	mapPtMatchPairs.clear();
 
 	auto KFit = KeyFrameFeatureVec.begin();
+	auto KFend = KeyFrameFeatureVec.end();
 	auto Fit = frame.getFeatureVector().begin();
+	auto Fend = frame.getFeatureVector().end();
 
-	while (KFit!=KeyFrameFeatureVec.end() and Fit!=frame.getFeatureVector().end()) {
+	while (KFit!=KFend and Fit!=Fend) {
 
 		if (KFit->first == Fit->first) {
 
@@ -152,14 +178,15 @@ Localizer::SearchBoW (const kfid &k, Frame &frame, set<mpid> &vpMapPts, const fl
 					continue;
 				}
 
-				const cv::Mat &descKf = sourceMap->keyframe(k)->getDescriptorAt(realKpIdxKF);
+				const cv::Mat &descKf = kf.getDescriptorAt(realKpIdxKF);
 
 				int bestDist1 = 256;
 				int bestIdxF = -1;
 				int bestDist2 = 256;
 
-				for (uint32_t iF=0; iF<vIndicesF.size(); iF++) {
-					const auto realKpIdxF = vIndicesF[iF];
+				kpid realKpIdxF;
+				for (uint32_t iF=0; iF<vIndicesF.size(); ++iF) {
+					realKpIdxF = vIndicesF[iF];
 
 					if (vpMapPts.find(nMpId) != vpMapPts.end())
 						continue;
@@ -169,7 +196,7 @@ Localizer::SearchBoW (const kfid &k, Frame &frame, set<mpid> &vpMapPts, const fl
 
 					if (descDist < bestDist1) {
 						bestDist2 = bestDist1;
-						bestDist2 = descDist;
+						bestDist1 = descDist;
 						bestIdxF = realKpIdxF;
 					} else if (descDist<bestDist2) {
 						bestDist2 = descDist;
@@ -180,7 +207,8 @@ Localizer::SearchBoW (const kfid &k, Frame &frame, set<mpid> &vpMapPts, const fl
 					if (float(bestDist1) <  matchNNRatio*float(bestDist2)) {
 						vpMapPts.insert(nMpId);
 						matches++;
-						const cv::KeyPoint &kp = sourceMap->keyframe(k)->getKeyPointAt(realKpIdxKF);
+						const cv::KeyPoint &kp = kf.getKeyPointAt(realKpIdxKF);
+						mapPtMatchPairs.push_back (make_pair(nMpId, bestIdxF));
 
 						// Check orientation
 						// XXX: We skip orientation check
