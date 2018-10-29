@@ -177,9 +177,13 @@ private:
   bool enableDisplayMarker;
   bool auto_mission_reload_;
   bool use_management_system_;
+  bool disuse_vector_map_;
   uint32_t param_num_of_steer_behind_;
-  double dist_threshold_;
-  double angle_threshold_;
+  double change_threshold_dist_;
+  double change_threshold_angle_;
+  double time_to_avoidance_;
+  double goal_threshold_dist_;
+  double goal_threshold_vel_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
