@@ -132,8 +132,8 @@ public:
 		cv::Mat allKfs(N, 7, CV_64F);
 
 		for (kfid k: this->getKeyFrameList()) {
-			Vector3d p = this->keyframe(k)->getPosition();
-			Quaterniond q = this->keyframe(k)->getOrientation();
+			Vector3d p = this->keyframe(k)->position();
+			Quaterniond q = this->keyframe(k)->orientation();
 			allKfs.row(k).col(0) = p.x();
 			allKfs.row(k).col(1) = p.y();
 			allKfs.row(k).col(2) = p.z();

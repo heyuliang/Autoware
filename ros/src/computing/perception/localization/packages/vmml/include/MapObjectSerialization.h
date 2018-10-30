@@ -142,8 +142,8 @@ void serialize (
 		kf.descriptors &
 		kf.srcItemId;
 	ar &
-		kf.position &
-		kf.orientation &
+		kf.mPosition &
+		kf.mOrientation &
 		kf.normal &
 		kf.projMatrix,
 		kf.cameraId;

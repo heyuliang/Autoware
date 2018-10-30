@@ -5,6 +5,9 @@
  *      Author: sujiwo
  */
 
+#include <Eigen/Eigen>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core/eigen.hpp>
 #include "KeyFrame.h"
 #include "Localizer.h"
 #include "MapPoint.h"
@@ -104,41 +107,18 @@ Localizer::detect (cv::Mat &frmImg)
 		int numMatches = SearchBoW (kf, frame, mapPointMatches);
 		if (numMatches >= 15) {
 			isValidKfs[i] = true;
-			debug_KF_F_Matching(kf, frame, mapPointMatches);
+//			debug_KF_F_Matching(kf, frame, mapPointMatches);
+
+			Pose currentFramePose;
+			solvePose(kf, frame, mapPointMatches, currentFramePose);
+
+			continue;
 		}
 
 	}
 
 	return bestKfId;
 }
-
-
-/*
-
-#define averageProjectionDeviation 2.0
-
-float
-Localizer::projectionCheck (const Frame &frame, const kfid &keyframeId)
-const
-{
-	vector<FeaturePair> featurePairs;
-	KeyFrame *keyframe = sourceMap->keyframe(keyframeId);
-
-//	KeyFrame::match(*keyframe, frame, featurePairs);
-	vector<float> projectionErrors(featurePairs.size());
-
-	for (int i=0; i<featurePairs.size(); i++) {
-		auto &pair = featurePairs[i];
-
-		const MapPoint &pt3d = *sourceMap->mappoint(sourceMap->getMapPointByKeypoint(keyframeId, pair.kpid1));
-		Vector2d ptProj = keyframe->project(pt3d);
-		const float dist2D = (ptProj - Vector2d(pair.keypoint2.x, pair.keypoint2.y)).norm();
-		if (dist2D < averageProjectionDeviation) {
-
-		}
-	}
-}
-*/
 
 
 /*
@@ -233,4 +213,53 @@ Localizer::SearchBoW (const KeyFrame &kf, Frame &frame, vector<pair<mpid,kpid>> 
 	}
 
 	return matches;
+}
+
+
+bool
+Localizer::solvePose (
+	const KeyFrame &kf,
+	const Frame &fr,
+	const vector<pair<mpid,kpid>> &mapPtMatchPairs,
+	Pose& frpose)
+const
+{
+	// XXX: Use cv::solvePnPRansac()
+
+	auto eKfRotMat = kf.getOrientation().toRotationMatrix();
+	cv::Mat cKfRotMat, cRVec;
+	cv::eigen2cv(eKfRotMat, cKfRotMat);
+	cv::Rodrigues(cKfRotMat, cRVec);
+
+	auto eKfTransVec = kf.getPosition();
+	cv::Mat cKfTransVec;
+	cv::eigen2cv(eKfTransVec, cKfTransVec);
+
+	cv::Mat
+		objectPoints (mapPtMatchPairs.size(), 3, CV_32F),
+		imagePoints (mapPtMatchPairs.size(), 2, CV_32F);
+	for (int r=0; r<mapPtMatchPairs.size(); ++r) {
+		objectPoints.at<float>(r, 0) = sourceMap->mappoint(mapPtMatchPairs[r].first)->X();
+		objectPoints.at<float>(r, 1) = sourceMap->mappoint(mapPtMatchPairs[r].first)->Y();
+		objectPoints.at<float>(r, 2) = sourceMap->mappoint(mapPtMatchPairs[r].first)->Z();
+		imagePoints.at<float>(r, 0) = fr.keypoint(mapPtMatchPairs[r].second).pt.x;
+		imagePoints.at<float>(r, 1) = fr.keypoint(mapPtMatchPairs[r].second).pt.y;
+	}
+
+	cv::Mat cameraMatrix = sourceMap->getCameraParameter(0).toCvMat();
+	cv::Mat inlierIdx;
+
+	bool hasSolution = cv::solvePnPRansac(objectPoints, imagePoints, cameraMatrix, cv::Mat(), cRVec, cKfTransVec, true, 100, 4.0, 0.99, inlierIdx, cv::SOLVEPNP_EPNP);
+	if (hasSolution==false)
+		return false;
+
+	cv::Rodrigues(cRVec, cKfRotMat);
+	cv::cv2eigen(cKfRotMat, eKfRotMat);
+	Eigen::Quaterniond Q;
+	Q = eKfRotMat;
+	cv::cv2eigen(cKfTransVec, eKfTransVec);
+
+	frpose = Pose::from_Pos_Quat(eKfTransVec, Q);
+
+	return true;
 }

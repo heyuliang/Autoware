@@ -32,6 +32,8 @@ struct CameraPinholeParams
 
 	Eigen::Matrix<double,3,4> toMatrix() const;
 
+	cv::Mat toCvMat() const;
+
 	CameraPinholeParams():
 		width(-1), height(-1)
 	{}

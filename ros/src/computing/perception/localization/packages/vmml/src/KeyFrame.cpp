@@ -55,8 +55,8 @@ KeyFrame::KeyFrame(
 	const int _cameraId,
 	dataItemId _srcItemId) :
 
-	orientation(o),
-	position(p),
+	mOrientation(o),
+	mPosition(p),
 	cameraId(_cameraId),
 	frCreationTime(boost::posix_time::second_clock::local_time()),
 	srcItemId(_srcItemId),
@@ -68,7 +68,7 @@ KeyFrame::KeyFrame(
 
 	id = nextId++;
 
-	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
+	updateNormal();
 
 	// Enforce gray image before computing features
 	cv::Mat grayImg;
@@ -90,13 +90,19 @@ KeyFrame::~KeyFrame()
 }
 
 
+void KeyFrame::updateNormal()
+{
+	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
+}
+
+
 // XXX: 3x4 or 4x4 ?
 poseMatrix KeyFrame::externalParamMatrix () const
 {
 	poseMatrix ex = poseMatrix::Zero();
-	Matrix3d R = orientation.toRotationMatrix().transpose();
+	Matrix3d R = mOrientation.toRotationMatrix().transpose();
 	ex.block<3,3>(0,0) = R;
-	ex.col(3) = -(R*position);
+	ex.col(3) = -(R*mPosition);
 	return ex;
 }
 
@@ -104,9 +110,9 @@ poseMatrix KeyFrame::externalParamMatrix () const
 poseMatrix4 KeyFrame::externalParamMatrix4() const
 {
 	poseMatrix4 ex = poseMatrix4::Identity();
-	Matrix3d R = orientation.toRotationMatrix().transpose();
+	Matrix3d R = mOrientation.toRotationMatrix().transpose();
 	ex.block<3,3>(0,0) = R;
-	ex.col(3).head(3) = -(R*position);
+	ex.col(3).head(3) = -(R*mPosition);
 	return ex;
 }
 
@@ -275,12 +281,12 @@ void KeyFrame::triangulate (
 
 		// checking for regularity of triangulation result
 		// 1: Point must be in front of camera
-		Vector3d v1 = pointm - kf1->position;
+		Vector3d v1 = pointm - kf1->mPosition;
 		double cos1 = v1.dot(kf1->normal) / v1.norm();
 		if (cos1 < 0)
 			continue;
 		double dist1 = v1.norm();
-		Vector3d v2 = pointm - kf2->position;
+		Vector3d v2 = pointm - kf2->mPosition;
 		double cos2 = v2.dot(kf2->normal) / v2.norm();
 		if (cos2 < 0)
 			continue;

@@ -131,11 +131,17 @@ public:
 	// Transform point (in world) to camera coordinate system
 	Eigen::Vector3d transform (const Eigen::Vector3d &pt3) const;
 
-	Eigen::Vector3d &getPosition ()
-	{ return position; }
+	Eigen::Vector3d &position ()
+	{ return mPosition; }
 
-	Eigen::Quaterniond &getOrientation ()
-	{ return orientation; }
+	const Eigen::Vector3d &getPosition () const
+	{ return mPosition; }
+
+	Eigen::Quaterniond &orientation ()
+	{ return mOrientation; }
+
+	const Eigen::Quaterniond &getOrientation () const
+	{ return mOrientation; }
 
 	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
 
@@ -158,6 +164,8 @@ public:
 
 	void debugKeyPoints() const;
 
+	void updateNormal();
+
 protected:
 
 	template <class Archive>
@@ -173,8 +181,8 @@ protected:
 	// To be used for referring to original dataset
 	dataItemId srcItemId;
 
-	Eigen::Vector3d position;
-	Eigen::Quaterniond orientation;
+	Eigen::Vector3d mPosition;
+	Eigen::Quaterniond mOrientation;
 	Eigen::Vector3d normal;
 	Eigen::Matrix<double,3,4> projMatrix;
 
