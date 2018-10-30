@@ -63,8 +63,7 @@
 
 using namespace MAPPINGGRID_CPY_NS;
 
-#define MAX_SAT_NUM 10
-#define LINE_WIDTH 8
+#define LINE_WIDTH 2.5
 #define GROUND_RELATIVE_HRIGHT 8
 
 
@@ -118,78 +117,46 @@ void InsertNewStyle(TiXmlElement* pElem, std::string style_id, int r, int g, int
 	TiXmlElement* pStyleElem = pElem->LastChild()->ToElement();
 	pStyleElem->SetAttribute("id", style_id);
 
-	TiXmlElement* pLineStyleElem = CreateStyleWithColor(pStyleElem, "LineStyle", r,g,b,255);
+	TiXmlElement* pLineStyleElem = CreateStyleWithColor(pStyleElem, "LineStyle", 50,50,255,255);
 	pLineStyleElem->LinkEndChild(new TiXmlElement("width"));
 	std::ostringstream width_str;
 	width_str << LINE_WIDTH;
 	pLineStyleElem->LastChild()->LinkEndChild(new TiXmlText(width_str.str()));
 
-	TiXmlElement* pPolyStyleElem = CreateStyleWithColor(pStyleElem, "PolyStyle", 120,120,120,175);
-	pPolyStyleElem->LinkEndChild(new TiXmlElement("outline"));
-	std::ostringstream outline_str;
-	outline_str << 0;
-	pPolyStyleElem->LastChild()->LinkEndChild(new TiXmlText(outline_str.str()));
+	TiXmlElement* pPolyStyleElem = CreateStyleWithColor(pStyleElem, "PolyStyle", 100,255,100,125);
+//	pPolyStyleElem->LinkEndChild(new TiXmlElement("outline"));
+//	std::ostringstream outline_str;
+//	outline_str << 0;
+//	pPolyStyleElem->LastChild()->LinkEndChild(new TiXmlText(outline_str.str()));
 }
 
-void InitializeStyleForSateliteNumbers(TiXmlElement* pElem, int max_sat_nu)
+void InitializeStyleForSateliteNumbers(TiXmlElement* pElem)
 {
-	for(int i=max_sat_nu; i >= 0; i--)
-	{
-		double r=0, g=0, b=0;
-
-		float norm_cost = (float)i / (float)max_sat_nu;
-		if(norm_cost <= 0.5)
-		{
-			g = (0.5 - norm_cost)*2.0;
-			r = 0;
-		}
-		else if(norm_cost > 0.5)
-		{
-			g = 0;
-			r = (norm_cost - 0.5)*2.0;
-		}
-
-		std::ostringstream style_id;
-		style_id<< "stl_" << i;
-		InsertNewStyle(pElem,style_id.str(), r*255.0,g*255.0,b*255.0);
-	}
+	double r=0.3, g=0.95, b=0.3;
+	InsertNewStyle(pElem, "Area_Style", r*255.0,g*255.0,b*255.0);
 }
 
-void CreateLinePlaceMark(std::vector<GPS_Point>& line, int sat_no)
+void CreateLinePlaceMark(std::vector<GPS_Point>& line)
 {
 	if(line.size() == 0 ) return;
 
-	sat_no = (float)sat_no / 2.0 +  (float)MAX_SAT_NUM/2.0;
-
-	std::ostringstream path_name, style_name;
-	path_id++;
-	path_name << "path_" << path_id;
-	style_name << "stl_" << sat_no;
-
 	pHeadElem->LinkEndChild(new TiXmlElement("Placemark"));
 	pHeadElem->LastChild()->LinkEndChild(new TiXmlElement("name"));
-	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlText(path_name.str()));
+	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlText("Map Area"));
 
 	pHeadElem->LastChild()->LinkEndChild(new TiXmlElement("styleUrl"));
-	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlText(style_name.str()));
+	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlText("Area_Style"));
 
-	pHeadElem->LastChild()->LinkEndChild(new TiXmlElement("LineString"));
+	pHeadElem->LastChild()->LinkEndChild(new TiXmlElement("Polygon"));
 
-	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("extrude"));
+	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("tessellate"));
 	pHeadElem->LastChild()->LastChild()->LastChild()->LinkEndChild(new TiXmlText("1"));
 
-	if(GROUND_RELATIVE_HRIGHT > 0)
-	{
-		pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("tessellate"));
-		pHeadElem->LastChild()->LastChild()->LastChild()->LinkEndChild(new TiXmlText("0"));
+	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("outerBoundaryIs"));
+	pHeadElem->LastChild()->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("LinearRing"));
+	pHeadElem->LastChild()->LastChild()->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("coordinates"));
 
-		pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("altitudeMode"));
-		pHeadElem->LastChild()->LastChild()->LastChild()->LinkEndChild(new TiXmlText("relativeToGround"));
-	}
-
-	pHeadElem->LastChild()->LastChild()->LinkEndChild(new TiXmlElement("coordinates"));
-
-	TiXmlElement* pCoordsElem = pHeadElem->LastChild()->LastChild()->LastChild()->ToElement();
+	TiXmlElement* pCoordsElem = pHeadElem->LastChild()->LastChild()->LastChild()->LastChild()->LastChild()->ToElement();
 
 	std::ostringstream coords ;
 	coords.precision(16);
@@ -200,7 +167,6 @@ void CreateLinePlaceMark(std::vector<GPS_Point>& line, int sat_no)
 
 	pCoordsElem->LinkEndChild(new TiXmlText(coords.str()));
 }
-
 
 void GetFileNameInFolder(const std::string& path, std::vector<std::string>& out_list)
 {
@@ -359,19 +325,19 @@ void xyzTolla_proj(const double& x_in, const double& y_in, const double& z_in, d
 	}
 }
 
-void LoadPointCloudData(std::vector<std::string> map_files, pcl::PointCloud<pcl::PointXYZRGB>& map_data)
+void LoadPointCloudData(std::vector<std::string> map_files, pcl::PointCloud<pcl::PointXYZ>& map_data)
 {
-	pcl::PointCloud<pcl::PointXYZRGB> file_data;
+	pcl::PointCloud<pcl::PointXYZ> file_data;
 	std::cout << std::endl;
 	for(unsigned int i=0; i < map_files.size();i++)
 	{
 		//std::cout << map_files.at(i) << endl;
 		file_data.clear();
-		pcl::io::loadPCDFile<pcl::PointXYZRGB> (map_files.at(i), file_data);
+		pcl::io::loadPCDFile<pcl::PointXYZ> (map_files.at(i), file_data);
 		map_data += file_data;
 	}
 
-	std::cout << "Point Cloud is loaded with Points: " << file_data.size() << std::endl;
+	std::cout << "Point Cloud is loaded with Points: " << map_data.size() << std::endl;
 }
 
 void ConvertMap(const std::vector<std::string>& pcd_files)
@@ -394,29 +360,26 @@ void ConvertMap(const std::vector<std::string>& pcd_files)
 
 	CreateTemplateDocument(xml_doc);
 	pHeadElem = xml_doc.FirstChildElement()->FirstChildElement("Document");
-	InitializeStyleForSateliteNumbers(pHeadElem, MAX_SAT_NUM);
+	InitializeStyleForSateliteNumbers(pHeadElem);
 
-	pcl::PointCloud<pcl::PointXYZRGB> map_data;
+	pcl::PointCloud<pcl::PointXYZ> map_data;
 
 	std::cout << "Load PointCloud Data From Files .... " << std::endl;
 	LoadPointCloudData(pcd_files, map_data);
 
-	std::cout << "Initialize Grid Map .... " << std::endl;
-	g_GridMap.LoadMap(map_data);
+	std::cout << "Initialize Map Polygon .... " << std::endl;
+	PolygonGenerator poly(256);
+	WayPoint new_center;
+	std::vector<WayPoint> map_polygon = poly.EstimateClusterPolygon(map_data, new_center, 5);
+	std::cout << "Contour points for this Map = " << map_polygon.size() << std::endl;
 
+	for(unsigned int i=0; i < map_polygon.size(); i++)
+	{
+		g_line_points.push_back(GPS_Point(map_polygon.at(i).x,map_polygon.at(i).y, map_polygon.at(i).z));
+	}
 
 
 	GPS_Point p;
-//	for(unsigned int i=0; i < map_data.size(); i++)
-//	{
-//		xyzTolla_proj(map_data.at(i).y, map_data.at(i).x, map_data.at(i).z, p.lat, p.lon, p.alt);
-//		//correct_gps_coor(p.lat, p.lon);
-//		g_line_points.push_back(p);
-//	}
-
-	std::cout << "Create One path From Data .... " << std::endl;
-	g_GridMap.GetOnePathFromGridCentersLeftToRight(g_line_points);
-
 	std::cout << "Convert Coordinates .... " << std::endl;
 	for(unsigned int i=0; i < g_line_points.size(); i++)
 	{
@@ -424,12 +387,8 @@ void ConvertMap(const std::vector<std::string>& pcd_files)
 		g_line_points.at(i) = p;
 	}
 
-	std::cout << "Filter Points .... " << std::endl;
-//	CompressPointCloudData(g_line_points, 0.4, 0.48, 0.1);
-//	FixPathDensity(g_line_points, 10);
-
 	std::cout << "Create KML file ... " << std::endl;
-	CreateLinePlaceMark(g_line_points, MAX_SAT_NUM-3);
+	CreateLinePlaceMark(g_line_points);
 	xml_doc.SaveFile(output_kml);
 }
 

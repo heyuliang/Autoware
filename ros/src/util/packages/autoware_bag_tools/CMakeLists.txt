@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_bag_tools)
 
-find_package(catkin REQUIRED COMPONENTS autoware_build_flags rospy rosbag nmea_msgs roslib pcl_ros)
+find_package(catkin REQUIRED COMPONENTS autoware_build_flags rospy rosbag nmea_msgs roslib pcl_ros )
 find_package(Proj)
 
 catkin_package(
-  CATKIN_DEPENDS rosbag nmea_msgs roslib
+  CATKIN_DEPENDS rosbag nmea_msgs roslib 
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
