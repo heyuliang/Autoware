@@ -69,6 +69,8 @@ protected:
 
 	DBoW2::BowVector words;
 	DBoW2::FeatureVector featureVec;
+
+	// XXX: Put camera pose in here
 };
 
 #endif /* FRAME_H_ */
