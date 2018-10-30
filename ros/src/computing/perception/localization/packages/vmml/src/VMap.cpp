@@ -77,6 +77,19 @@ Matrix<double,3,4> CameraPinholeParams::toMatrix() const
 }
 
 
+cv::Mat
+CameraPinholeParams::toCvMat() const
+{
+	cv::Mat K = cv::Mat::zeros(3,3,CV_32F);
+	K.at<float>(2,2) = 1.0;
+    K.at<float>(0,0) = fx;
+    K.at<float>(1,1) = fy;
+    K.at<float>(0,2) = cx;
+    K.at<float>(1,2) = cy;
+	return K;
+}
+
+
 kfid VMap::createKeyFrame(const cv::Mat &imgSrc,
 		const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 		const int cameraId,
@@ -383,7 +396,7 @@ VMap::dumpCameraPoses () const
 		KeyFrame *kf = kptr.second;
 		Retr.push_back(
 			pair<Vector3d,Quaterniond>
-				(kf->getPosition(), kf->getOrientation()));
+				(kf->position(), kf->orientation()));
 	}
 
 	return Retr;

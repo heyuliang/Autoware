@@ -53,8 +53,9 @@ void fromSE3Quat(const g2o::SE3Quat &pose,
 
 void fromSE3Quat (const g2o::SE3Quat &pose, KeyFrame &kf)
 {
-	kf.getOrientation() = pose.rotation().inverse();
-	kf.getPosition() = -(kf.getOrientation() * pose.translation());
+	kf.orientation() = pose.rotation().inverse();
+	kf.position() = -(kf.orientation() * pose.translation());
+	kf.updateNormal();
 }
 
 
