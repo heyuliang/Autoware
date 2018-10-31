@@ -7,7 +7,9 @@
 
 
 #include "optimizer.h"
+#include "BaseFrame.h"
 #include "KeyFrame.h"
+
 #include "g2o/core/block_solver.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
 #include "g2o/solvers/eigen/linear_solver_eigen.h"
@@ -42,6 +44,13 @@ g2o::SE3Quat toSE3Quat (const KeyFrame &kf)
 }
 
 
+g2o::SE3Quat toSE3Quat (const BaseFrame &frame)
+{
+	Matrix4d extMat = frame.externalParamMatrix4();
+	return g2o::SE3Quat(extMat.block<3,3>(0,0), extMat.block<3,1>(0,3));
+}
+
+
 // XXX: Wrong
 void fromSE3Quat(const g2o::SE3Quat &pose,
 	Vector3d &position, Quaterniond &orientation)
@@ -56,6 +65,14 @@ void fromSE3Quat (const g2o::SE3Quat &pose, KeyFrame &kf)
 	kf.orientation() = pose.rotation().inverse();
 	kf.position() = -(kf.orientation() * pose.translation());
 	kf.updateNormal();
+}
+
+
+void fromSE3Quat (const g2o::SE3Quat &pose, BaseFrame &frb)
+{
+	auto Q = pose.rotation().inverse();
+	auto P = -(Q * pose.translation());
+	frb.setPose(P, Q);
 }
 
 
@@ -159,4 +176,28 @@ void bundle_adjustment (VMap *orgMap)
 		g2o::VertexSBAPointXYZ *vMp = static_cast<g2o::VertexSBAPointXYZ*> (optimizer.vertex(vId));
 		mp->setPosition(vMp->estimate());
 	}
+}
+
+
+void optimize_pose (Frame &frame, Pose &initPose, const std::vector<kpid> &inliers)
+{
+    g2o::SparseOptimizer optimizer;
+    g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
+
+    linearSolver = new g2o::LinearSolverDense<g2o::BlockSolver_6_3::PoseMatrixType>();
+
+    g2o::BlockSolver_6_3 * solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+
+    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    optimizer.setAlgorithm(solver);
+
+    int nInitialCorrespondences=0;
+
+    // Set Frame vertex
+    g2o::VertexSE3Expmap * vSE3 = new g2o::VertexSE3Expmap();
+//    vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
+    vSE3->setId(0);
+    vSE3->setFixed(false);
+    optimizer.addVertex(vSE3);
+
 }

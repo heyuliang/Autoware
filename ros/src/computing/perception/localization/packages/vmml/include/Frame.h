@@ -14,7 +14,10 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
 #include "VMap.h"
+#include "BaseFrame.h"
+#include "utilities.h"
 
 #include "DBoW2/BowVector.h"
 #include "DBoW2/FORB.h"
@@ -25,7 +28,7 @@ class ImageDatabase;
 class Localizer;
 
 
-class Frame
+class Frame : public BaseFrame
 {
 public:
 	friend class KeyFrame;
@@ -42,33 +45,13 @@ public:
 	DBoW2::FeatureVector& getFeatureVector()
 	{ return featureVec; }
 
-	const cv::Mat& descriptor() const
-	{ return mDescriptors; }
-
-	cv::Mat descriptor(const int r)
-	{ return mDescriptors.row(r); }
-
-	const cv::KeyPoint &keypoint(const kpid kp) const
-	{ return keypoints.at(kp); }
-
-	const vector<cv::KeyPoint> &getAllKeyPoints() const
-	{ return keypoints; }
-
 	void debugKeyPoints () const;
 
-	cv::Mat getImage() const
-	{ return image.clone(); }
-
 protected:
-	cv::Mat image;
-	std::vector<cv::KeyPoint> keypoints;
-	cv::Mat mDescriptors;
-
-	Eigen::Vector3d _mPos;
-	Eigen::Quaterniond _mOri;
 
 	DBoW2::BowVector words;
 	DBoW2::FeatureVector featureVec;
+
 };
 
 #endif /* FRAME_H_ */

@@ -98,6 +98,7 @@ add_library(
 		src/MapPoint.cpp
 		src/Viewer.cpp
 		src/ImageDatabase.cpp
+		src/BaseFrame.cpp
 		src/Frame.cpp
 		src/Localizer.cpp
 		src/triangulation.cpp

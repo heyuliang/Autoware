@@ -66,7 +66,8 @@ protected:
 		const KeyFrame &kf,
 		const Frame &fr,
 		const std::vector<std::pair<mpid,kpid>> &mapPtMatchPairs,
-		Pose& frpose)
+		Pose& frpose,
+		vector<kpid> *inliers=nullptr)
 	const;
 
 	void debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, const vector<pair<mpid,kpid>> &mapPtMatchPairs);

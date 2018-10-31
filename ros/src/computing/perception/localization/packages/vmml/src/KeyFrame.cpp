@@ -177,7 +177,7 @@ KeyFrame::match (const KeyFrame &kf,
 
 	// Matching itself
 	vector<cv::DMatch> kf2fMatches;
-	matcher->match(frame.descriptor(), kf.descriptors, kf2fMatches);
+	matcher->match(frame.fDescriptors, kf.descriptors, kf2fMatches);
 
 	// Sort descending based on distance
 	sort(kf2fMatches.begin(), kf2fMatches.end(),
@@ -195,10 +195,10 @@ KeyFrame::match (const KeyFrame &kf,
 	for (int i=0; i<kf2fMatches.size(); ++i) {
 		auto &m = kf2fMatches[i];
 
-		if (m.trainIdx >= kf.keypoints.size() or m.queryIdx >= frame.keypoints.size())
+		if (m.trainIdx >= kf.keypoints.size() or m.queryIdx >= frame.fKeypoints.size())
 			continue;
 
-		const cv::Point2f &frameKp = frame.keypoints[m.queryIdx].pt;
+		const cv::Point2f &frameKp = frame.fKeypoints[m.queryIdx].pt;
 
 		if (doDebugMatch) {
 			if (i<=maxDebugMatchPair)
@@ -212,7 +212,7 @@ KeyFrame::match (const KeyFrame &kf,
 		if (projDev >= pixelReprojectionError)
 			continue;
 
-		FeaturePair fp = {m.trainIdx, kf.keypoints[m.trainIdx].pt, m.queryIdx, frame.keypoints[m.queryIdx].pt};
+		FeaturePair fp = {m.trainIdx, kf.keypoints[m.trainIdx].pt, m.queryIdx, frame.fKeypoints[m.queryIdx].pt};
 		featurePairs.push_back(fp);
 
 	}

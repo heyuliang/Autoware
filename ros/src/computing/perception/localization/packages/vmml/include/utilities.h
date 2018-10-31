@@ -33,6 +33,11 @@ using Eigen::Quaterniond;
 using Eigen::Vector3d;
 
 
+typedef uint64_t kfid;
+typedef uint64_t mpid;
+typedef decltype(cv::DMatch::trainIdx) kpid;
+
+
 typedef Eigen::Affine3d Transform3d;
 
 typedef boost::posix_time::ptime ptime;
@@ -201,11 +206,6 @@ struct TTransform : public Eigen::Affine3d
 	displacement (const TTransform &other, double &linear, double &angular) const;
 
 	static TTransform interpolate(const TTransform &T1, const TTransform &T2, const double ratio);
-
-//	inline void setPosition(const double &x=0, const double &y=0, const double &z=0)
-//	{
-//		translation() = Eigen::Translation3d(x, y, z);
-//	}
 
 	template<class Archive>
 	inline void save(Archive &ar, const unsigned int v) const

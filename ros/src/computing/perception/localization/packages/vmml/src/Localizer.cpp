@@ -110,7 +110,10 @@ Localizer::detect (cv::Mat &frmImg)
 //			debug_KF_F_Matching(kf, frame, mapPointMatches);
 
 			Pose currentFramePose;
-			solvePose(kf, frame, mapPointMatches, currentFramePose);
+			vector<kpid> inliers;
+
+			solvePose(kf, frame, mapPointMatches, currentFramePose, &inliers);
+			// What to do with list of inliers/outliers ?
 
 			continue;
 		}
@@ -221,17 +224,21 @@ Localizer::solvePose (
 	const KeyFrame &kf,
 	const Frame &fr,
 	const vector<pair<mpid,kpid>> &mapPtMatchPairs,
-	Pose& frpose)
+	Pose& frpose,
+	vector<kpid> *inliers)
 const
 {
 	// XXX: Use cv::solvePnPRansac()
+	// XXX: Need to clarify utilization of the camera poses
 
-	auto eKfRotMat = kf.getOrientation().toRotationMatrix();
+	Eigen::Matrix4d eKfExt = kf.externalParamMatrix4();
+
+	Eigen::Matrix3d eKfRotMat = eKfExt.block<3,3>(0,0);
 	cv::Mat cKfRotMat, cRVec;
 	cv::eigen2cv(eKfRotMat, cKfRotMat);
 	cv::Rodrigues(cKfRotMat, cRVec);
 
-	auto eKfTransVec = kf.getPosition();
+	Eigen::Vector3d eKfTransVec = eKfExt.block<3,1>(0,3);
 	cv::Mat cKfTransVec;
 	cv::eigen2cv(eKfTransVec, cKfTransVec);
 
@@ -247,6 +254,7 @@ const
 	}
 
 	cv::Mat cameraMatrix = sourceMap->getCameraParameter(0).toCvMat();
+
 	cv::Mat inlierIdx;
 
 	bool hasSolution = cv::solvePnPRansac(objectPoints, imagePoints, cameraMatrix, cv::Mat(), cRVec, cKfTransVec, true, 100, 4.0, 0.99, inlierIdx, cv::SOLVEPNP_EPNP);
@@ -259,7 +267,14 @@ const
 	Q = eKfRotMat;
 	cv::cv2eigen(cKfTransVec, eKfTransVec);
 
-	frpose = Pose::from_Pos_Quat(eKfTransVec, Q);
+	frpose = Pose::from_Pos_Quat(eKfTransVec, Q).inverse();
+
+	if (inliers != nullptr) {
+		inliers->resize(inlierIdx.rows);
+		for (int i=0; i<inlierIdx.rows; ++i) {
+			inliers->at(i) = mapPtMatchPairs.at(i).second;
+		}
+	}
 
 	return true;
 }

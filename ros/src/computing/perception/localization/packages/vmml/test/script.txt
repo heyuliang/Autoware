@@ -26,3 +26,8 @@ zoom 0.33333333
 dataset /media/sujiwo/ssd/log_2016-12-26-13-21-10.bag
 map /media/sujiwo/ssd/sample-mapping.bag.map
 detect 933.51
+
+# Fringe cases
+detect 932.16
+detect 3148.25
+
