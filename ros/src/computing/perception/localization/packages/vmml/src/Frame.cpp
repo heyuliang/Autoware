@@ -20,22 +20,18 @@ using namespace Eigen;
 
 Frame::Frame(
 	cv::Mat &imgSrc,
-	const Localizer* parent
-) :
+	const Localizer* parent) :
+
 	BaseFrame()
+
 {
-	/*parent->getFeatureDetector()->detectAndCompute(
-		image,
-		parent->getMask(),
-		keypoints,
-		mDescriptors,
-		false);*/
 	image = imgSrc;
 	computeFeatures(parent->getFeatureDetector(), parent->getMask());
 }
 
 
-Frame::~Frame() {
+Frame::~Frame()
+{
 	// TODO Auto-generated destructor stub
 }
 
