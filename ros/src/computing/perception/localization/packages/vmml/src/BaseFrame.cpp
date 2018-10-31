@@ -69,7 +69,7 @@ BaseFrame::normal() const
 
 
 void
-BaseFrame::computeFeatures (cv::Ptr<cv::FeatureDetector> &fd, const cv::Mat &mask)
+BaseFrame::computeFeatures (cv::Ptr<cv::FeatureDetector> fd, const cv::Mat &mask)
 {
 	assert (image.empty() == false);
 

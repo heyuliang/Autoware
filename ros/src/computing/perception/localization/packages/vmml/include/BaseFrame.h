@@ -62,7 +62,7 @@ public:
 	 */
 	Eigen::Vector3d normal() const;
 
-	void computeFeatures (cv::Ptr<cv::FeatureDetector> &fd, const cv::Mat &mask=cv::Mat());
+	void computeFeatures (cv::Ptr<cv::FeatureDetector> fd, const cv::Mat &mask=cv::Mat());
 
 	const cv::Mat descriptor(uint32_t r) const
 	{ return fDescriptors.row(r); }
@@ -75,6 +75,9 @@ public:
 
 	int numOfKeypoints() const
 	{ return fKeypoints.size(); }
+
+	cv::Mat getImage() const
+	{ return image; }
 
 
 protected:
