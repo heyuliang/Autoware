@@ -30,6 +30,10 @@ add_executable(${PROJECT_NAME}_main
     src/browse_launcher.cpp
     src/browse_button.cpp
     src/launch_button.cpp
+    src/base_widget.cpp
+    src/base_window.cpp
+    src/map_config_widget.cpp
+    src/map_config_window.cpp
 )
 set_target_properties(${PROJECT_NAME}_main PROPERTIES OUTPUT_NAME main PREFIX "")
 target_link_libraries(${PROJECT_NAME}_main ${catkin_LIBRARIES} ${QT_LIBRARIES})

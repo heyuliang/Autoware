@@ -1,5 +1,15 @@
-#include "main_tool.hpp"
+#include "base_window.hpp"
 
+namespace autoware_launcher {
+
+AwBaseWindow::AwBaseWindow()
+{
+
+
+
+}
+
+/*
 #include "map_config_widget.hpp"
 
 #include "base_widget.hpp"
@@ -56,5 +66,6 @@ void AwMainTool::loadConfig(const AwConfig &config)
         launcher->setPath(config[key].toString());
     }
 }
+*/
 
 }
