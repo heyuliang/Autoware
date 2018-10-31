@@ -24,8 +24,8 @@ Frame::	Frame(
 ) :
 
 	image(imgSrc),
-	_mPos(Vector3d::Zero()),
-	_mOri(Quaterniond::Identity())
+	mPosition(Vector3d::Zero()),
+	mOrientation(Quaterniond::Identity())
 
 {
 	parent->getFeatureDetector()->detectAndCompute(
@@ -39,6 +39,14 @@ Frame::	Frame(
 
 Frame::~Frame() {
 	// TODO Auto-generated destructor stub
+}
+
+
+void
+Frame::setPose (const Pose &sp)
+{
+	mPosition = sp.position();
+	mOrientation = sp.orientation();
 }
 
 

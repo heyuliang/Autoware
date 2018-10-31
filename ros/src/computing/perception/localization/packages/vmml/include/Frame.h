@@ -14,7 +14,10 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
 #include "VMap.h"
+#include "BaseFrame.h"
+#include "utilities.h"
 
 #include "DBoW2/BowVector.h"
 #include "DBoW2/FORB.h"
@@ -59,18 +62,34 @@ public:
 	cv::Mat getImage() const
 	{ return image.clone(); }
 
+	Eigen::Vector3d &position ()
+	{ return mPosition; }
+
+	const Eigen::Vector3d &getPosition () const
+	{ return mPosition; }
+
+	Eigen::Quaterniond &orientation ()
+	{ return mOrientation; }
+
+	void setPose (const Pose &sp);
+
+	Pose getPose () const
+	{ return Pose::from_Pos_Quat(mPosition, mOrientation); }
+
+	const Eigen::Quaterniond &getOrientation () const
+	{ return mOrientation; }
+
 protected:
 	cv::Mat image;
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat mDescriptors;
 
-	Eigen::Vector3d _mPos;
-	Eigen::Quaterniond _mOri;
+	Eigen::Vector3d mPosition;
+	Eigen::Quaterniond mOrientation;
 
 	DBoW2::BowVector words;
 	DBoW2::FeatureVector featureVec;
 
-	// XXX: Put camera pose in here
 };
 
 #endif /* FRAME_H_ */
