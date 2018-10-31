@@ -11,6 +11,7 @@
 
 #include <Eigen/Eigen>
 #include <opencv2/core.hpp>
+#include <opencv2/features2d.hpp>
 
 #include "CameraPinholeParams.h"
 #include "utilities.h"
@@ -34,8 +35,14 @@ public:
 	// Project to 2D
 	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
 
+	// Transform a point in World coordinate to Frame-centric one
+	Eigen::Vector3d transform (const Eigen::Vector3d &pt3) const;
+
 	void setCameraParam(const CameraPinholeParams *c)
 	{ cameraParam = const_cast<CameraPinholeParams*>(c); }
+
+	CameraPinholeParams getCameraParameters() const
+	{ return *cameraParam; }
 
 	/*
 	 * This matrix transforms points in World Coordinate to Frame-centric coordinate
@@ -43,6 +50,22 @@ public:
 	Eigen::Matrix4d externalParamMatrix4 () const;
 
 	Eigen::Matrix<double,3,4> projectionMatrix () const;
+
+	/*
+	 * Normal vector
+	 */
+	Eigen::Vector3d normal() const;
+
+	void computeFeatures (cv::Ptr<cv::FeatureDetector> &fd, const cv::Mat &mask=cv::Mat());
+
+	const cv::Mat descriptor(uint32_t r) const
+	{ return fDescriptors.row(r); }
+
+	const cv::KeyPoint keypoint(uint32_t k) const
+	{ return fKeypoints.at(k); }
+
+	int numOfKeypoints() const
+	{ return fKeypoints.size(); }
 
 
 protected:
@@ -55,6 +78,15 @@ protected:
 	Pose mPose = Pose::Identity();
 
 	CameraPinholeParams *cameraParam = nullptr;
+
+	/*
+	 * =================
+	 * 2D Image Features
+	 */
+
+	cv::Mat fDescriptors;
+
+	std::vector<cv::KeyPoint> fKeypoints;
 };
 
 #endif /* _BASEFRAME_H_ */

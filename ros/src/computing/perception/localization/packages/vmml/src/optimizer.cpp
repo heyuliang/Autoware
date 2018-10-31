@@ -7,7 +7,9 @@
 
 
 #include "optimizer.h"
+#include "BaseFrame.h"
 #include "KeyFrame.h"
+
 #include "g2o/core/block_solver.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
 #include "g2o/solvers/eigen/linear_solver_eigen.h"
@@ -38,6 +40,13 @@ g2o::SE3Quat toSE3Quat
 g2o::SE3Quat toSE3Quat (const KeyFrame &kf)
 {
 	Matrix4d extMat = kf.externalParamMatrix4();
+	return g2o::SE3Quat(extMat.block<3,3>(0,0), extMat.block<3,1>(0,3));
+}
+
+
+g2o::SE3Quat toSE3Quat (const BaseFrame &frame)
+{
+	Matrix4d extMat = frame.externalParamMatrix4();
 	return g2o::SE3Quat(extMat.block<3,3>(0,0), extMat.block<3,1>(0,3));
 }
 

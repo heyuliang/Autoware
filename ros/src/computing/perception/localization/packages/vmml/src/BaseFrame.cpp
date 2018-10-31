@@ -5,7 +5,7 @@
  *      Author: sujiwo
  */
 
-#include <BaseFrame.h>
+#include "BaseFrame.h"
 
 
 using namespace Eigen;
@@ -31,7 +31,14 @@ BaseFrame::project (const Eigen::Vector3d &pt3) const
 {
 	Vector3d ptx = projectionMatrix() * pt3.homogeneous();
 	return ptx.head(2) / ptx[2];
+}
 
+
+Vector3d
+BaseFrame::transform (const Eigen::Vector3d &pt3) const
+{
+	Vector4d P = externalParamMatrix4() * pt3.homogeneous();
+	return P.head(3);
 }
 
 
@@ -51,4 +58,25 @@ BaseFrame::projectionMatrix () const
 {
 	assert (cameraParam != nullptr);
 	return cameraParam->toMatrix() * externalParamMatrix4();
+}
+
+
+Vector3d
+BaseFrame::normal() const
+{
+	return externalParamMatrix4().block(0,0,3,3).transpose().col(2);
+}
+
+
+void
+BaseFrame::computeFeatures (cv::Ptr<cv::FeatureDetector> &fd, const cv::Mat &mask)
+{
+	assert (image.empty() == false);
+
+	fd->detectAndCompute(
+		image,
+		mask,
+		fKeypoints,
+		fDescriptors,
+		false);
 }
