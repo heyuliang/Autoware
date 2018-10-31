@@ -32,6 +32,12 @@ public:
 	void setPose (const Pose &p)
 	{ mPose = p; }
 
+	Eigen::Vector3d position() const
+	{ return mPose.position(); }
+
+	Eigen::Quaterniond orientation() const
+	{ return mPose.orientation(); }
+
 	// Project to 2D
 	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
 
@@ -61,8 +67,11 @@ public:
 	const cv::Mat descriptor(uint32_t r) const
 	{ return fDescriptors.row(r); }
 
-	const cv::KeyPoint keypoint(uint32_t k) const
+	const cv::KeyPoint keypoint(kpid k) const
 	{ return fKeypoints.at(k); }
+
+	cv::Mat allDescriptors() const
+	{ return fDescriptors; }
 
 	int numOfKeypoints() const
 	{ return fKeypoints.size(); }

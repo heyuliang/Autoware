@@ -68,6 +68,14 @@ void fromSE3Quat (const g2o::SE3Quat &pose, KeyFrame &kf)
 }
 
 
+void fromSE3Quat (const g2o::SE3Quat &pose, BaseFrame &frb)
+{
+	auto Q = pose.rotation().inverse();
+	auto P = -(Q * pose.translation());
+	frb.setPose(P, Q);
+}
+
+
 #include <cstdio>
 void debugVector (const VectorXd &v)
 {

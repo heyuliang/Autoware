@@ -35,10 +35,6 @@ class KeyFrame;
 class MapPoint;
 class ImageDatabase;
 
-typedef uint64_t kfid;
-typedef uint64_t mpid;
-typedef decltype(cv::DMatch::trainIdx) kpid;
-
 
 #define MAX_ORB_POINTS_IN_FRAME 6000
 
