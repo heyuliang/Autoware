@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rviz
   std_msgs
 )
+find_package(yaml-cpp REQUIRED)
 
 if(rviz_QT_VERSION VERSION_LESS "5")
   message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
@@ -55,11 +56,17 @@ set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
   src/state_monitor/panel.cpp
+  src/state_monitor/graph.cpp
   src/decision_maker_panel/decision_maker_panel.cpp
 )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+target_link_libraries(autoware_rviz_plugins
+    ${QT_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${rviz_DEFAULT_PLUGIN_LIBRARIES}
+    yaml-cpp
+)
 
 ## Install rules
 

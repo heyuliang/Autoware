@@ -1,12 +1,17 @@
 #ifndef STATE_MONITOR_PANEL_HPP_
 #define STATE_MONITOR_PANEL_HPP_
 
+#include "graph.hpp"
+
 #include <rviz/panel.h>
 #include <std_msgs/String.h>
 
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #endif
+
+#include <string>
+#include <vector>
 
 namespace autoware_rviz_plugins {
 
@@ -17,11 +22,15 @@ class StateMonitor : public rviz::Panel
     public:
 
         StateMonitor(QWidget* parent = nullptr);
+
         void onInitialize() override;
 
     protected:
 
+        void createStateGraph();
         void paintEvent(QPaintEvent* event) override;
+        void drawWithGraph();
+        void drawWithoutGraph();
 
     private:
 
@@ -29,8 +38,10 @@ class StateMonitor : public rviz::Panel
 
         ros::NodeHandle node_;
         ros::Subscriber sub_state_;
+        int sub_count_;
 
-        std::string state_string_;
+        state_monitor::StateGraph graph_;
+        std::vector<std::string> states_;
 };
 
 }
