@@ -24,7 +24,7 @@
         </description>
     </class>
 
-    <class name="autoware_rviz_plugins/State Monitor" type="autoware_rviz_plugins::StateMonitor" base_class_type="rviz::Panel">
+    <class name="autoware_rviz_plugins/State Monitor" type="autoware_rviz_plugins::state_monitor::Panel" base_class_type="rviz::Panel">
         <description>Monitor the stats for decision maker</description>
     </class>
 

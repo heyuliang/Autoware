@@ -56,6 +56,7 @@ set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
   src/state_monitor/panel.cpp
+  src/state_monitor/grid.cpp
   src/state_monitor/graph.cpp
   src/decision_maker_panel/decision_maker_panel.cpp
 )

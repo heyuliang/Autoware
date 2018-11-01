@@ -14,14 +14,15 @@
 #include <vector>
 
 namespace autoware_rviz_plugins {
+namespace state_monitor {
 
-class StateMonitor : public rviz::Panel
+class Panel : public rviz::Panel
 {
     Q_OBJECT
 
     public:
 
-        StateMonitor(QWidget* parent = nullptr);
+        Panel(QWidget* parent = nullptr);
 
         void onInitialize() override;
 
@@ -35,15 +36,17 @@ class StateMonitor : public rviz::Panel
     private:
 
         void receiveState(const std_msgs::String::ConstPtr &msg);
+        void getDrawRect(int x, int y);
 
         ros::NodeHandle node_;
         ros::Subscriber sub_state_;
         int sub_count_;
 
-        state_monitor::StateGraph graph_;
-        std::vector<std::string> states_;
+        StateGraph graph_;
+        QMap<QString, QStringList> states_;
+        QStringList unknown_states_;
 };
 
-}
+}}
 
 #endif // INCLUDE GUARD
