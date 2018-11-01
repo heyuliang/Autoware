@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        laser_geometry
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -168,6 +169,22 @@ target_link_libraries(compare_map_filter
         )
 add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
 
+# Laser to Pointcloud
+add_executable(laser_to_pointcloud
+        nodes/laser_to_pointcloud/laser_to_pointcloud.cpp
+        )
+
+target_include_directories(laser_to_pointcloud PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        )
+
+target_link_libraries(laser_to_pointcloud
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        )
+
+add_dependencies(laser_to_pointcloud ${catkin_EXPORTED_TARGETS})
+
 ### Unit Tests ###
 #if (CATKIN_ENABLE_TESTING)
 #    find_package(rostest REQUIRED)
@@ -183,7 +200,6 @@ add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
 #            ray_ground_filter_lib
 #            ${catkin_LIBRARIES})
 #endif ()
-
 
 install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter compare_map_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
