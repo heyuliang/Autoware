@@ -6,9 +6,10 @@
  */
 
 
-#include "optimizer.h"
+#include "VMap.h"
+#include "Optimizer.h"
 #include "BaseFrame.h"
-#include "KeyFrame.h"
+#include "Frame.h"
 
 #include "g2o/core/block_solver.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
@@ -147,6 +148,8 @@ void bundle_adjustment (VMap *orgMap)
 			edge->setInformation(uncertainty);
 			edge->setParameterId(0, 0);
 
+			// XXX: Should we add a robust kernel for the edge here, ie. like pose optimization below ?
+
 			optimizer.addEdge(edge);
 		}
 	}
@@ -179,7 +182,7 @@ void bundle_adjustment (VMap *orgMap)
 }
 
 
-void optimize_pose (Frame &frame, Pose &initPose, const std::vector<kpid> &inliers)
+void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 {
     g2o::SparseOptimizer optimizer;
     g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
@@ -195,9 +198,53 @@ void optimize_pose (Frame &frame, Pose &initPose, const std::vector<kpid> &inlie
 
     // Set Frame vertex
     g2o::VertexSE3Expmap * vSE3 = new g2o::VertexSE3Expmap();
-//    vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
+    vSE3->setEstimate(toSE3Quat(frame));
     vSE3->setId(0);
     vSE3->setFixed(false);
     optimizer.addVertex(vSE3);
 
+	const CameraPinholeParams cp = frame.getCameraParameters();
+	g2o::CameraParameters *camParams =
+		new g2o::CameraParameters(cp.fx, Vector2d(cp.cx,cp.cy), 0);
+	camParams->setId(0);
+	optimizer.addParameter(camParams);
+
+    // Set MapPoint vertices
+    const auto &mapProjections = frame.getVisibleMapPoints();
+    const int N = mapProjections.size();
+
+    vector<g2o::EdgeProjectXYZ2UV*> vpEdgesMono;
+    vector<size_t> vnIndexEdgeMono;
+    vpEdgesMono.reserve(N);
+    vnIndexEdgeMono.reserve(N);
+    vector<bool> isMpOutliers (N, false);
+
+    const float deltaMono = sqrt(5.991);
+
+    int i=0;
+    for (auto &vpmp: mapProjections) {
+		const MapPoint &mp = *vmap->mappoint(vpmp.first);
+
+		const cv::KeyPoint &kp = frame.keypoint(vpmp.second);
+		Vector2d obs (kp.pt.x, kp.pt.y);
+
+		g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV;
+		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
+		edge->setMeasurement(obs);
+
+		// It still amazes me how uncertainty is measured ...
+		Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(kp.octave+1));
+		edge->setInformation(uncertainty);
+		edge->setParameterId(0, 0);
+
+		g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
+		edge->setRobustKernel(rk);
+		rk->setDelta(deltaMono);
+
+		optimizer.addEdge(edge);
+		vpEdgesMono.push_back(edge);
+		vnIndexEdgeMono.push_back(i);
+
+		++i;
+    }
 }
