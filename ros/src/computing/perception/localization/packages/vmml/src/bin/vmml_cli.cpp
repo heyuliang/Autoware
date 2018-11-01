@@ -21,6 +21,7 @@
 #include <boost/filesystem.hpp>
 
 #include "VMap.h"
+#include "KeyFrame.h"
 #include "ImageDatabase.h"
 #include "SequenceSLAM.h"
 #include "Localizer.h"

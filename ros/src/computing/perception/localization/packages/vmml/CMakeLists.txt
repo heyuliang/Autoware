@@ -102,7 +102,7 @@ add_library(
 		src/Frame.cpp
 		src/Localizer.cpp
 		src/triangulation.cpp
-		src/optimizer.cpp
+		src/Optimizer.cpp
 		src/utilities.cpp
 		src/SequenceSLAM.cpp	
 		src/datasets/GenericDataset.cpp

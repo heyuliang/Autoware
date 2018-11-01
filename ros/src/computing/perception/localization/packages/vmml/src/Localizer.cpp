@@ -11,6 +11,7 @@
 #include "KeyFrame.h"
 #include "Localizer.h"
 #include "MapPoint.h"
+#include "Optimizer.h"
 #include "utilities.h"
 
 
@@ -82,6 +83,9 @@ Localizer::detect (cv::Mat &frmImg)
 		rzImg = frmImg;
 
 	Frame frame (rzImg, this);
+	frame.sourceMap = sourceMap;
+	frame.cameraParam = &this->localizerCamera;
+
 	vector<kfid> placeCandidates = imgDb->findCandidates(frame);
 
 	// for debugging
@@ -110,10 +114,19 @@ Localizer::detect (cv::Mat &frmImg)
 //			debug_KF_F_Matching(kf, frame, mapPointMatches);
 
 			Pose currentFramePose;
-			vector<kpid> inliers;
+			// store index of inlier pairs here
+			vector<int> inliers;
 
 			solvePose(kf, frame, mapPointMatches, currentFramePose, &inliers);
-			// What to do with list of inliers/outliers ?
+
+			// Store the inliers
+			for (auto iidx: inliers) {
+				auto p = mapPointMatches.at(inliers[iidx]);
+				frame.vfMapPoints[p.first] = p.second;
+			}
+
+			// XXX: Call pose optimization
+
 
 			continue;
 		}
@@ -225,7 +238,7 @@ Localizer::solvePose (
 	const Frame &fr,
 	const vector<pair<mpid,kpid>> &mapPtMatchPairs,
 	Pose& frpose,
-	vector<kpid> *inliers)
+	vector<int> *inliers)
 const
 {
 	// XXX: Use cv::solvePnPRansac()
@@ -272,7 +285,7 @@ const
 	if (inliers != nullptr) {
 		inliers->resize(inlierIdx.rows);
 		for (int i=0; i<inlierIdx.rows; ++i) {
-			inliers->at(i) = mapPtMatchPairs.at(i).second;
+			inliers->at(i) = inlierIdx.at<int>(i,0);
 		}
 	}
 

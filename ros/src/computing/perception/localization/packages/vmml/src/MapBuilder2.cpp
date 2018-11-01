@@ -8,7 +8,7 @@
 #include <exception>
 #include <thread>
 #include "MapBuilder2.h"
-#include "optimizer.h"
+#include "Optimizer.h"
 #include "ImageDatabase.h"
 #include "Viewer.h"
 #include "utilities.h"

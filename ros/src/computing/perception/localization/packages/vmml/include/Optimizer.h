@@ -15,9 +15,12 @@
 #include "MapPoint.h"
 
 
+class Frame;
+
+
 void bundle_adjustment (VMap *orgMap);
 
-void optimize_pose (Frame &frame, Pose &initPose, const std::vector<kpid> &inliers);
+void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap);
 
 
 #endif /* OPTIMIZER_H_ */

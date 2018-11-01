@@ -128,7 +128,13 @@ public:
 	KeyFrame* keyframe (const kfid &i)
 	{ return keyframeInvIdx.at(i); }
 
+	const KeyFrame* keyframe (const kfid &i) const
+	{ return keyframeInvIdx.at(i); }
+
 	MapPoint* mappoint (const mpid &i)
+	{ return mappointInvIdx.at(i); }
+
+	const MapPoint* mappoint (const mpid &i) const
 	{ return mappointInvIdx.at(i); }
 
 	void estimateStructure (const kfid &keyFrame1, const kfid &keyFrame2);

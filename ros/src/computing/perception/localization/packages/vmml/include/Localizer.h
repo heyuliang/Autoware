@@ -13,7 +13,6 @@
 #include <Eigen/Eigen>
 
 #include "VMap.h"
-#include "optimizer.h"
 #include "Frame.h"
 #include "ImageDatabase.h"
 
@@ -67,7 +66,7 @@ protected:
 		const Frame &fr,
 		const std::vector<std::pair<mpid,kpid>> &mapPtMatchPairs,
 		Pose& frpose,
-		vector<kpid> *inliers=nullptr)
+		vector<int> *mpInliers=nullptr)
 	const;
 
 	void debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, const vector<pair<mpid,kpid>> &mapPtMatchPairs);
