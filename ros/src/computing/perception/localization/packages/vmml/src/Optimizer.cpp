@@ -131,6 +131,10 @@ void bundle_adjustment (VMap *orgMap)
 			const cv::KeyPoint p2K = kf->getKeyPointAt(ptr.second);
 
 			g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
+
+			// What effect if we run this line ?
+//			vMp->setFixed(false);
+
 			vMp->setEstimate(mp->getPosition());
 			vMp->setMarginalized(true);
 			vMp->setId(vId);
@@ -232,7 +236,7 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
 		edge->setMeasurement(obs);
 
-		// It still amazes me how uncertainty is measured ...
+		// It still amazes me how 2D uncertainty is measured ...
 		Matrix2d uncertainty = Matrix2d::Identity() * (1.2*(kp.octave+1));
 		edge->setInformation(uncertainty);
 		edge->setParameterId(0, 0);
@@ -241,10 +245,24 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 		edge->setRobustKernel(rk);
 		rk->setDelta(deltaMono);
 
+		// Put MP's world coordinate, as vertex
+		g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ;
+		vMp->setFixed(true);
+		vMp->setEstimate(mp.getPosition());
+		optimizer.addVertex(vMp);
+		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(vMp));
+
 		optimizer.addEdge(edge);
 		vpEdgesMono.push_back(edge);
 		vnIndexEdgeMono.push_back(i);
 
 		++i;
     }
+
+    // Run optimization 4 times
+    // XXX: Unfinished
+    for (i=0; i<4; ++i) {
+
+    }
+
 }
