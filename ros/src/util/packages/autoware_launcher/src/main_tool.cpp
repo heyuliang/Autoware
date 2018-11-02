@@ -10,7 +10,7 @@
 
 namespace autoware_launcher {
 
-AwMainTool::AwMainTool(QWidget* parent) : QWidget(parent)
+AwMainTool::AwMainTool(QWidget* parent)
 {
     auto profile = new AwBaseWidget;
     profile->addButton( new QPushButton("Change") );
@@ -25,16 +25,10 @@ AwMainTool::AwMainTool(QWidget* parent) : QWidget(parent)
     sensors->addButton( new QPushButton("Change") );
     sensors->addButton( new QPushButton("Launch") );
 
-    auto layout = new QVBoxLayout;
-    layout->setMargin(MERGIN);
-    layout->setSpacing(MERGIN);
-    layout->addWidget(profile);
-    layout->addWidget(map);
-    layout->addWidget(vehicle);
-    layout->addWidget(sensors);
-    layout->addStretch();
-    setLayout(layout);
-
+    addSubWidget(profile);
+    addSubWidget(map);
+    addSubWidget(vehicle);
+    addSubWidget(sensors);
 }
 
 void AwMainTool::saveConfig(AwConfig &config) const

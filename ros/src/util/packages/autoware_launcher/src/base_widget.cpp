@@ -3,8 +3,6 @@
 #include <QLabel>
 #include <QPainter>
 
-#define MERGIN 4
-
 namespace autoware_launcher {
 
 AwBaseWidget::AwBaseWidget()
@@ -14,21 +12,21 @@ AwBaseWidget::AwBaseWidget()
     value_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     header_ = new QHBoxLayout;
-    header_->setSpacing(MERGIN);
+    header_->setSpacing(layout_margin);
     header_->addWidget(title_);
     header_->addWidget(value_);
 
     content_ = new QLabel("data\ndata\ndata");
 
     auto vlayout = new QVBoxLayout;
-    vlayout->setMargin(MERGIN);
-    vlayout->setSpacing(MERGIN * 2);
+    vlayout->setMargin(layout_margin);
+    vlayout->setSpacing(layout_margin * 2);
     vlayout->addLayout(header_);
     vlayout->addWidget(content_);
     setLayout(vlayout);
 
     //setStyleSheet("border: 1px solid red");
-    setStyleSheet("font-size: 14px");
+    //setStyleSheet("font-size: 14px");
 }
 
 void AwBaseWidget::addButton(QWidget* button)
@@ -42,7 +40,7 @@ void AwBaseWidget::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.drawRect(0, 0, width()-1, height()-1);
 
-    int bottom = layout()->itemAt(0)->geometry().bottom() + MERGIN;
+    int bottom = layout()->itemAt(0)->geometry().bottom() + layout_margin;
     painter.drawLine(0, bottom, width()-1, bottom);
 }
 

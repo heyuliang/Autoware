@@ -13,6 +13,10 @@ class AwBaseWindow : public QWidget
 
         AwBaseWindow();
 
+    protected:
+
+        void addSubWidget(QWidget* widget, int stretch = 0);
+
     private:
 
         static constexpr int layout_margin = 16;

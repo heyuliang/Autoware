@@ -17,6 +17,9 @@ class AwBaseWidget : public QWidget
         AwBaseWidget();
         void addButton(QWidget* button);
 
+        void setLabel(const QString& label);
+        void setTitle(const QString& title);
+
     protected:
 
         void paintEvent(QPaintEvent* event) override;
@@ -25,6 +28,10 @@ class AwBaseWidget : public QWidget
         QLabel* title_;
         QLabel* value_;
         QWidget* content_;
+
+    private:
+
+        static constexpr int layout_margin = 4;
 };
 
 }

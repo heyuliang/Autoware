@@ -1,13 +1,14 @@
 #ifndef AUTOWARE_LAUNCHER_MAIN_TOOL_HPP_
 #define AUTOWARE_LAUNCHER_MAIN_TOOL_HPP_
 
+#include "base_window.hpp"
 #include "main_config.hpp"
 #include "browse_launcher.hpp"
 #include <QWidget>
 
 namespace autoware_launcher {
 
-class AwMainTool final : public QWidget, public AwConfigInterface
+class AwMainTool final : public AwBaseWindow, public AwConfigInterface
 {
     Q_OBJECT
 

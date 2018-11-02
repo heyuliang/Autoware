@@ -19,20 +19,10 @@ else()
   set(QT_LIBRARIES Qt5::Widgets)
 endif()
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES state_rviz_plugins
-#  CATKIN_DEPENDS rviz std_msgs
-  DEPENDS rviz
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS rviz std_msgs
+#  DEPENDS rviz
 )
 
 ###########
@@ -54,10 +44,11 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
-  )
+  src/autoware_launcher_rviz/panel.cpp
+)
 
-add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+add_library(autoware_rviz_plugins ${SOURCE_FILES})
+target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
 ## Install rules
 
