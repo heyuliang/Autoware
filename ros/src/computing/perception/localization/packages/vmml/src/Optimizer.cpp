@@ -52,6 +52,13 @@ g2o::SE3Quat toSE3Quat (const BaseFrame &frame)
 }
 
 
+g2o::SE3Quat toSE3Quat (const Pose &spose)
+{
+	Matrix4d extMat = BaseFrame::createExternalParamMatrix4(spose);
+	return g2o::SE3Quat(extMat.block<3,3>(0,0), extMat.block<3,1>(0,3));
+}
+
+
 // XXX: Wrong
 void fromSE3Quat(const g2o::SE3Quat &pose,
 	Vector3d &position, Quaterniond &orientation)
@@ -74,6 +81,14 @@ void fromSE3Quat (const g2o::SE3Quat &pose, BaseFrame &frb)
 	auto Q = pose.rotation().inverse();
 	auto P = -(Q * pose.translation());
 	frb.setPose(P, Q);
+}
+
+
+void fromSE3Quat (const g2o::SE3Quat &pose, Pose &target)
+{
+	auto Q = pose.rotation().inverse();
+	auto P = -(Q * pose.translation());
+	target = Pose::from_Pos_Quat(P, Q);
 }
 
 
@@ -188,52 +203,51 @@ void bundle_adjustment (VMap *orgMap)
 
 void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 {
-    g2o::SparseOptimizer optimizer;
-    g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
+	g2o::SparseOptimizer optimizer;
+	g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
 
-    linearSolver = new g2o::LinearSolverDense<g2o::BlockSolver_6_3::PoseMatrixType>();
+	linearSolver = new g2o::LinearSolverDense<g2o::BlockSolver_6_3::PoseMatrixType>();
 
-    g2o::BlockSolver_6_3 * solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+	g2o::BlockSolver_6_3 * solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
 
-    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
-    optimizer.setAlgorithm(solver);
+	g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+	optimizer.setAlgorithm(solver);
 
-    int nInitialCorrespondences=0;
-
-    // Set Frame vertex
-    g2o::VertexSE3Expmap * vSE3 = new g2o::VertexSE3Expmap();
-    vSE3->setEstimate(toSE3Quat(frame));
-    vSE3->setId(0);
-    vSE3->setFixed(false);
-    optimizer.addVertex(vSE3);
+	int nInitialCorrespondences=0;
 
 	const CameraPinholeParams cp = frame.getCameraParameters();
 	g2o::CameraParameters *camParams =
-		new g2o::CameraParameters(cp.fx, Vector2d(cp.cx,cp.cy), 0);
+		new g2o::CameraParameters((cp.fx+cp.fy)/2, Vector2d(cp.cx,cp.cy), 0);
 	camParams->setId(0);
 	optimizer.addParameter(camParams);
 
-    // Set MapPoint vertices
-    const auto &mapProjections = frame.getVisibleMapPoints();
-    const int N = mapProjections.size();
+	// Set Frame vertex
+	g2o::VertexSE3Expmap * vSE3 = new g2o::VertexSE3Expmap();
+	vSE3->setEstimate(toSE3Quat(initPose));
+	vSE3->setId(1);
+	vSE3->setFixed(false);
+	optimizer.addVertex(vSE3);
 
-    vector<g2o::EdgeProjectXYZ2UV*> vpEdgesMono;
-    vector<size_t> vnIndexEdgeMono;
-    vpEdgesMono.reserve(N);
-    vnIndexEdgeMono.reserve(N);
-    vector<bool> isMpOutliers (N, false);
+	// Set MapPoint vertices
+	const auto &mapProjections = frame.getVisibleMapPoints();
+	const int N = mapProjections.size();
 
-    const float deltaMono = sqrt(5.991);
+	vector<g2o::EdgeProjectXYZ2UV*> vpEdgesMono;
+	vector<size_t> vnIndexEdgeMono;
+	vpEdgesMono.reserve(N);
+	vnIndexEdgeMono.reserve(N);
+	vector<bool> isMpOutliers (N, false);
 
-    int i=0;
-    for (auto &vpmp: mapProjections) {
+	const float deltaMono = sqrt(5.991);
+
+	int i=0;
+	for (auto &vpmp: mapProjections) {
 		const MapPoint &mp = *vmap->mappoint(vpmp.first);
 
 		const cv::KeyPoint &kp = frame.keypoint(vpmp.second);
 		Vector2d obs (kp.pt.x, kp.pt.y);
 
 		g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV;
-		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
 		edge->setMeasurement(obs);
 
 		// It still amazes me how 2D uncertainty is measured ...
@@ -247,22 +261,61 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 
 		// Put MP's world coordinate, as vertex
 		g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ;
+		vMp->setId(i+2);
 		vMp->setFixed(true);
+		vMp->setMarginalized(true);
 		vMp->setEstimate(mp.getPosition());
 		optimizer.addVertex(vMp);
-		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(vMp));
-
+		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(1)));
+		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(i+2)));
 		optimizer.addEdge(edge);
+
 		vpEdgesMono.push_back(edge);
 		vnIndexEdgeMono.push_back(i);
 
 		++i;
-    }
+	}
 
-    // Run optimization 4 times
-    // XXX: Unfinished
-    for (i=0; i<4; ++i) {
+	// Run optimization 4 times
+	// Credit to original ORB-SLAM
+	const int numOfOptimizationIteration = 10;
 
-    }
+	for (int it=0; it<4; ++it) {
+		vSE3->setEstimate(toSE3Quat(initPose));
+		optimizer.initializeOptimization(0);
+		optimizer.optimize(numOfOptimizationIteration);
+
+		for (int ix=0; ix<vpEdgesMono.size(); ++ix) {
+
+			auto edge = vpEdgesMono[ix];
+			auto idx = vnIndexEdgeMono[ix];
+
+			if (isMpOutliers[ix]) {
+				edge->computeError();
+			}
+
+			const double xi2 = edge->chi2();
+			if (xi2 > deltaMono) {
+				isMpOutliers[ix] = true;
+				edge->setLevel(1);
+			}
+
+			else {
+				isMpOutliers[ix] = false;
+				edge->setLevel(0);
+			}
+
+			if (it==2)
+				edge->setRobustKernel(0);
+		}
+
+		if (optimizer.edges().size() < 10)
+			break;
+	}
+
+	// Recover pose
+	g2o::VertexSE3Expmap* vSE3_new = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(0));
+	g2o::SE3Quat SE3quat_new = vSE3_new->estimate();
+	fromSE3Quat(SE3quat_new, initPose);
 
 }

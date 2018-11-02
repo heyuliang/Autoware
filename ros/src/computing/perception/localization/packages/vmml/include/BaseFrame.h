@@ -55,6 +55,11 @@ public:
 	 */
 	Eigen::Matrix4d externalParamMatrix4 () const;
 
+	/*
+	 * Similar to the above function, only for general pose
+	 */
+	static Eigen::Matrix4d createExternalParamMatrix4(const Pose &ps);
+
 	Eigen::Matrix<double,3,4> projectionMatrix () const;
 
 	/*

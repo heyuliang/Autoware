@@ -97,6 +97,7 @@ Localizer::detect (cv::Mat &frmImg)
 	size_t bestKfScore=0;
 	kfid bestKfId;
 	vector<bool> isValidKfs (placeCandidates.size(), false);
+	Pose currentFramePose;
 
 	for (int i=0; i<placeCandidates.size(); i++) {
 
@@ -113,7 +114,6 @@ Localizer::detect (cv::Mat &frmImg)
 			isValidKfs[i] = true;
 //			debug_KF_F_Matching(kf, frame, mapPointMatches);
 
-			Pose currentFramePose;
 			// store index of inlier pairs here
 			vector<int> inliers;
 
@@ -121,12 +121,12 @@ Localizer::detect (cv::Mat &frmImg)
 
 			// Store the inliers
 			for (auto iidx: inliers) {
-				auto p = mapPointMatches.at(inliers[iidx]);
+				auto p = mapPointMatches.at(iidx);
 				frame.vfMapPoints[p.first] = p.second;
 			}
 
 			// XXX: Call pose optimization
-
+			optimize_pose(frame, currentFramePose, sourceMap);
 
 			continue;
 		}

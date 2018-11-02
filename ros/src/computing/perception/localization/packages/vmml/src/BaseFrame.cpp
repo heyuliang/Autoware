@@ -45,10 +45,17 @@ BaseFrame::transform (const Eigen::Vector3d &pt3) const
 poseMatrix4
 BaseFrame::externalParamMatrix4 () const
 {
+	return createExternalParamMatrix4(mPose);
+}
+
+
+Eigen::Matrix4d
+BaseFrame::createExternalParamMatrix4(const Pose &ps)
+{
 	poseMatrix4 ex = poseMatrix4::Identity();
-	Matrix3d R = mPose.orientation().toRotationMatrix().transpose();
+	Matrix3d R = ps.orientation().toRotationMatrix().transpose();
 	ex.block<3,3>(0,0) = R;
-	ex.col(3).head(3) = -(R*mPose.position());
+	ex.col(3).head(3) = -(R*ps.position());
 	return ex;
 }
 
