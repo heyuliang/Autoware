@@ -1,30 +1,43 @@
 #include "graph.hpp"
 
 #include <yaml-cpp/yaml.h>
-#include <iostream>
+#include <sstream>
 
 namespace autoware_rviz_plugins {
 namespace state_monitor {
 
-StateNode::StateNode(const std::string &graph, const std::string &state, const std::string &parent)
+StateFrame::StateFrame()
 {
-    depth_  = -1;
-    graph_  = graph;
-    state_  = state;
-    parent_ = parent;
+    duration = 0;
+    empty = true;
+    name.clear();
+}
+
+StateNode::StateNode(const std::string &group, const std::string &state, const std::string &parent)
+{
+    this->depth  = -1;
+    this->group  = group;
+    this->state  = state;
+    this->parent = parent;
 }
 
 int StateNode::updateDepth(std::map<std::string, StateNode>& nodes)
 {
-    if(0 <= depth_)
+    if(0 <= depth)
     {
-        return depth_;
+        return depth;
     }
-    if(nodes.count(parent_) == 0)
+
+    if(nodes.count(parent) == 0)
     {
-        return (depth_ = 0);
+        depth = 0;
     }
-    return (depth_ = nodes[parent_].updateDepth(nodes) + 1);
+    else
+    {
+        depth = nodes[parent].updateDepth(nodes) + 1;
+    }
+
+    return depth;
 }
 
 
@@ -36,7 +49,7 @@ StateGraph::StateGraph()
 
 bool StateGraph::isOK()
 {
-    return ok_;
+    return constructed_;
 }
 
 bool StateGraph::load(const std::string& graph, const std::string &filename)
@@ -50,7 +63,6 @@ bool StateGraph::load(const std::string& graph, const std::string &filename)
             const std::string parent = node["Parent"].as<std::string>();
             nodes_[state] = StateNode(graph, state, parent);
         }
-        height_[graph] = 0;
     }
     catch( ... )
     {
@@ -61,42 +73,91 @@ bool StateGraph::load(const std::string& graph, const std::string &filename)
 
 void StateGraph::clear()
 {
-    ok_ = false;
-    height_.clear();
+    constructed_ = false;
     nodes_.clear();
+    state_view_ = StateView();
 }
 
 void StateGraph::construct()
 {
+    std::map<std::string, int> heights;
     for(auto& it : nodes_)
     {
-        std::string graph = it.second.graph_;
-        height_[graph] = std::max(height_[graph], it.second.updateDepth(nodes_));
+        std::string group = it.second.group;
+        heights[group] = std::max(heights[group], it.second.updateDepth(nodes_));
     }
 
-    for(auto a : height_)
+    int current_offset = 0;
+    for(const auto& it : heights)
     {
-        std::cout << a.first << " " << a.second << std::endl;
+        state_view_.grouped_states[it.first].offset = current_offset;
+        state_view_.grouped_states[it.first].states.resize(it.second + 1);
+        current_offset += it.second + 1;
     }
 
-    ok_ = true;
+    constructed_ = true;
 }
 
-bool StateGraph::getState(std::string state, StateNode& node)
+StateView StateGraph::getStateView()
 {
-    if(!nodes_.count(state))
+    return state_view_;
+}
+
+void StateGraph::updateStateView(const std::string& states)
+{
+    std::istringstream sin(states);
+    std::string state;
+    std::vector<std::string> unknown_states;
+
+    for(auto& group : state_view_.grouped_states)
     {
-        return false;
+        for(auto& frame : group.second.states)
+        {
+            frame.empty = true;
+        }
     }
 
-    node = nodes_[state];
-    return true;
-}
+    while(sin >> state)
+    {
+        if(constructed_ && nodes_.count(state))
+        {
+            StateFrame& frame = state_view_.grouped_states[nodes_[state].group].states[nodes_[state].depth];
+            if(frame.name == state)
+            {
+                ++frame.duration;
+            }
+            else
+            {
+                frame.duration = 0;
+                frame.name = state;
+            }
+            frame.empty = false;
+        }
+        else
+        {
+            unknown_states.emplace_back(state);
+        }
+    }
 
-std::map<std::string, int> StateGraph::getHeight()
-{
-    return height_;
-}
+    for(auto& group : state_view_.grouped_states)
+    {
+        for(auto& frame : group.second.states)
+        {
+            if(frame.empty)
+            {
+                frame.name.clear();
+            }
+        }
+    }
 
+    if(!unknown_states.empty())
+    {
+        state_view_.unknown_states = unknown_states[0];
+        for(size_t i = 1; i < unknown_states.size(); ++i)
+        {
+            state_view_.unknown_states += " / " + unknown_states[i];
+        }
+    }
+}
 
 }}

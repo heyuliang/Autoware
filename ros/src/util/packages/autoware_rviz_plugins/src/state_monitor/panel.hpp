@@ -43,8 +43,6 @@ class Panel : public rviz::Panel
         int sub_count_;
 
         StateGraph graph_;
-        QMap<QString, QStringList> states_;
-        QStringList unknown_states_;
 };
 
 }}

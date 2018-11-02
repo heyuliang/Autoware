@@ -9,19 +9,38 @@
 namespace autoware_rviz_plugins {
 namespace state_monitor {
 
-class StateNode
+struct StateFrame
 {
-    public:
+    StateFrame();
 
-        StateNode() = default;
-        StateNode(const std::string& graph, const std::string& state, const std::string& parent);
+    int duration;
+    bool empty;
+    std::string name;
+};
 
-        int updateDepth(std::map<std::string, StateNode>& nodes);
+struct StateGroup
+{
+    int offset;
+    std::vector<StateFrame> states;
+};
 
-        int depth_;
-        std::string graph_;
-        std::string state_;
-        std::string parent_;
+struct StateView
+{
+    std::string unknown_states;
+    std::map<std::string, StateGroup> grouped_states;
+};
+
+struct StateNode
+{
+    StateNode() = default;
+    StateNode(const std::string& group, const std::string& state, const std::string& parent);
+
+    int updateDepth(std::map<std::string, StateNode>& nodes);
+
+    int depth;
+    std::string group;
+    std::string state;
+    std::string parent;
 };
 
 class StateGraph
@@ -35,14 +54,14 @@ class StateGraph
         void clear();
         void construct();
 
-        bool getState(std::string state, StateNode& node);
-        std::map<std::string, int> getHeight();
+        StateView getStateView();
+        void updateStateView(const std::string& states);
 
     private:
 
-        bool ok_;
-        std::map<std::string, int> height_;
+        bool constructed_;
         std::map<std::string, StateNode> nodes_;
+        StateView state_view_;
 };
 
 }}
