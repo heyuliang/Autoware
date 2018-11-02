@@ -5,7 +5,7 @@
 	<arg name="enableGenrateBranches" 	default="false"/>
 	<arg name="enableCurbObstacles" 	default="false" />
 	<arg name="distanceBetweenCurbs" 	default="1.5" />
-	<arg name="visualizationTime" 		default="0.25" />
+	<arg name="visualizationTime" 		default="0.01" />
 	<arg name="enableStepByStepSignal" 	default="false" />
 	<arg name="enableParticleFilterPrediction" 	default="false" />
 	

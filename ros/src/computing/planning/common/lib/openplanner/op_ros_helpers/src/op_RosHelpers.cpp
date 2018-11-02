@@ -333,6 +333,7 @@ void RosHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<Plan
 			if(prop > 0.5)
 			{
 				bCurrent = true;
+				//std::cout << "Trajectory with Index << " << i << " >> Cost = " << prop << std::endl;
 			}
 		}
 
@@ -346,17 +347,18 @@ void RosHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<Plan
 		{
 			r = 1.0;
 		}
-//		else if(i == 0)
+//		if(i == 0)
 //		{
 //			r = 1.0;
 //		}
 //		else if(i == 1)
 //		{
-//			r = 1.0;
+//			b = 1.0;
 //		}
 //		else if(i == 2)
 //		{
 //			r = 1.0;
+//			b = 1.0;
 //		}
 //		else if(i == 3)
 //		{
@@ -463,12 +465,12 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	lane_waypoint_marker.ns = "road_network_vector_map";
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = 0.25;
+	lane_waypoint_marker.scale.x = 0.15;
 	std_msgs::ColorRGBA roll_color, total_color, curr_color;
 	roll_color.r = 1;
-	roll_color.g = 1;
-	roll_color.b = 1;
-	roll_color.a = 0.25;
+	roll_color.g = 0.5;
+	roll_color.b = 0;
+	roll_color.a = 0.5;
 
 	lane_waypoint_marker.color = roll_color;
 	lane_waypoint_marker.frame_locked = false;

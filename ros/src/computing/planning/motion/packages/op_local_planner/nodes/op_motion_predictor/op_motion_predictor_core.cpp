@@ -109,11 +109,11 @@ MotionPrediction::~MotionPrediction()
 	car_name << "Moving_stopping_";
 	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::PredictionFolderName,
 			car_name.str(),
-			"time, x, y, heading, velocity, acceleration, indicator, "
-			"n_part_forward_1, p_forward_1, w_forward_1, n_part_stopping_1, p_stopping_1, w_stopping_1, n_part_yielding_1, p_yielding_1, w_yielding_1, best_1,"
-			"n_part_forward_2, p_forward_2, w_forward_2, n_part_stopping_2, p_stopping_2, w_stopping_2, n_part_yielding_2, p_yielding_2, w_yielding_2, best_2,"
-			"n_part_forward_3, p_forward_3, w_forward_3, n_part_stopping_3, p_stopping_3, w_stopping_3, n_part_yielding_3, p_yielding_3, w_yielding_3, best_3,"
-			"n_part_forward_4, p_forward_4, w_forward_4, n_part_stopping_4, p_stopping_4, w_stopping_4, n_part_yielding_4, p_yielding_4, w_yielding_4, best_4," , m_LogData);
+			"time,x,y,heading,Velocity,Acceleration,Indicator,"
+			"n_part_forward_1,p_forward_1,w_forward_1,n_part_stopping_1,p_stopping_1,w_stopping_1,n_part_yielding_1,p_yielding_1,w_yielding_1,best_beh_1,all_p_1,all_w_1,best_p_1, best_w_1,"
+			"n_part_forward_2,p_forward_2,w_forward_2,n_part_stopping_2,p_stopping_2,w_stopping_2,n_part_yielding_2,p_yielding_2,w_yielding_2,best_beh_2,all_p_2,all_w_2,best_p_2, best_w_2,"
+			"n_part_forward_3,p_forward_3,w_forward_3,n_part_stopping_3,p_stopping_3,w_stopping_3,n_part_yielding_3,p_yielding_3,w_yielding_3,best_beh_3,all_p_3,all_w_3,best_p_3, best_w_3,"
+			"n_part_forward_4,p_forward_4,w_forward_4,n_part_stopping_4,p_stopping_4,w_stopping_4,n_part_yielding_4,p_yielding_4,w_yielding_4,best_beh_4,all_p_4,all_w_4,best_p_4, best_w_4," , m_LogData);
 }
 
 void MotionPrediction::UpdatePlanningParams(ros::NodeHandle& _nh)
@@ -340,6 +340,7 @@ void MotionPrediction::LogDataRaw()
 		dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
 		dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
 		dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+		dataLine << pTrajectoryTracker->all_p << "," << pTrajectoryTracker->all_w << "," << pTrajectoryTracker->best_p <<"," << pTrajectoryTracker->best_w <<",";
 
 		if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 1)
 		{
@@ -347,45 +348,50 @@ void MotionPrediction::LogDataRaw()
 			dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
 			dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
 			dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+			dataLine << pTrajectoryTracker->all_p << "," << pTrajectoryTracker->all_w << "," << pTrajectoryTracker->best_p <<"," << pTrajectoryTracker->best_w <<",";
+
+			if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 2)
+			{
+				PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(2);
+				dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
+				dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
+				dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+				dataLine << pTrajectoryTracker->all_p << "," << pTrajectoryTracker->all_w << "," << pTrajectoryTracker->best_p <<"," << pTrajectoryTracker->best_w <<",";
+
+				if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 3)
+				{
+					PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(3);
+					dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
+					dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
+					dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
+					dataLine << pTrajectoryTracker->all_p << "," << pTrajectoryTracker->all_w << "," << pTrajectoryTracker->best_p <<"," << pTrajectoryTracker->best_w <<",";
+				}
+				else
+				{
+					dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+				}
+			}
+			else
+			{
+				dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+				dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			}
+
 		}
 		else
 		{
-			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
 		}
 
-		if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 2)
-		{
-			PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(2);
-			dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
-			dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
-			dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
-		}
-		else
-		{
-			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-		}
-
-		if(m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.size() > 3)
-		{
-			PlannerHNS::TrajectoryTracker* pTrajectoryTracker = m_PredictBeh.m_ParticleInfo_II.at(0)->m_TrajectoryTracker.at(3);
-			dataLine << pTrajectoryTracker->nAliveForward << "," << pTrajectoryTracker->pForward << "," << pTrajectoryTracker->w_avg_forward <<",";
-			dataLine << pTrajectoryTracker->nAliveStop << "," << pTrajectoryTracker->pStop << "," << pTrajectoryTracker->w_avg_stop <<",";
-			dataLine << pTrajectoryTracker->nAliveYield << "," << pTrajectoryTracker->pYield << "," << pTrajectoryTracker->w_avg_yield <<"," << pTrajectoryTracker->best_beh_by_p <<",";
-		}
-		else
-		{
-			dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-		}
 	}
 	else
 	{
-		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
-		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
+		dataLine << 0 << "," << 0 << "," << 0 <<"," << 0 << "," << 0 << "," << 0 <<"," << 0 <<","<< 0 << "," << 0 <<"," << 0 <<","<< 0 <<","<< 0 << "," << 0 <<"," << 0 <<",";
 	}
 
 	m_LogData.push_back(dataLine.str());
@@ -393,6 +399,7 @@ void MotionPrediction::LogDataRaw()
 	if(m_t==0)
 	{
 		UtilityHNS::UtilityH::GetTickCount(m_LogTime);
+		m_t = 0.01;
 	}
 	else
 	{

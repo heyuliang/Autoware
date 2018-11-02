@@ -18,9 +18,9 @@
 namespace PlannerHNS
 {
 
-#define MOTION_POSE_ERROR 0.75 // 50 cm pose error
+#define MOTION_POSE_ERROR 0.7 // 50 cm pose error
 #define MOTION_ANGLE_ERROR 0.05 // 0.05 rad angle error
-#define MOTION_VEL_ERROR 0.25
+#define MOTION_VEL_ERROR 0.2
 #define MOTION_ACC_ERROR 0.1
 #define MOTION_IND_ERROR 0.1
 
@@ -36,13 +36,11 @@ namespace PlannerHNS
 #define BEH_MIN_PARTICLE_NUM 1
 #define KEEP_PERCENTAGE 0.5
 
-#define MAX_PREDICTION_SPEED 18.0
-
 constexpr double  POSE_FACTOR = 0.1;
 constexpr double  DIRECTION_FACTOR = 0.0;
-constexpr double  VELOCITY_FACTOR = 0.45;
-constexpr double  ACCELERATE_FACTOR = 0.45;
-constexpr double  INDICATOR_FACTOR = 0.0;
+constexpr double  VELOCITY_FACTOR = 0.35;
+constexpr double  ACCELERATE_FACTOR = 0.35;
+constexpr double  INDICATOR_FACTOR = 0.2;
 
 #define FIXED_PLANNING_DISTANCE 10
 
@@ -1107,6 +1105,12 @@ public:
 				best_behavior_track = m_TrajectoryTracker.at(t);
 				i_best_beh_track = t;
 			}
+
+//			if(m_TrajectoryTracker.at(t)->all_w > best_behavior_track->all_w)
+//			{
+//				best_behavior_track = m_TrajectoryTracker.at(t);
+//				i_best_beh_track = t;
+//			}
 		}
 	}
 };

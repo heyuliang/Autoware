@@ -359,7 +359,7 @@ void BehaviorPrediction::MoveParticles(ObjParticles* pParts)
 	carInfo.length = pParts->obj.l;
 	carInfo.max_acceleration = 2.0;
 	carInfo.max_deceleration = -1.5;
-	carInfo.max_speed_forward = 12;
+	carInfo.max_speed_forward = 10;
 	carInfo.min_speed_forward = 0;
 	carInfo.max_steer_angle = 0.4;
 	carInfo.min_steer_angle = -0.4;
@@ -368,7 +368,7 @@ void BehaviorPrediction::MoveParticles(ObjParticles* pParts)
 
 	for(unsigned int t=0; t < pParts->m_TrajectoryTracker.size(); t++)
 	{
-		PlanningHelpers::GenerateRecommendedSpeed(pParts->m_TrajectoryTracker.at(t)->trajectory, carInfo.max_speed_forward, 0.75);
+		PlanningHelpers::GenerateRecommendedSpeed(pParts->m_TrajectoryTracker.at(t)->trajectory, carInfo.max_speed_forward, 1.0);
 	}
 
 	if(m_bDebugOutWeights)
@@ -422,10 +422,10 @@ void BehaviorPrediction::MoveParticles(ObjParticles* pParts)
 		break;
 		case BEH_YIELDING_STATE:
 		{
-			if(curr_part_info.state == PlannerHNS::STOPPING_STATE)
-				p->vel = 0 + p->vel_rand;
-			else
-				p->vel = curr_part_info.vel/2.0 + p->vel_rand;
+//			if(curr_part_info.state == PlannerHNS::STOPPING_STATE)
+//				p->vel = 0 + p->vel_rand;
+//			else
+			p->vel = curr_part_info.vel/2.0 + p->vel_rand;
 
 			p->acc = -1;
 
@@ -448,7 +448,6 @@ void BehaviorPrediction::MoveParticles(ObjParticles* pParts)
 		std::cout << "End Motion Status ------ " << std::endl;
 }
 
-
 void BehaviorPrediction::CalculateAccelerationDESC(double dt, Particle* pPart)
 {
 	pPart->prev_time_diff += dt;
@@ -467,7 +466,6 @@ void BehaviorPrediction::CalculateAccelerationDESC(double dt, Particle* pPart)
 	else
 		pPart->acc = 0;
 }
-
 
 void BehaviorPrediction::CalculateWeights(ObjParticles* pParts)
 {
@@ -538,7 +536,6 @@ void BehaviorPrediction::CalculateWeights(ObjParticles* pParts)
 		NormalizeOnePartWeight(pParts, *pParts->m_AllParticles.at(i));
 	}
 }
-
 
 void BehaviorPrediction::RemoveWeakParticles(ObjParticles* pParts)
 {
@@ -660,7 +657,6 @@ void BehaviorPrediction::FindBest(ObjParticles* pParts)
 	}
 }
 
-
 void BehaviorPrediction::CalPredictionTimeForObject(ObjParticles* pCarPart)
 {
 	if(pCarPart->obj.center.v > 0 )
@@ -668,7 +664,6 @@ void BehaviorPrediction::CalPredictionTimeForObject(ObjParticles* pCarPart)
 	else
 		pCarPart->m_PredictionTime = MIN_PREDICTION_TIME;
 }
-
 
 int BehaviorPrediction::FromIndicatorToNumber(const PlannerHNS::LIGHT_INDICATOR& indi)
 {
@@ -686,7 +681,6 @@ int BehaviorPrediction::FromIndicatorToNumber(const PlannerHNS::LIGHT_INDICATOR&
 		return 0;
 }
 
-
 PlannerHNS::LIGHT_INDICATOR BehaviorPrediction::FromNumbertoIndicator(const int& num)
 {
 	if(num == 0)
@@ -701,7 +695,6 @@ PlannerHNS::LIGHT_INDICATOR BehaviorPrediction::FromNumbertoIndicator(const int&
 		return PlannerHNS::INDICATOR_NONE;
 }
 
-
 double BehaviorPrediction::CalcIndicatorWeight(PlannerHNS::LIGHT_INDICATOR p_ind, PlannerHNS::LIGHT_INDICATOR obj_ind)
 {
 	if(p_ind == obj_ind)
@@ -710,7 +703,6 @@ double BehaviorPrediction::CalcIndicatorWeight(PlannerHNS::LIGHT_INDICATOR p_ind
 		return MEASURE_IND_ERROR;
 }
 
-
 double BehaviorPrediction::CalcAccelerationWeight(int p_acl, int obj_acl)
 {
 	if(p_acl == obj_acl)
@@ -718,7 +710,6 @@ double BehaviorPrediction::CalcAccelerationWeight(int p_acl, int obj_acl)
 	else
 		return MEASURE_ACC_ERROR;
 }
-
 
 void BehaviorPrediction::CalOnePartWeight(ObjParticles* pParts,Particle& p)
 {
@@ -807,8 +798,8 @@ void BehaviorPrediction::NormalizeOnePartWeight(ObjParticles* pParts,Particle& p
 	else
 		p.vel_w = 0;
 
-	if(m_bDebugOutWeights)
-		std::cout << "Vel Norm W: " << p.vel_w  << ", p.vel: " << p.vel << ", CurrV: " <<  pParts->obj.center.v << ", Diff: " << pParts->vel_diff_raw << std::endl;
+//	if(m_bDebugOutWeights)
+//		std::cout << "Vel Norm W: " << p.vel_w  << ", p.vel: " << p.vel << ", CurrV: " <<  pParts->obj.center.v << ", Diff: " << pParts->vel_diff_raw << std::endl;
 
 	if(pParts->ind_diff_raw > epsilon)
 		p.ind_w = (p.ind_w - pParts->ind_w_min)/pParts->ind_diff_raw;

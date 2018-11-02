@@ -3235,7 +3235,7 @@ params :
       desc : Max trajectory prediction distance
       label: Prediction distance
       min  : 1.0
-      max  : 75.0
+      max  : 150.0
       v    : 25.0
       cmd_param:
         dash     : ''

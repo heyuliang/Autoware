@@ -40,10 +40,10 @@
 	<arg name="length" 						default="4.2"  />
 	<arg name="wheelBaseLength" 			default="2.7"  />
 	<arg name="turningRadius"				default="5.2"  />
-	<arg name="maxSteerAngle" 				default="0.4" />
+	<arg name="maxSteerAngle" 				default="0.45" />
 	
 	<arg name="steeringDelay" 				default="1.2" />
-	<arg name="minPursuiteDistance" 		default="3.5"  />
+	<arg name="minPursuiteDistance" 		default="4"  />
 	<arg name="maxAcceleration" 			default="3"  />
 	<arg name="maxDeceleration"		 		default="-3"  />
 	
@@ -54,8 +54,8 @@
 	<arg name="enableStepByStepSignal" 		default="false" />
 	<arg name="enableSimulatedVelodyne" 	default="false" />  
 	
-	<arg name="mapSource" 					default="0" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 				default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" /> 
+	<arg name="mapSource" 					default="2" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
+	<arg name="mapFileName" 				default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/NagoyaUniversityMap_COI/kml_map/assure_around_nu_complete_with_dir_actions_2018.kml" /> 
 	
 	<arg name="enableUsingJoyStick" 	default="false" /> 
 	
