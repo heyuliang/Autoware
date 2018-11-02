@@ -133,7 +133,7 @@ void bundle_adjustment (VMap *orgMap)
 			g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
 
 			// What effect if we run this line ?
-//			vMp->setFixed(false);
+			vMp->setFixed(false);
 
 			vMp->setEstimate(mp->getPosition());
 			vMp->setMarginalized(true);
