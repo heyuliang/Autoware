@@ -80,8 +80,13 @@ void Panel::paintEvent(QPaintEvent* event)
 void Panel::drawWithGraph()
 {
     StateView state_view = graph_.getStateView();
+    int grid_column = 0;
+    for(const auto& group : state_view.grouped_states)
+    {
+        grid_column += group.second.states.size();
+    }
 
-    Grid grid(width(), height(), 3, 8, 150, 2);
+    Grid grid(width(), height(), 3, grid_column, 150, 2);
     QPainter painter(this);
     painter.setWindow(grid.drawArea());
 
