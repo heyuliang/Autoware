@@ -16,6 +16,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import subprocess
 from recommonmark.parser import CommonMarkParser
 
 # -- Project information -----------------------------------------------------
@@ -188,3 +189,6 @@ epub_exclude_files = ['search.html']
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
+# -- Document generation -----------------------------------------------------
+
+subprocess.call('cd DevelopersGuide/PackagesAPI; ./update.sh', shell=True)

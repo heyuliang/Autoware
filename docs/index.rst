@@ -17,16 +17,17 @@ Users Guide
 ===========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    UsersGuide/Installation
    UsersGuide/Tutorials
+   UsersGuide/Videos
 
 Developers Guide
 ================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    DevelopersGuide/DevelopmentProcess
    DevelopersGuide/DesignArchitecture
