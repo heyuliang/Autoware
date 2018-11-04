@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#find ../../../../ros/src/computing/perception/detection -name README.md | awk -F/ '{ print $NF }'
-
-
-#exit
-
 paths=(
   ../../../ros/src/sensing
   ../../../ros/src/computing/perception/detection
@@ -27,3 +22,4 @@ for path in ${paths[@]}; do
   mkdir $dir
   find $path -name README.md | awk -F/ -v dir=$dir '{ print "../"$0, dir"/"$(NF-1)".md" }' | xargs -L1 ln -s
 done
+
