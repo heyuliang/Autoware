@@ -40,8 +40,10 @@ Developers Guide
 Community
 =========
 
+ToDo List
+=========
 
-
+.. todolist::
 
 Indices and tables
 ==================
