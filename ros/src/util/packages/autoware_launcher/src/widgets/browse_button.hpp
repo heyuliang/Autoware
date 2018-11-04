@@ -11,16 +11,22 @@ class AwBrowseButton : public QPushButton
 
     public:
 
+        enum class BrowseTarget { File, FileList, SaveFile, Direcroty };
+
         AwBrowseButton(const QString& text = "Browse", QWidget* parent = nullptr);
-        virtual ~AwBrowseButton() = default;
 
     Q_SIGNALS:
 
-        void browsed(const QString& path);
+        void fileBrowsed(const QString& path);
+        void listBrowsed(const QStringList& paths);
 
     private Q_SLOTS:
 
         void onClicked(bool checked);
+
+    private:
+
+        BrowseTarget target_;
 };
 
 }

@@ -18,7 +18,7 @@ catkin_package(
 
 include_directories(
 #  include
-#  src/common
+  src
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -28,20 +28,21 @@ add_executable(${PROJECT_NAME}_main
     src/main_config.cpp
     src/main_tool.cpp
     src/browse_launcher.cpp
-    src/browse_button.cpp
     src/launch_button.cpp
-    src/base_widget.cpp
     src/base_window.cpp
     src/map_config_widget.cpp
     src/map_config_window.cpp
+    src/frames/base_widget.cpp
+    src/frames/single_file_selector.cpp
+    src/widgets/browse_button.cpp
 )
 set_target_properties(${PROJECT_NAME}_main PROPERTIES OUTPUT_NAME main PREFIX "")
 target_link_libraries(${PROJECT_NAME}_main ${catkin_LIBRARIES} ${QT_LIBRARIES})
 
 add_library(${PROJECT_NAME}_rviz
     src/rviz_panel.cpp
-    src/browse_button.cpp
     src/launch_button.cpp
+    src/widgets/browse_button.cpp
 )
 target_link_libraries(${PROJECT_NAME}_rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 

@@ -2,7 +2,7 @@
 #define AUTOWARE_LAUNCHER_BROWSE_LAUNCHER_HPP_
 
 #include "launch_button.hpp"
-#include "browse_button.hpp"
+#include "widgets/browse_button.hpp"
 
 #include <QPushButton>
 #include <QLineEdit>

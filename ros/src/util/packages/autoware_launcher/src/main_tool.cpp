@@ -2,11 +2,9 @@
 
 #include "map_config_widget.hpp"
 
-#include "base_widget.hpp"
+#include "frames/base_widget.hpp"
 #include <QGroupBox>
 #include <QVBoxLayout>
-
-#define MERGIN 16
 
 namespace autoware_launcher {
 

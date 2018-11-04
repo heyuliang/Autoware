@@ -1,7 +1,7 @@
 #ifndef AUTOWARE_LAUNCHER_MAP_CONFIG_WIDGET_HPP_
 #define AUTOWARE_LAUNCHER_MAP_CONFIG_WIDGET_HPP_
 
-#include "base_widget.hpp"
+#include "frames/base_widget.hpp"
 
 namespace autoware_launcher {
 

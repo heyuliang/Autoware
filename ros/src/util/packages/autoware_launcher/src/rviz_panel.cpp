@@ -1,6 +1,6 @@
 #include "rviz_panel.hpp"
 
-#include "browse_button.hpp"
+#include "widgets/browse_button.hpp"
 #include "launch_button.hpp"
 #include <QLineEdit>
 #include <QPushButton>
@@ -37,7 +37,7 @@ void createLauncher(QGridLayout* main, QGridLayout* conf)
         conf->addWidget(browse, i, 2);
 
         launch_path[i] = path;
-        QObject::connect(browse, &AwBrowseButton::browsed, path, &QLineEdit::setText);
+        QObject::connect(browse, &AwBrowseButton::fileBrowsed, path, &QLineEdit::setText);
         QObject::connect(path, &QLineEdit::textChanged, launch, &AwLaunchButton::setNativeArguments);
     }
 }

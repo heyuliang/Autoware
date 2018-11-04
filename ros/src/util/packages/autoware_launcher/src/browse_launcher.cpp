@@ -13,7 +13,7 @@ AwBrowseLauncher::AwBrowseLauncher(QWidget* parent) : QHBoxLayout(parent)
     addWidget(browse_);
 
     apply_->setProgram("roslaunch");
-    connect(browse_, &AwBrowseButton::browsed, path_, &QLineEdit::setText);
+    connect(browse_, &AwBrowseButton::fileBrowsed, path_, &QLineEdit::setText);
     connect(path_, &QLineEdit::textChanged, apply_, &AwLaunchButton::setNativeArguments);
 }
 

@@ -1,6 +1,6 @@
 #include "base_window.hpp"
 
-#include "base_widget.hpp"
+#include "frames/base_widget.hpp"
 #include <QVBoxLayout>
 
 namespace autoware_launcher {

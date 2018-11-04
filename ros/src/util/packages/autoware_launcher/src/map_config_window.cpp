@@ -1,6 +1,6 @@
 #include "map_config_window.hpp"
 
-#include "base_widget.hpp"
+#include "frames/base_widget.hpp"
 
 namespace autoware_launcher {
 

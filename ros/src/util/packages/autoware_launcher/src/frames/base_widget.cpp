@@ -1,4 +1,4 @@
-#include "base_widget.hpp"
+#include "frames/base_widget.hpp"
 
 #include <QLabel>
 #include <QPainter>
