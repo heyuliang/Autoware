@@ -135,6 +135,10 @@ add_executable(icp_matching nodes/icp_matching/icp_matching.cpp)
 target_link_libraries(icp_matching ${catkin_LIBRARIES})
 add_dependencies(icp_matching ${catkin_EXPORTED_TARGETS})
 
+add_executable(compare_map_reliability nodes/compare_map_reliability/compare_map_reliability.cpp)
+target_link_libraries(compare_map_reliability ${catkin_LIBRARIES})
+add_dependencies(compare_map_reliability ${catkin_EXPORTED_TARGETS})
+
 install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku ndt_matching_monitor
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
