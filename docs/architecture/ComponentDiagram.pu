@@ -104,8 +104,8 @@ folder detection {
 () "sensor_msgs::PointCloud2\n/points_map" as points_map
 
 'vel_pose_connect
-() "geometry_msgs::PoseStamped\n/localization/current_pose" as current_pose
-() "geometry_msgs::TwistStamped\n/localization/current_velocity" as current_velocity
+() "geometry_msgs::PoseStamped\n/localization/pose" as current_pose
+() "geometry_msgs::TwistStamped\n/localization/velocity" as current_velocity
 
 folder localization {
     () "geometry_msgs::PoseStamped\n/localization/gnss_pose" as gnss_pose
@@ -139,19 +139,69 @@ folder localization {
     '[dead_reckoner] @ Autoware v2.0
 }
 
-() "autoware_msgs::lane\n/final_waypoints" as final_waypoints
-() "geometry_msgs::TwistStamped\n/twist_cmd" as twist_cmd
-() "autoware_msgs::ControlCommandStamped\n/ctrl_cmd" as ctrl_cmd
+'() "autoware_msgs::ControlCommandStamped\n/ctrl_cmd" as ctrl_cmd
+
+'folder mission {
+'}
+
+() "geometry_msgs::TwistStamped\n/motion/twist" as twist
 
 folder motion {
+    () "autoware_msgs::Lane\n/motion/planner/waypoints" as final_waypoints
+    () "geometry_msgs::TwistStamped\n/motion/waypoint_follower/twist" as twist_cmd
+    () "geometry_msgs::TwistStamped\n/motion/motion_filter/twist" as twist_filtered
+    () "autoware_msgs::VehicleCmd\n/motion/{type}/vehicle_cmd" as vehicle_cmd
+
+    [velocity_planner and trajectory_planner] as motion_planner
+    'inputs
+    detection_result --> motion_planner
+    current_pose --> motion_planner
+    current_velocity --> motion_planner
+    'outputs
+    motion_planner --> final_waypoints
+
     [waypoint_follower]
     'inputs
-    current_pose --> waypoint_follower
-    current_velocity --> waypoint_follower
     final_waypoints --> waypoint_follower
     'outputs
     waypoint_follower --> twist_cmd
-    waypoint_follower --> ctrl_cmd
+    'waypoint_follower --> ctrl_cmd
+
+    [motion_filter]
+    'inputs
+    twist_cmd --> motion_filter
+    'outputs
+    motion_filter --> twist_filtered
+
+    [motion_interface]
+    'outputs
+    motion_interface --> vehicle_cmd
+
+    [motion_gateway]
+    'inputs
+    vehicle_cmd --> motion_gateway
+    twist_filtered --> motion_gateway
+    'outputs
+    motion_gateway --> twist
+}
+
+() "autoware_msgs::VehicleStatus\n/actuation/vehicle_status" as vehicle_status
+
+folder vehicle {
+    () "CAN, Socket, Serial, etc" as vehicle_communication
+
+    [low_level_controller and vehicle] as low_level_controller
+    'inputs
+    vehicle_communication --> low_level_controller
+}
+
+folder actuation {
+    [vehicle_interface]
+    'inputs
+    twist --> vehicle_interface
+    'outputs
+    vehicle_interface --> vehicle_status
+    vehicle_interface --> vehicle_communication
 }
 
 @enduml
