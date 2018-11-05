@@ -240,7 +240,7 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 
 	const float deltaMono = sqrt(5.991);
 
-	int i=0;
+	int i=0, vId;
 	for (auto &vpmp: mapProjections) {
 		const MapPoint &mp = *vmap->mappoint(vpmp.first);
 
@@ -261,13 +261,14 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 
 		// Put MP's world coordinate, as vertex
 		g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ;
-		vMp->setId(i+2);
+		vId = i+2;
+		vMp->setId(vId);
 		vMp->setFixed(true);
 		vMp->setMarginalized(true);
 		vMp->setEstimate(mp.getPosition());
 		optimizer.addVertex(vMp);
 		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(1)));
-		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(i+2)));
+		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(vId)));
 		optimizer.addEdge(edge);
 
 		vpEdgesMono.push_back(edge);
