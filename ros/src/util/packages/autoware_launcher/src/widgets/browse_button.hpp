@@ -11,9 +11,10 @@ class AwBrowseButton : public QPushButton
 
     public:
 
-        enum class BrowseTarget { File, FileList, SaveFile, Direcroty };
-
         AwBrowseButton(const QString& text = "Browse", QWidget* parent = nullptr);
+
+        enum class BrowseTarget { File, FileList, SaveFile, Direcroty };
+        void setBrowseTarget(BrowseTarget target);
 
     Q_SIGNALS:
 

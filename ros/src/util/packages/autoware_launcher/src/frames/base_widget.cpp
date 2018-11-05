@@ -7,40 +7,42 @@ namespace autoware_launcher {
 
 AwBaseWidget::AwBaseWidget()
 {
-    title_ = new QLabel("Title:");
-    value_ = new QLabel("Value");
-    value_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    title_ = new QLabel;
+    title_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    header_ = new QHBoxLayout;
-    header_->setSpacing(layout_margin);
-    header_->addWidget(title_);
-    header_->addWidget(value_);
+    hlayout_ = new QHBoxLayout;
+    hlayout_->setSpacing(layout_margin);
+    hlayout_->addWidget(title_);
 
-    content_ = new QLabel("data\ndata\ndata");
-
-    auto vlayout = new QVBoxLayout;
-    vlayout->setMargin(layout_margin);
-    vlayout->setSpacing(layout_margin * 2);
-    vlayout->addLayout(header_);
-    vlayout->addWidget(content_);
-    setLayout(vlayout);
-
-    //setStyleSheet("border: 1px solid red");
-    //setStyleSheet("font-size: 14px");
+    vlayout_ = new QVBoxLayout;
+    vlayout_->setMargin(layout_margin);
+    vlayout_->setSpacing(layout_margin * 2);
+    vlayout_->addLayout(hlayout_);
+    setLayout(vlayout_);
 }
 
 void AwBaseWidget::addButton(QWidget* button)
 {
-    header_->addWidget(button);
+    hlayout_->addWidget(button);
+}
+
+void AwBaseWidget::addWidget(QWidget* widget)
+{
+    vlayout_->addWidget(widget);
+}
+
+void AwBaseWidget::setFrameTitle(const QString &title)
+{
+    title_->setText(title);
 }
 
 void AwBaseWidget::paintEvent(QPaintEvent* event)
 {
     QWidget::paintEvent(event);
     QPainter painter(this);
-    painter.drawRect(0, 0, width()-1, height()-1);
 
     int bottom = layout()->itemAt(0)->geometry().bottom() + layout_margin;
+    painter.drawRect(0, 0, width()-1, height()-1);
     painter.drawLine(0, bottom, width()-1, bottom);
 }
 

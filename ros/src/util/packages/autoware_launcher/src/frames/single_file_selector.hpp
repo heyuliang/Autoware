@@ -3,6 +3,8 @@
 
 #include "base_widget.hpp"
 
+#include <QLineEdit>
+
 namespace autoware_launcher {
 
 class AwSingleFileSelector : public AwBaseWidget
@@ -11,7 +13,13 @@ class AwSingleFileSelector : public AwBaseWidget
 
     public:
 
-        AwSingleFileSelector() = default;
+        AwSingleFileSelector(const QString& title);
+
+    private:
+
+        void onBrowsed(const QString& path);
+
+        QLineEdit* content_;
 };
 
 }

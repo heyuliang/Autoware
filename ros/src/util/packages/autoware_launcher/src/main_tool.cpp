@@ -23,10 +23,10 @@ AwMainTool::AwMainTool(QWidget* parent)
     sensors->addButton( new QPushButton("Change") );
     sensors->addButton( new QPushButton("Launch") );
 
-    addSubWidget(profile);
-    addSubWidget(map);
-    addSubWidget(vehicle);
-    addSubWidget(sensors);
+    addFrame(profile);
+    addFrame(map);
+    addFrame(vehicle);
+    addFrame(sensors);
 }
 
 void AwMainTool::saveConfig(AwConfig &config) const

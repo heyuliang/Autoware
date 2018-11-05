@@ -2,6 +2,7 @@
 #define AUTOWARE_LAUNCHER_BASE_WINDOW_HPP_
 
 #include <QWidget>
+#include <QVBoxLayout>
 
 namespace autoware_launcher {
 
@@ -15,7 +16,9 @@ class AwBaseWindow : public QWidget
 
     protected:
 
-        void addSubWidget(QWidget* widget, int stretch = 0);
+        void addFrame(QWidget* frame, int stretch = 0);
+
+        QVBoxLayout* vlayout_;
 
     private:
 

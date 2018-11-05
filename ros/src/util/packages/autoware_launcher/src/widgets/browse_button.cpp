@@ -10,6 +10,11 @@ AwBrowseButton::AwBrowseButton(const QString& text, QWidget* parent) : QPushButt
     connect(this, &AwBrowseButton::clicked, this, &AwBrowseButton::onClicked);
 }
 
+void AwBrowseButton::setBrowseTarget(BrowseTarget target)
+{
+    target_ = target;
+}
+
 void AwBrowseButton::onClicked(bool checked)
 {
     if(target_ == BrowseTarget::File)

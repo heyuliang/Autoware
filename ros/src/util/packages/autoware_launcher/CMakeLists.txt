@@ -10,14 +10,10 @@ set(QT_LIBRARIES Qt5::Widgets)
 add_definitions(-DQT_NO_KEYWORDS)
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ${PROJECT_NAME}
-#  CATKIN_DEPENDS other_catkin_pkg
-  DEPENDS rviz
+  CATKIN_DEPENDS rviz
 )
 
 include_directories(
-#  include
   src
   ${catkin_INCLUDE_DIRS}
 )
@@ -29,11 +25,12 @@ add_executable(${PROJECT_NAME}_main
     src/main_tool.cpp
     src/browse_launcher.cpp
     src/launch_button.cpp
-    src/base_window.cpp
     src/map_config_widget.cpp
     src/map_config_window.cpp
+    src/frames/base_window.cpp
     src/frames/base_widget.cpp
     src/frames/single_file_selector.cpp
+    src/frames/multi_file_selector.cpp
     src/widgets/browse_button.cpp
 )
 set_target_properties(${PROJECT_NAME}_main PROPERTIES OUTPUT_NAME main PREFIX "")

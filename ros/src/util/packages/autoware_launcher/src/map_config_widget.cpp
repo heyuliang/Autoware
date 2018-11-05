@@ -20,7 +20,6 @@ AwMapConfigWidget::AwMapConfigWidget()
 void AwMapConfigWidget::test()
 {
     auto config_window = new AwMapConfigWindow;
-    config_window->adjustSize();
     config_window->move(window()->pos() + window()->rect().center() - config_window->rect().center());
     config_window->setAttribute(Qt::WA_DeleteOnClose);
     config_window->setWindowModality(Qt::ApplicationModal);
