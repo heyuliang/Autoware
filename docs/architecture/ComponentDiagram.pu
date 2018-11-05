@@ -187,14 +187,6 @@ folder motion {
 
 () "autoware_msgs::VehicleStatus\n/actuation/vehicle_status" as vehicle_status
 
-folder vehicle {
-    () "CAN, Socket, Serial, etc" as vehicle_communication
-
-    [low_level_controller and vehicle] as low_level_controller
-    'inputs
-    vehicle_communication --> low_level_controller
-}
-
 folder actuation {
     [vehicle_interface]
     'inputs
@@ -202,6 +194,14 @@ folder actuation {
     'outputs
     vehicle_interface --> vehicle_status
     vehicle_interface --> vehicle_communication
+}
+
+folder vehicle {
+    () "CAN, Socket, Serial, etc" as vehicle_communication
+
+    [low_level_controller and vehicle] as low_level_controller
+    'inputs
+    vehicle_communication --> low_level_controller
 }
 
 @enduml
