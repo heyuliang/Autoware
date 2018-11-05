@@ -201,7 +201,11 @@ void bundle_adjustment (VMap *orgMap)
 }
 
 
-void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
+/*
+ * We would rather not store the computed pose into Frame, as the decision to use the pose (or
+ * not) is left for the caller
+ */
+int optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 {
 	g2o::SparseOptimizer optimizer;
 	g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
@@ -239,6 +243,7 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 	vector<bool> isMpOutliers (N, false);
 
 	const float deltaMono = sqrt(5.991);
+	const float deltaMono2 = 5.991;
 
 	int i=0, vId;
 	for (auto &vpmp: mapProjections) {
@@ -267,8 +272,9 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 		vMp->setMarginalized(true);
 		vMp->setEstimate(mp.getPosition());
 		optimizer.addVertex(vMp);
-		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(1)));
-		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(vId)));
+
+		edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(vId)));
+		edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(1)));
 		optimizer.addEdge(edge);
 
 		vpEdgesMono.push_back(edge);
@@ -280,12 +286,14 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 	// Run optimization 4 times
 	// Credit to original ORB-SLAM
 	const int numOfOptimizationIteration = 10;
+	int numOutliers = 0;
 
 	for (int it=0; it<4; ++it) {
 		vSE3->setEstimate(toSE3Quat(initPose));
 		optimizer.initializeOptimization(0);
 		optimizer.optimize(numOfOptimizationIteration);
 
+		numOutliers = 0;
 		for (int ix=0; ix<vpEdgesMono.size(); ++ix) {
 
 			auto edge = vpEdgesMono[ix];
@@ -296,9 +304,10 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 			}
 
 			const double xi2 = edge->chi2();
-			if (xi2 > deltaMono) {
+			if (xi2 > deltaMono2) {
 				isMpOutliers[ix] = true;
 				edge->setLevel(1);
+				numOutliers += 1;
 			}
 
 			else {
@@ -315,8 +324,9 @@ void optimize_pose (const Frame &frame, Pose &initPose, const VMap *vmap)
 	}
 
 	// Recover pose
-	g2o::VertexSE3Expmap* vSE3_new = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(0));
+	g2o::VertexSE3Expmap* vSE3_new = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(1));
 	g2o::SE3Quat SE3quat_new = vSE3_new->estimate();
 	fromSE3Quat(SE3quat_new, initPose);
 
+	return N-numOutliers;
 }

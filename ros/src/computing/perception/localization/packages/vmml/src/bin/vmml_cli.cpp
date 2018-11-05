@@ -592,15 +592,9 @@ private:
 	}
 
 
-//	void map_find_cmd(const string &durationSecStr)
-//	{
-//		double d = std::stod(durationSecStr);
-//		auto di = localizTestDataSrc->atDurationSecond(d);
-//		cv::Mat img = di.getImage();
-//		cv::cvtColor(img, img, CV_RGB2GRAY);
-//		seqSlProv->find(img, 10);
-//	}
-
+	/*
+	 * You can feed an offset number from dataset, or a path to an image
+	 */
 	void map_detect_cmd(const string &detectionStr)
 	{
 		if (localizer==NULL) {
@@ -624,9 +618,21 @@ private:
 			img = di->getImage();
 		}
 
+		ptime t_detect_1 = getCurrentTime();
 		cv::cvtColor(img, img, CV_RGB2GRAY);
-		kfid k = localizer->detect(img);
-		debug("Max.: "+to_string(k));
+		kfid kmap;
+		Pose computedPose;
+		bool gotplace = localizer->detect(img, kmap, computedPose);
+		ptime t_detect_2 = getCurrentTime();
+		tduration td = t_detect_2 - t_detect_1;
+		debug("Time to detect: " + to_string(double(td.total_microseconds() / 1e6)) + " seconds");
+
+		if (gotplace) {
+			debug("Result: "+to_string(kmap));
+		}
+		else {
+			debug ("Unable to detect place");
+		}
 	}
 
 	const string dumpImagePath = "/tmp/dump_image.png";

@@ -71,8 +71,8 @@ Localizer::debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, co
 }
 
 
-kfid
-Localizer::detect (cv::Mat &frmImg)
+bool
+Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 {
 	cv::Mat rzImg;
 	if (frmImg.cols != localizerCamera.width) {
@@ -95,8 +95,8 @@ Localizer::detect (cv::Mat &frmImg)
 	}
 
 	size_t bestKfScore=0;
-	kfid bestKfId;
 	vector<bool> isValidKfs (placeCandidates.size(), false);
+	bool gotValidPose = false;
 	Pose currentFramePose;
 
 	for (int i=0; i<placeCandidates.size(); i++) {
@@ -126,14 +126,21 @@ Localizer::detect (cv::Mat &frmImg)
 			}
 
 			// XXX: Call pose optimization
-			optimize_pose(frame, currentFramePose, sourceMap);
+			int numInliers = optimize_pose(frame, currentFramePose, sourceMap);
+			if (numInliers >= numMatches/2 and gotValidPose==false)
+				gotValidPose = true;
 
+			srcMapKfId = kf.getId();
 			continue;
 		}
 
 	}
 
-	return bestKfId;
+	if (gotValidPose==true) {
+		computedPose = currentFramePose;
+	}
+
+	return gotValidPose;
 }
 
 

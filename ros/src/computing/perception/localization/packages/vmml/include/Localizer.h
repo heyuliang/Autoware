@@ -28,7 +28,7 @@ public:
 	/*
 	 * Entry point to Place Recognition Routine
 	 */
-	kfid detect (cv::Mat &frmImg);
+	bool detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose);
 
 	void setCameraParameter (const CameraPinholeParams &c)
 	{ localizerCamera = c; }
