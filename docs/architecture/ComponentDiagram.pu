@@ -144,13 +144,14 @@ folder localization {
 'folder mission {
 '}
 
-() "geometry_msgs::TwistStamped\n/motion/twist" as twist
+() "autoware_motion_msgs::VehicleCmd\n/motion/vehicle_cmd" as twist
 
 folder motion {
-    () "autoware_msgs::Lane\n/motion/planner/waypoints" as final_waypoints
+    () "autoware_planning_msgs::Lane\n/motion/planner/waypoints" as final_waypoints
     () "geometry_msgs::TwistStamped\n/motion/waypoint_follower/twist" as twist_cmd
     () "geometry_msgs::TwistStamped\n/motion/motion_filter/twist" as twist_filtered
-    () "autoware_msgs::VehicleCmd\n/motion/{type}/vehicle_cmd" as vehicle_cmd
+    () "autoware_motion_msgs::VehicleCmd\n/motion/{type}/vehicle_cmd" as vehicle_cmd
+    () "autoware_motion_msgs::Pedal\n/motion/phisical_controller/pedal" as pedal
 
     [velocity_planner and trajectory_planner] as motion_planner
     'inputs
@@ -173,6 +174,12 @@ folder motion {
     'outputs
     motion_filter --> twist_filtered
 
+    [phisical_controller]
+    'inputs
+    twist_filtered --> phisical_controller
+    'outputs
+    phisical_controller --> pedal
+
     [motion_interface]
     'outputs
     motion_interface --> vehicle_cmd
@@ -181,11 +188,13 @@ folder motion {
     'inputs
     vehicle_cmd --> motion_gateway
     twist_filtered --> motion_gateway
+    pedal --> motion_gateway
     'outputs
     motion_gateway --> twist
 }
 
-() "autoware_msgs::VehicleStatus\n/actuation/vehicle_status" as vehicle_status
+() "CAN, Socket, Serial, etc" as vehicle_communication
+() "autoware_actuation_msgs::VehicleStatus\n/actuation/vehicle_status" as vehicle_status
 
 folder actuation {
     [vehicle_interface]
@@ -197,8 +206,6 @@ folder actuation {
 }
 
 folder vehicle {
-    () "CAN, Socket, Serial, etc" as vehicle_communication
-
     [low_level_controller and vehicle] as low_level_controller
     'inputs
     vehicle_communication --> low_level_controller
