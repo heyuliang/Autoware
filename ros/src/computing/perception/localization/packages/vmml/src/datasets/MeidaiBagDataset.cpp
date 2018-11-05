@@ -231,7 +231,7 @@ MeidaiBagDataset::setLidarParameters (
 
 
 void
-MeidaiBagDataset::forceCreateCache (bool resetSubset)
+MeidaiBagDataset::forceCreateCache (bool resetSubset, bool useNdt)
 {
 	bfs::path bagCachePath = bagPath;
 	bagCachePath += ".cache";
@@ -245,7 +245,7 @@ MeidaiBagDataset::forceCreateCache (bool resetSubset)
 	gnssTrack.clear();
 	ndtTrack.clear();
 	cameraTrack.clear();
-	createCache();
+	createCache(useNdt);
 	writeCache(bagCachePath.string());
 }
 
@@ -280,12 +280,21 @@ MeidaiBagDataset::doLoadCache(const string &path)
 
 
 void
-MeidaiBagDataset::createCache()
+MeidaiBagDataset::createCache(bool useNdt)
 {
+	Trajectory *trajectorySrc;
+
 	cout << "Creating GNSS Trajectory\n";
 	createTrajectoryFromGnssBag(*gnssBag, gnssTrack);
-	cout << "Creating NDT Trajectory\n";
-	createTrajectoryFromNDT(*velodyneBag, ndtTrack, gnssTrack, velodyneCalibrationFilePath, pcdMapFilePath);
+
+	if (useNdt==true) {
+		cout << "Creating NDT Trajectory\n";
+		createTrajectoryFromNDT(*velodyneBag, ndtTrack, gnssTrack, velodyneCalibrationFilePath, pcdMapFilePath);
+		trajectorySrc = &ndtTrack;
+	}
+
+	else
+		trajectorySrc = &gnssTrack;
 
 	cout << "Creating Camera Trajectory\n";
 	// XXX: It is possible that camera recording may have started earlier than lidar's
@@ -294,11 +303,11 @@ MeidaiBagDataset::createCache()
 
 		// in both cases; extrapolate
 		PoseTimestamp poseX;
-		if (tm < ndtTrack[0].timestamp or tm>=ndtTrack.back().timestamp) {
-			poseX = ndtTrack.extrapolate(tm);
+		if (tm < trajectorySrc->at(0).timestamp or tm>=trajectorySrc->back().timestamp) {
+			poseX = trajectorySrc->extrapolate(tm);
 		}
 		else
-			poseX = ndtTrack.interpolate(tm);
+			poseX = trajectorySrc->interpolate(tm);
 		// XXX: Check this value
 		PoseTimestamp poseX1 = poseX * lidarToCameraTransform;
 		cameraTrack.push_back(poseX1);

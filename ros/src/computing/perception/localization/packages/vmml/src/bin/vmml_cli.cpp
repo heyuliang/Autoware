@@ -403,22 +403,34 @@ private:
 
 			MeidaiBagDataset::Ptr nuDataset;
 			bool resetSubset;
+			bool useNdt = true;
 
-			if (cmd.size()==1) {
+			if (cmd.size()<=2) {
 				nuDataset = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
 				resetSubset = true;
+				if (cmd.size()==2 and cmd[1]=="gnss")
+					useNdt = false;
 			}
+
 			else {
+
 				double startPos = stod(cmd[1]),
 					stopPos = stod(cmd[2]);
+
+				if (cmd.size()==4 and cmd[3]=="gnss")
+					useNdt = false;
+
 				debug ("Building from "+to_string(startPos) + " to " + to_string(stopPos));
 				MeidaiBagDataset::Ptr nTmp = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
 				nuDataset = nTmp->subset(startPos, stopPos);
 				resetSubset = false;
 			}
 
+			if (useNdt==false)
+				debug ("Not using NDT; camera positions are estimated from GNSS");
+
 			nuDataset->setLidarParameters(meidaiNdtParameters.velodyneCalibrationPath, meidaiNdtParameters.pcdMapPath, meidaiNdtParameters.lidarToCamera);
-			nuDataset->forceCreateCache(resetSubset);
+			nuDataset->forceCreateCache(resetSubset, useNdt);
 			ptime tbuild2 = getCurrentTime();
 
 			tduration td = tbuild2 - tbuild1;
@@ -628,6 +640,7 @@ private:
 		debug("Time to detect: " + to_string(double(td.total_microseconds() / 1e6)) + " seconds");
 
 		if (gotplace) {
+			debug(computedPose.str());
 			debug("Result: "+to_string(kmap));
 		}
 		else {

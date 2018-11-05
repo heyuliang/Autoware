@@ -38,6 +38,13 @@
         <number>7</number>
        </property>
        <item>
+        <widget class="QPushButton" name="playButton">
+         <property name="text">
+          <string>Play</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="timeOffsetLabel">
          <property name="text">
           <string>0.0</string>

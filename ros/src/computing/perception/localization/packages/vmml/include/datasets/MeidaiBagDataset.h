@@ -107,6 +107,9 @@ public:
 
 	PoseTimestamp at(const ptime &t) const;
 
+	PoseTimestamp at(const int idx) const
+	{ return std::vector<PoseTimestamp>::at(idx); }
+
 	PoseTimestamp interpolate (const ros::Time&) const;
 
 	PoseTimestamp extrapolate (const ros::Time&) const;
@@ -225,7 +228,7 @@ public:
 	bool hasPositioning() const
 	{ return !gnssTrack.empty(); }
 
-	void forceCreateCache (bool resetSubset=false);
+	void forceCreateCache (bool resetSubset=false, bool useNdt=true);
 
 	void setZoomRatio (float r);
 
@@ -267,7 +270,7 @@ protected:
 private:
 	void loadCache ();
 	void doLoadCache (const std::string &);
-	void createCache ();
+	void createCache (bool useNdt=true);
 	void writeCache (const std::string&);
 
 	Trajectory gnssTrack;
