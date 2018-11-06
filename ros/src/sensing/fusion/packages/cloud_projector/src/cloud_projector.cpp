@@ -81,7 +81,8 @@ void RosCloudProjectorApp::CloudCallback(const sensor_msgs::PointCloud2::ConstPt
         && cam_cloud[i].z < 70
       )
     {
-      cloud_projected_image.at<float>(cv::Point(u, v)) = cam_cloud[i].z;
+      //cloud_projected_image.at<float>(cv::Point(u, v)) = cam_cloud[i].z;
+      cv::circle(cloud_projected_image, cv::Point(u, v), 4, cv::Scalar_<float>(cam_cloud[i].z), -1);
     }
   }
 
