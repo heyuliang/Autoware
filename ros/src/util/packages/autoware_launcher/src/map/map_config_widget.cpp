@@ -2,6 +2,7 @@
 #include "map_config_window.hpp"
 
 #include <QPushButton>
+#include <QDebug>
 
 namespace autoware_launcher {
 
@@ -20,6 +21,7 @@ AwMapConfigWidget::AwMapConfigWidget()
 void AwMapConfigWidget::test()
 {
     auto config_window = new AwMapConfigWindow;
+    config_window->resize(0.8 * window()->size());
     config_window->move(window()->pos() + window()->rect().center() - config_window->rect().center());
     config_window->setAttribute(Qt::WA_DeleteOnClose);
     config_window->setWindowModality(Qt::ApplicationModal);

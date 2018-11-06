@@ -1,4 +1,4 @@
-#include "frames/base_widget.hpp"
+#include "base_widget.hpp"
 
 #include <QLabel>
 #include <QPainter>
@@ -21,6 +21,11 @@ AwBaseWidget::AwBaseWidget()
     setLayout(vlayout_);
 }
 
+void AwBaseWidget::setTitle(const QString& title)
+{
+    title_->setText(title);
+}
+
 void AwBaseWidget::addButton(QWidget* button)
 {
     hlayout_->addWidget(button);
@@ -29,6 +34,11 @@ void AwBaseWidget::addButton(QWidget* button)
 void AwBaseWidget::addWidget(QWidget* widget)
 {
     vlayout_->addWidget(widget);
+}
+
+void AwBaseWidget::addLayout(QLayout* layout)
+{
+    vlayout_->addLayout(layout);
 }
 
 void AwBaseWidget::setFrameTitle(const QString &title)

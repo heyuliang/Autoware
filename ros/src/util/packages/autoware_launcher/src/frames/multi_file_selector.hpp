@@ -15,9 +15,11 @@ class AwMultiFileSelector : public AwBaseWidget
 
         AwMultiFileSelector(const QString& title);
 
-    private:
+    private Q_SLOTS:
 
         void onBrowsed(const QStringList& paths);
+
+    private:
 
         QTextEdit* content_;
 };

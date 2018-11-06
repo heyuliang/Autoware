@@ -2,7 +2,8 @@
 
 #include "map_config_widget.hpp"
 
-#include "frames/base_widget.hpp"
+#include "base_widget.hpp"
+#include "sensor_fusion_frame.hpp"
 #include <QGroupBox>
 #include <QVBoxLayout>
 
@@ -19,9 +20,7 @@ AwMainTool::AwMainTool(QWidget* parent)
     vehicle->addButton( new QPushButton("Change") );
     vehicle->addButton( new QPushButton("Launch") );
 
-    auto sensors = new AwBaseWidget;
-    sensors->addButton( new QPushButton("Change") );
-    sensors->addButton( new QPushButton("Launch") );
+    auto sensors = new AwSensorFusionFrame;
 
     addFrame(profile);
     addFrame(map);

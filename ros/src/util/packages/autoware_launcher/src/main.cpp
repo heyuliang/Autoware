@@ -8,6 +8,7 @@ int main(int argc, char** argv)
     autoware_launcher::AwMainWindow window;
     window.loadSettings();
     //window.setStyleSheet("font-size: 16px");
+    //window.setStyleSheet("border: 1px solid red");
     window.show();
     return application.exec();
 }

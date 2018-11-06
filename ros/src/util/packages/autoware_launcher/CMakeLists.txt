@@ -14,7 +14,11 @@ catkin_package(
 )
 
 include_directories(
-  src
+  src/common
+  src/frames
+  src/widgets
+  src/map
+  src/sensor
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -25,10 +29,18 @@ add_executable(${PROJECT_NAME}_main
     src/main_tool.cpp
     src/browse_launcher.cpp
     src/launch_button.cpp
-    src/map_config_widget.cpp
-    src/map_config_window.cpp
+
+    src/common/frame_container.cpp
+    src/common/frame_title.cpp
+    src/common/frame_widget.cpp
+    src/map/map_config_widget.cpp
+    src/map/map_config_window.cpp
+    src/sensor/sensor_fusion_frame.cpp
+    src/sensor/sensor_fusion_window.cpp
+
     src/frames/base_window.cpp
     src/frames/base_widget.cpp
+    src/frames/profile_frame.cpp
     src/frames/single_file_selector.cpp
     src/frames/multi_file_selector.cpp
     src/widgets/browse_button.cpp

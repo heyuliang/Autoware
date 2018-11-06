@@ -2,6 +2,7 @@
 #define AUTOWARE_LAUNCHER_BASE_WINDOW_HPP_
 
 #include <QWidget>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 
 namespace autoware_launcher {
@@ -18,11 +19,18 @@ class AwBaseWindow : public QWidget
 
         void addFrame(QWidget* frame, int stretch = 0);
 
-        QVBoxLayout* vlayout_;
+    private Q_SLOTS:
+
+        void onConfigClose();
+        void onConfigApply();
+        void onConfigCancel();
 
     private:
 
         static constexpr int layout_margin = 16;
+
+        QHBoxLayout* hlayout_;
+        QVBoxLayout* vlayout_;
 };
 
 }

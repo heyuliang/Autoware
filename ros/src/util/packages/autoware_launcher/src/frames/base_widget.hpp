@@ -16,8 +16,10 @@ class AwBaseWidget : public QWidget
 
         AwBaseWidget();
 
+        void setTitle(const QString& title);
         void addButton(QWidget* button);
         void addWidget(QWidget* widget);
+        void addLayout(QLayout* layout);
 
         void setFrameTitle(const QString& title);
 

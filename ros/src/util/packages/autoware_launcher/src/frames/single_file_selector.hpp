@@ -15,9 +15,11 @@ class AwSingleFileSelector : public AwBaseWidget
 
         AwSingleFileSelector(const QString& title);
 
-    private:
+    private Q_SLOTS:
 
         void onBrowsed(const QString& path);
+
+    private:
 
         QLineEdit* content_;
 };

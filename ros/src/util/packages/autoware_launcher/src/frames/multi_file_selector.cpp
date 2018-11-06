@@ -1,6 +1,6 @@
-#include "frames/multi_file_selector.hpp"
+#include "multi_file_selector.hpp"
 
-#include "widgets/browse_button.hpp"
+#include "browse_button.hpp"
 
 namespace autoware_launcher {
 
