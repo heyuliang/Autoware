@@ -23,13 +23,6 @@
 using namespace std;
 
 
-QImage fromCvMat (cv::Mat &matsrc)
-{
-	QImage img(matsrc.data, matsrc.cols, matsrc.rows, matsrc.step[0], QImage::Format_RGB888);
-	return img;
-}
-
-
 DatasetBrowser::DatasetBrowser(QWidget *parent):
 	QWidget(parent)
 {
@@ -81,10 +74,6 @@ DatasetBrowser::setImageOnPosition (int v)
 		throw runtime_error("Invalid time position");
 
 	auto curItem = openDs->get(v);
-	cv::Mat image = curItem->getImage();
-
-	QImage curImage = fromCvMat(image);
-	frame->setImage(curImage);
 
 	auto ts = curItem->getTimestamp() - dataItem0->getTimestamp();
 	double tsd = double(ts.total_microseconds())/1e6;
@@ -92,6 +81,11 @@ DatasetBrowser::setImageOnPosition (int v)
 	stringstream ss;
 	ss << fixed << setprecision(2) << tsd;
 	timeOffsetLabel->setText(QString::fromStdString(ss.str()));
+
+	cv::Mat image = curItem->getImage();
+	cv::cvtColor(image, image, CV_BGR2RGB);
+	QImage curImage (image.data, image.cols, image.rows, image.step[0], QImage::Format_RGB888);
+	frame->setImage(curImage);
 }
 
 
@@ -105,6 +99,7 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 	[&]()
 	{
 		const int startPos = timelineSlider->sliderPosition();
+		timelineSlider->setDisabled(true);
 		for (int p=startPos; p<=timelineSlider->maximum(); p++) {
 			timelineSlider->setSliderPosition(p);
 			setImageOnPosition(p);
@@ -117,6 +112,7 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 				std::this_thread::sleep_for(std::chrono::milliseconds(td.total_milliseconds()));
 			}
 		}
+		timelineSlider->setDisabled(false);
 	};
 
 	if (checked==true) {
