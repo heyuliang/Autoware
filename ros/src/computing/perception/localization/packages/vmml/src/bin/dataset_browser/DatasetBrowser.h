@@ -33,6 +33,7 @@ public:
 public slots:
 	void on_timelineSlider_sliderMoved(int value);
 	void on_saveImageButton_clicked(bool checked);
+	void on_playButton_clicked(bool checked);
 
 private:
 	Ui::DatasetBrowser_frm ui;
@@ -44,8 +45,13 @@ private:
 	QLabel *timeOffsetLabel;
 	QPushButton *saveImageButton;
 
+	QPushButton *playButton;
+
 private:
 	void setImageOnPosition (int v);
+	void startPlayBag();
+	void stopPlayBag();
+
 	GenericDataItem::ConstPtr dataItem0;
 };
 

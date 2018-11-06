@@ -8,6 +8,10 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <chrono>
+#include <thread>
+#include <functional>
+
 #include <opencv2/core.hpp>
 #include <SequenceSLAM.h>
 #include <QImage>
@@ -35,6 +39,7 @@ DatasetBrowser::DatasetBrowser(QWidget *parent):
 	frame = ui.frame;
 	timeOffsetLabel = ui.timeOffsetLabel;
 	saveImageButton = ui.saveImageButton;
+	playButton = ui.playButton;
 }
 
 DatasetBrowser::~DatasetBrowser()
@@ -87,4 +92,38 @@ DatasetBrowser::setImageOnPosition (int v)
 	stringstream ss;
 	ss << fixed << setprecision(2) << tsd;
 	timeOffsetLabel->setText(QString::fromStdString(ss.str()));
+}
+
+
+void
+DatasetBrowser::on_playButton_clicked(bool checked)
+{
+
+	std::function<void()> playThread =
+	[&]()
+	{
+
+	};
+
+	if (checked==true) {
+		cout << "Play\n";
+/*
+		const int startPos = timelineSlider->sliderPosition();
+
+		for (int p=startPos; p<=timelineSlider->maximum(); p++) {
+			setImageOnPosition(p);
+			timelineSlider->setSliderPosition(p);
+			if (p<timelineSlider->maximum()) {
+				ptime t1 = openDs->get(p)->getTimestamp();
+				ptime t2 = openDs->get(p+1)->getTimestamp();
+				tduration td = t2-t1;
+				std::this_thread::sleep_for(std::chrono::milliseconds(td.total_milliseconds()));
+			}
+		}
+*/
+	}
+
+	else {
+		cout << "Stop\n";
+	}
 }
