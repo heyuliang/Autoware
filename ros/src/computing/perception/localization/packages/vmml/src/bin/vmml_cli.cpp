@@ -252,6 +252,8 @@ public:
 			else if (command[0]=="detect")
 				map_detect_cmd(command[1]);
 
+			// To ask a subset, specify `start' and `stop' offset from beginning
+			// as optional parameters
 			else if (command[0]=="map_create")
 				map_create_cmd(stringTokens(command.begin()+1, command.end()));
 
@@ -709,10 +711,11 @@ private:
 			OxfordDataset::Ptr oxfAll = static_pointer_cast<OxfordDataset>(loadedDataset);
 			bool isSubset;
 
-			double start;
+			double start, stop;
 			if (cmd.size() >= 2) {
 				start = stod(cmd[0]);
-				duration = stod(cmd[1]);
+				stop = stod(cmd[1]);
+				duration = stop - start;
 				oxfSubset = oxfAll->timeSubset(start, duration);
 				isSubset = true;
 			}
@@ -736,9 +739,22 @@ private:
 			// Meidai Dataset does not have integrated camera parameters (yet)
 			MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(loadedDataset);
 			meidaiDs->addCameraParameter(meidaiCamera1Params);
-			targetDataset = meidaiDs;
-			numOfFrames = meidaiDs->size();
-			duration = meidaiDs->length();
+
+			if (cmd.size() >= 2) {
+				double start, stop;
+				start = stod(cmd[0]);
+				stop = stod(cmd[1]);
+				duration = stop - start;
+				MeidaiBagDataset::Ptr meidaiSub = meidaiDs->subset(start, stop);
+				numOfFrames = meidaiSub->size();
+				targetDataset = meidaiSub;
+			}
+
+			else {
+				targetDataset = meidaiDs;
+				numOfFrames = meidaiDs->size();
+				duration = meidaiDs->length();
+			}
 
 			// Information
 			mapBld.getMap()->setInfo("sourceType", "Meidai");

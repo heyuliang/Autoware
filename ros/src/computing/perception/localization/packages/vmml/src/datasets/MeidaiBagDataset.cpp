@@ -112,10 +112,13 @@ MeidaiBagDataset::Ptr
 MeidaiBagDataset::subset(const double startTimeOffsetSecond, const double endOffsetFromBeginning) const
 {
 	assert (endOffsetFromBeginning >= startTimeOffsetSecond);
+
 	ros::Duration
 		d0(startTimeOffsetSecond),
 		d1(endOffsetFromBeginning-startTimeOffsetSecond);
-	return subset(cameraRawBag->timeAt(0) + d0, d1);
+	ros::Time t1 = cameraRawBag->timeAt(0) + d1;
+
+	return subset(t1, d1);
 }
 
 
@@ -556,8 +559,21 @@ MeidaiDataItem::getTimestamp() const
 
 
 PoseTimestamp
-PoseTimestamp::operator* (const Pose &t)
+PoseTimestamp::operator* (const Pose &transform)
 {
-	Pose P = static_cast<Pose&>(*this) * t;
+	Pose P = static_cast<Pose&>(*this) * transform;
 	return PoseTimestamp(P, this->timestamp);
 }
+
+
+PoseTimestamp
+PoseTimestamp::interpolate(
+	const PoseTimestamp &p1,
+	const PoseTimestamp &p2,
+	const ros::Time &t)
+{
+	assert (p1.timestamp<=t and t<=p2.timestamp);
+	double r = (t - p1.timestamp).toSec() / (p2.timestamp - p1.timestamp).toSec();
+	return PoseTimestamp (Pose::interpolate(p1, p2, r), t);
+}
+

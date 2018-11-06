@@ -205,13 +205,3 @@ void createTrajectoryFromGnssBag (RandomAccessBag &bagsrc, Trajectory &trajector
 }
 
 
-PoseTimestamp
-PoseTimestamp::interpolate(
-	const PoseTimestamp &p1,
-	const PoseTimestamp &p2,
-	const ros::Time &t)
-{
-	assert (p1.timestamp<=t and t<=p2.timestamp);
-	double r = (t - p1.timestamp).toSec() / (p2.timestamp - p1.timestamp).toSec();
-	return Pose::interpolate(p1, p2, r);
-}

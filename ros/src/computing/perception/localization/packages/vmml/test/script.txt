@@ -21,6 +21,10 @@ build 1907.96 2053.06
 dataset /media/sujiwo/ssd/log_2016-12-26-13-21-10.bag
 mask /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/test/meidai_mask.png
 zoom 0.33333333
+# Ask whole map
+map_create
+# Ask a subset (surrounding campus)
+map_create 317.22 932.16
 
 # Relocalization test
 dataset /media/sujiwo/ssd/log_2016-12-26-13-21-10.bag
