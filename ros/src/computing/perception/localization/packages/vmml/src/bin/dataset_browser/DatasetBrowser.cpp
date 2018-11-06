@@ -98,32 +98,39 @@ DatasetBrowser::setImageOnPosition (int v)
 void
 DatasetBrowser::on_playButton_clicked(bool checked)
 {
+	static bool playStarted = false;
+	static std::thread *playerThread = NULL;
 
-	std::function<void()> playThread =
+	std::function<void()> playThreadFn =
 	[&]()
 	{
-
-	};
-
-	if (checked==true) {
-		cout << "Play\n";
-/*
 		const int startPos = timelineSlider->sliderPosition();
-
 		for (int p=startPos; p<=timelineSlider->maximum(); p++) {
-			setImageOnPosition(p);
 			timelineSlider->setSliderPosition(p);
-			if (p<timelineSlider->maximum()) {
+			setImageOnPosition(p);
+			if (playStarted == false)
+				break;
+			if(p < timelineSlider->maximum()) {
 				ptime t1 = openDs->get(p)->getTimestamp();
 				ptime t2 = openDs->get(p+1)->getTimestamp();
 				tduration td = t2-t1;
 				std::this_thread::sleep_for(std::chrono::milliseconds(td.total_milliseconds()));
 			}
 		}
-*/
+	};
+
+	if (checked==true) {
+		cout << "Play\n";
+		playStarted = true;
+		playerThread = new std::thread(playThreadFn);
 	}
 
 	else {
 		cout << "Stop\n";
+		playStarted = false;
+		playerThread->join();
+		delete(playerThread);
 	}
+
+	return;
 }
