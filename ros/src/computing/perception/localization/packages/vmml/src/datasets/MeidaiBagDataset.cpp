@@ -70,7 +70,9 @@ MeidaiBagDataset::load (
 MeidaiBagDataset::MeidaiBagDataset
 (const MeidaiBagDataset &cp):
 	bagPath(cp.bagPath),
-	bagfd(cp.bagfd)
+	bagfd(cp.bagfd),
+	cameraParams(cp.cameraParams),
+	zoomRatio(cp.zoomRatio)
 {}
 
 
@@ -116,7 +118,7 @@ MeidaiBagDataset::subset(const double startTimeOffsetSecond, const double endOff
 	ros::Duration
 		d0(startTimeOffsetSecond),
 		d1(endOffsetFromBeginning-startTimeOffsetSecond);
-	ros::Time t1 = cameraRawBag->timeAt(0) + d1;
+	ros::Time t1 = cameraRawBag->timeAt(0) + d0;
 
 	return subset(t1, d1);
 }
