@@ -96,3 +96,22 @@ BaseFrame::computeFeatures (cv::Ptr<cv::FeatureDetector> fd, const cv::Mat &mask
 		fDescriptors,
 		false);
 }
+
+
+void
+BaseFrame::perturb (PerturbationMode mode,
+	bool useRandomMotion,
+	double displacement, double rotationAngle)
+{
+	Vector3d movement;
+	switch (mode) {
+	case PerturbationMode::Lateral:
+		movement = Vector3d(1,0,0); break;
+	case PerturbationMode::Vertical:
+		movement = Vector3d(0,-1,0); break;
+	case PerturbationMode::Longitudinal:
+		movement = Vector3d(0,0,1); break;
+	}
+	movement = displacement * movement;
+}
+

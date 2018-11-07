@@ -134,13 +134,6 @@ public:
 
 	void updateNormal();
 
-	enum PerturbationMode {
-		Lateral,
-		Longitudinal,
-		Vertical
-	};
-
-	void perturb (PerturbationMode h, bool useRandomMotion, const double displacement=0, const double rotationAngle=0);
 
 protected:
 

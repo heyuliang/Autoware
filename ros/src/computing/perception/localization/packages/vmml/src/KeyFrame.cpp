@@ -305,8 +305,3 @@ KeyFrame::debugKeyPoints() const
 }
 
 
-void
-KeyFrame::perturb (PerturbationMode h, bool useRandomMotion, const double displacement, const double rotationAngle)
-{
-	// XXX: Unfinished
-}

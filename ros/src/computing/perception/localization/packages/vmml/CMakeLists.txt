@@ -174,7 +174,7 @@ target_link_libraries(
 
 
 add_executable(test_priv
-	src/bin/temporaries/test_priv.cpp
+	src/bin/temporaries/test_tf.cpp
 )
 
 

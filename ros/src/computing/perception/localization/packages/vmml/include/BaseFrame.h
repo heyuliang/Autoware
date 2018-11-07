@@ -92,6 +92,17 @@ public:
 	cv::Mat getImage() const
 	{ return image; }
 
+	enum PerturbationMode {
+		Lateral,
+		Longitudinal,
+		Vertical
+	};
+
+	void perturb (
+		PerturbationMode h,
+		bool useRandomMotion,
+		double displacement=0, double rotationAngle=0);
+
 
 protected:
 	cv::Mat image;

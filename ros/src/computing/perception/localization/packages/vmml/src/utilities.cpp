@@ -65,6 +65,22 @@ Vector3d quaternionToRPY (const Quaterniond &q)
 }
 
 
+TTransform::TTransform(
+	const double X, const double Y, const double Z,
+	const double QX, const double QY, const double QZ, const double QW) :
+		Affine3d(
+			Eigen::Translation3d(X,Y,Z) * Eigen::Quaterniond(QW, QX, QY, QZ))
+{}
+
+TTransform::TTransform(
+	const double X, const double Y, const double Z,
+	const double roll, const double pitch, const double yaw) :
+		Affine3d(
+			Eigen::Translation3d(X,Y,Z) * fromRPY(roll, pitch, yaw))
+{}
+
+
+
 TTransform
 TTransform::from_XYZ_RPY (
 	const Eigen::Vector3d &pos,

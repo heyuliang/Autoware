@@ -184,6 +184,14 @@ struct TTransform : public Eigen::Affine3d
 	TTransform(const Eigen::Affine3d &a)
 	{ m_matrix = a.matrix(); }
 
+	TTransform(
+		const double X, const double Y, const double Z,
+		const double QX, const double QY, const double QZ, const double QW);
+
+	TTransform(
+		const double X, const double Y, const double Z,
+		const double roll, const double pitch, const double yaw);
+
 	static TTransform from_XYZ_RPY
 		(const Eigen::Vector3d &pos,
 		double roll=0, double pitch=0, double yaw=0);
