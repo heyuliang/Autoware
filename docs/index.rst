@@ -35,7 +35,7 @@ Developers Guide
 
    DevelopersGuide/DevelopmentProcess
    DevelopersGuide/DesignArchitecture
-   DevelopersGuide/PackagesAPI
+   DevelopersGuide/PackagesNodes
 
 Community
 =========
