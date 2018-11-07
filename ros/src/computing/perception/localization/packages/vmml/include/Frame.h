@@ -58,6 +58,8 @@ public:
 	getVisibleMapPoints () const
 	{ return vfMapPoints; }
 
+	kpid nearestKf;
+
 protected:
 
 	DBoW2::BowVector words;
@@ -67,6 +69,7 @@ protected:
 
 	// visible map points and their reflections in this frame
 	std::map<mpid,kpid> vfMapPoints;
+
 };
 
 #endif /* FRAME_H_ */

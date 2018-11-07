@@ -63,14 +63,14 @@ public:
 	Eigen::Matrix<double,3,4> projectionMatrix () const;
 
 	/*
-	 * Normal vector
+	 * Normal vector; Or, Z-Axis of this frame
 	 */
 	Eigen::Vector3d normal() const;
 
 	void computeFeatures (cv::Ptr<cv::FeatureDetector> fd, const cv::Mat &mask=cv::Mat());
 
-	const cv::Mat descriptor(uint32_t r) const
-	{ return fDescriptors.row(r); }
+	const cv::Mat descriptor(kpid r) const
+	{ return fDescriptors.row(r).clone(); }
 
 	const cv::KeyPoint keypoint(kpid k) const
 	{ return fKeypoints.at(k); }
@@ -79,6 +79,9 @@ public:
 	{ return fDescriptors; }
 
 	int numOfKeypoints() const
+	{ return fKeypoints.size(); }
+
+	int numOfKeyPoints() const
 	{ return fKeypoints.size(); }
 
 	cv::Mat getImage() const

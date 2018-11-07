@@ -85,7 +85,7 @@ MapPoint::createDescriptor(const std::vector<KeyMapPoint> &visibleIn)
 {
 	vector<cv::Mat> allDescriptors;
 	for (auto &kmp: visibleIn) {
-		allDescriptors.push_back(kmp.keyframe->getDescriptorAt(kmp.keypointIdx));
+		allDescriptors.push_back(kmp.keyframe->descriptor(kmp.keypointIdx));
 	}
 
 	if (allDescriptors.empty())

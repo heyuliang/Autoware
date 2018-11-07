@@ -72,7 +72,6 @@ void fromSE3Quat (const g2o::SE3Quat &pose, KeyFrame &kf)
 {
 	kf.orientation() = pose.rotation().inverse();
 	kf.position() = -(kf.orientation() * pose.translation());
-	kf.updateNormal();
 }
 
 
@@ -143,7 +142,7 @@ void bundle_adjustment (VMap *orgMap)
 		for (auto &ptr: orgMap->allMapPointsAtKeyFrame(kId)) {
 
 			const MapPoint *mp = orgMap->mappoint(ptr.first);
-			const cv::KeyPoint p2K = kf->getKeyPointAt(ptr.second);
+			const cv::KeyPoint p2K = kf->keypoint(ptr.second);
 
 			g2o::VertexSBAPointXYZ *vMp = new g2o::VertexSBAPointXYZ();
 

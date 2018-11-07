@@ -43,7 +43,7 @@ collectAllKeypoints (const KeyFrame *kf, const vector<kpid> &allKpIds)
 {
 	vector<cv::KeyPoint> allKp;
 	for (auto &i: allKpIds) {
-		allKp.push_back(kf->getKeyPointAt(i));
+		allKp.push_back(kf->keypoint(i));
 	}
 	return allKp;
 }

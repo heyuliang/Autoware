@@ -138,14 +138,11 @@ void serialize (
 {
 	ar &
 		kf.id &
-		kf.keypoints &
-		kf.descriptors &
+		kf.fKeypoints &
+		kf.fDescriptors &
 		kf.srcItemId;
 	ar &
-		kf.mPosition &
-		kf.mOrientation &
-		kf.normal &
-		kf.projMatrix,
+		kf.mPose &
 		kf.cameraId;
 	ar &
 		kf.frCreationTime;

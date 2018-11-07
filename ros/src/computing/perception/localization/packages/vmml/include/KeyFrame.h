@@ -23,6 +23,7 @@
 #include "MapPoint.h"
 #include "triangulation.h"
 #include "utilities.h"
+#include "BaseFrame.h"
 #include "datasets/GenericDataset.h"
 
 
@@ -55,11 +56,17 @@ struct CameraPinholeParams;
 class Frame;
 
 
-class KeyFrame {
+class KeyFrame : public BaseFrame
+{
 public:
 
 	KeyFrame();
 
+	/*
+	 * Notes:
+	 * we require that the pose specified here must be in world coordinate,
+	 * with X->left, Y->bottom, Z->front
+	 */
 	KeyFrame(const cv::Mat &imgSrc,
 			const Eigen::Vector3d &p, const Eigen::Quaterniond &o,
 			cv::Mat &mask,
@@ -70,20 +77,8 @@ public:
 
 	virtual ~KeyFrame();
 
-	inline int numOfKeyPoints() const
-	{ return keypoints.size(); }
-
 	inline std::vector<cv::KeyPoint> getKeypoints() const
-	{ return keypoints; }
-
-	inline cv::KeyPoint getKeyPointAt (int idx) const
-	{ return keypoints[idx]; }
-
-	inline cv::Mat getDescriptors() const
-	{ return descriptors; }
-
-	inline cv::Mat getDescriptorAt(int idx) const
-	{ return descriptors.row(idx).clone(); }
+	{ return fKeypoints; }
 
 	static void match (const KeyFrame &k1, const KeyFrame &k2,
 		cv::Ptr<cv::DescriptorMatcher> matcher,
@@ -118,35 +113,11 @@ public:
 	int getCameraId() const
 	{ return cameraId; }
 
-	Eigen::Matrix<double,3,4> externalParamMatrix () const;
-	Eigen::Matrix4d externalParamMatrix4 () const;
-
-	Eigen::Matrix<double,3,4> projectionMatrix () const
-	{ return projMatrix; }
-
 	// Project to 2D
-	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
 	Eigen::Vector2d project (const MapPoint &pt3) const;
-
-	// Transform point (in world) to camera coordinate system
-	Eigen::Vector3d transform (const Eigen::Vector3d &pt3) const;
-
-	Eigen::Vector3d &position ()
-	{ return mPosition; }
-
-	const Eigen::Vector3d &getPosition () const
-	{ return mPosition; }
-
-	Eigen::Quaterniond &orientation ()
-	{ return mOrientation; }
-
-	const Eigen::Quaterniond &getOrientation () const
-	{ return mOrientation; }
 
 	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
 
-//	Transform3d toEigen()
-//	{ return Transform3d::fromPositionOrientationScale(Eigen::Translation3d(position), orientation, Eigen::Scaling(1.0)); }
 	cv::Mat getImage() const
 	{ return image; }
 
@@ -174,17 +145,9 @@ protected:
 	friend class VMap;
 
 	kfid id;
-	cv::Mat image;
-	std::vector<cv::KeyPoint> keypoints;
-	cv::Mat descriptors;
 
 	// To be used for referring to original dataset
 	dataItemId srcItemId;
-
-	Eigen::Vector3d mPosition;
-	Eigen::Quaterniond mOrientation;
-	Eigen::Vector3d normal;
-	Eigen::Matrix<double,3,4> projMatrix;
 
 	int cameraId;
 
@@ -193,7 +156,6 @@ protected:
 
 	static kfid nextId;
 
-//	KeyFrame* prev;
 	VMap* parentMap;
 
 };

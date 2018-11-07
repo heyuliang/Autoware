@@ -172,10 +172,6 @@ InputFrame createInputFrame(MeidaiDataItem::ConstPtr &DI)
 }
 
 
-ptime getCurrentTime ()
-{ return boost::posix_time::microsec_clock::local_time(); }
-
-
 class LocalizerApp
 {
 public:

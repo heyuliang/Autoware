@@ -61,7 +61,7 @@ Localizer::debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, co
 
 	for (auto &mpair: mapPtMatchPairs) {
 		const kpid _kp = sourceMap->getKeyPointId(keyframe.getId(), mpair.first);
-		const cv::KeyPoint k_in_kf = keyframe.getKeyPointAt(_kp);
+		const cv::KeyPoint k_in_kf = keyframe.keypoint(_kp);
 		const cv::KeyPoint k_in_f = frame.keypoint(mpair.second);
 		cv::line(img, k_in_kf.pt, k_in_f.pt, colorGreen, 1);
 		cv::circle(img, k_in_kf.pt, 2, colorRed);
@@ -181,7 +181,7 @@ Localizer::SearchBoW (const KeyFrame &kf, Frame &frame, vector<pair<mpid,kpid>> 
 					continue;
 				}
 
-				const cv::Mat &descKf = kf.getDescriptorAt(realKpIdxKF);
+				const cv::Mat &descKf = kf.descriptor(realKpIdxKF);
 
 				int bestDist1 = 256;
 				int bestIdxF = -1;
@@ -210,7 +210,7 @@ Localizer::SearchBoW (const KeyFrame &kf, Frame &frame, vector<pair<mpid,kpid>> 
 					if (float(bestDist1) <  matchNNRatio*float(bestDist2)) {
 						vpMapPts.insert(nMpId);
 						matches++;
-						const cv::KeyPoint &kp = kf.getKeyPointAt(realKpIdxKF);
+						const cv::KeyPoint &kp = kf.keypoint(realKpIdxKF);
 						mapPtMatchPairs.push_back (make_pair(nMpId, bestIdxF));
 
 						// Check orientation

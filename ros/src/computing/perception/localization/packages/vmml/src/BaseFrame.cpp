@@ -38,7 +38,7 @@ Vector3d
 BaseFrame::transform (const Eigen::Vector3d &pt3) const
 {
 	Vector4d P = externalParamMatrix4() * pt3.homogeneous();
-	return P.head(3);
+	return P.hnormalized();
 }
 
 

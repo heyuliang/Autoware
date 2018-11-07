@@ -283,16 +283,6 @@ VMap::save(const string &filepath)
 
 	boost::archive::binary_oarchive mapStore (mapFileFd);
 
-	for (auto &kfptr : keyframeInvIdx) {
-		KeyFrame *kf = kfptr.second;
-		mapStore << *kf;
-	}
-
-	for (auto &mpPtr : mappointInvIdx) {
-		MapPoint *mp = mpPtr.second;
-		mapStore << *mp;
-	}
-
 	mapStore << pointAppearances;
 	mapStore << framePoints;
 	mapStore << framePointsInv;
@@ -308,6 +298,16 @@ VMap::save(const string &filepath)
 	mapStore << kfVtxInvMap;
 
 	mapStore << keyValueInfo;
+
+	for (auto &kfptr : keyframeInvIdx) {
+		KeyFrame *kf = kfptr.second;
+		mapStore << *kf;
+	}
+
+	for (auto &mpPtr : mappointInvIdx) {
+		MapPoint *mp = mpPtr.second;
+		mapStore << *mp;
+	}
 
 	mapFileFd.close();
 	return true;
@@ -333,13 +333,6 @@ VMap::load(const string &filepath)
 	this->featureDetector = VMap::createFeatureDetector(header._featureDt);
 	this->descriptorMatcher = VMap::createDescriptorMatcher(header._descrptMt);
 
-	for (int i=0; i<header.numOfKeyFrame; i++) {
-		mapStore >> kfArray[i];
-	}
-	for (int j=0; j<header.numOfMapPoint; j++) {
-		mapStore >> mpArray[j];
-	}
-
 	mapStore >> pointAppearances;
 	mapStore >> framePoints;
 	mapStore >> framePointsInv;
@@ -356,12 +349,20 @@ VMap::load(const string &filepath)
 
 	mapStore >> keyValueInfo;
 
+	for (int i=0; i<header.numOfKeyFrame; i++) {
+		mapStore >> kfArray[i];
+	}
+	for (int j=0; j<header.numOfMapPoint; j++) {
+		mapStore >> mpArray[j];
+	}
+
 	// Rebuild pointers
 	keyframeInvIdx.clear();
 	for (int i=0; i<header.numOfKeyFrame; i++) {
 		KeyFrame *kf = &(kfArray[i]);
 		keyframeInvIdx.insert(pair<kfid,KeyFrame*>(kf->getId(), kf));
 		kf->parentMap = this;
+		kf->cameraParam = &(cameraList[kf->cameraId]);
 	}
 
 	mappointInvIdx.clear();

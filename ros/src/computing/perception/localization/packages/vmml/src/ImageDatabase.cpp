@@ -86,7 +86,7 @@ ImageDatabase::rebuildAll()
 //#pragma omp parallel
 	for (auto &kid: cMap->allKeyFrames()) {
 		KeyFrame *kf = cMap->keyframe(kid);
-		vector<cv::Mat> kfDescs = toDescriptorVector(kf->getDescriptors());
+		vector<cv::Mat> kfDescs = toDescriptorVector(kf->allDescriptors());
 
 		// Build BoW descriptor of this keyframe
 		BoWList[kid] = DBoW2::BowVector();

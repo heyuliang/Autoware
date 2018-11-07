@@ -101,14 +101,19 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 		const int startPos = timelineSlider->sliderPosition();
 		timelineSlider->setDisabled(true);
 		for (int p=startPos; p<=timelineSlider->maximum(); p++) {
+
+			ptime t1x = getCurrentTime();
 			timelineSlider->setSliderPosition(p);
 			setImageOnPosition(p);
 			if (playStarted == false)
 				break;
+
 			if(p < timelineSlider->maximum()) {
 				ptime t1 = openDs->get(p)->getTimestamp();
 				ptime t2 = openDs->get(p+1)->getTimestamp();
-				tduration td = t2-t1;
+				ptime t2x = getCurrentTime();
+				tduration tdx = t2x - t1x;	// processing overhead
+				tduration td = (t2-t1) - tdx;
 				std::this_thread::sleep_for(std::chrono::milliseconds(td.total_milliseconds()));
 			}
 		}

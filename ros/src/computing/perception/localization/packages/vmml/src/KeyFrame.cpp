@@ -19,7 +19,10 @@ using namespace std;
 using namespace Eigen;
 
 
-kfid KeyFrame::nextId = 0;
+/*
+ * Ensure that KeyFrame ID is always positive and non-zero
+ */
+kfid KeyFrame::nextId = 1;
 
 
 Vector2d cv2eigen (const cv::Point2f &p)
@@ -36,7 +39,7 @@ std::set<kpid>
 KeyFrame::allKeyPointId (const KeyFrame &kf)
 {
 	std::set<kpid> allkp;
-	for (kpid i=0; i<kf.keypoints.size(); i++)
+	for (kpid i=0; i<kf.fKeypoints.size(); i++)
 		allkp.insert(i);
 	return allkp;
 }
@@ -55,20 +58,19 @@ KeyFrame::KeyFrame(
 	const int _cameraId,
 	dataItemId _srcItemId) :
 
-	mOrientation(o),
-	mPosition(p),
 	cameraId(_cameraId),
 	frCreationTime(boost::posix_time::second_clock::local_time()),
 	srcItemId(_srcItemId),
 	parentMap(NULL)
 
 {
+	setPose(p, o);
+	cameraParam = const_cast<CameraPinholeParams*>(cameraIntr);
+
 	if(cameraIntr->width < 0 or cameraIntr->height < 0)
 		throw runtime_error("Camera parameter has not been initialized properly (<0)");
 
 	id = nextId++;
-
-	updateNormal();
 
 	// Enforce gray image before computing features
 	cv::Mat grayImg;
@@ -76,11 +78,8 @@ KeyFrame::KeyFrame(
 		grayImg = imgSrc;
 	else
 		cv::cvtColor(imgSrc, grayImg, CV_BGR2GRAY, 1);
-	fdetector->detectAndCompute(grayImg, mask, keypoints, descriptors, false);
 	image = grayImg;
-
-	Matrix<double,3,4> camInt = cameraIntr->toMatrix();
-	projMatrix = cameraIntr->toMatrix() * externalParamMatrix4();
+	computeFeatures(fdetector, mask);
 }
 
 
@@ -90,43 +89,16 @@ KeyFrame::~KeyFrame()
 }
 
 
-void KeyFrame::updateNormal()
-{
-	normal = externalParamMatrix().block(0,0,3,3).transpose().col(2);
-}
-
-
-// XXX: 3x4 or 4x4 ?
-poseMatrix KeyFrame::externalParamMatrix () const
-{
-	poseMatrix ex = poseMatrix::Zero();
-	Matrix3d R = mOrientation.toRotationMatrix().transpose();
-	ex.block<3,3>(0,0) = R;
-	ex.col(3) = -(R*mPosition);
-	return ex;
-}
-
-
-poseMatrix4 KeyFrame::externalParamMatrix4() const
-{
-	poseMatrix4 ex = poseMatrix4::Identity();
-	Matrix3d R = mOrientation.toRotationMatrix().transpose();
-	ex.block<3,3>(0,0) = R;
-	ex.col(3).head(3) = -(R*mPosition);
-	return ex;
-}
-
-
 void KeyFrame::match(const KeyFrame &k1, const KeyFrame &k2,
 	cv::Ptr<cv::DescriptorMatcher> matcher,
 	vector<FeaturePair> &featurePairs)
 {
 	vector<cv::DMatch> k12matches;
-	matcher->match(k2.descriptors, k1.descriptors, k12matches);
+	matcher->match(k2.fDescriptors, k1.fDescriptors, k12matches);
 
 	for (auto &m: k12matches) {
-		if (m.trainIdx < k1.keypoints.size() and m.queryIdx < k2.keypoints.size()) {
-			FeaturePair fp = {m.trainIdx, k1.keypoints[m.trainIdx].pt, m.queryIdx, k2.keypoints[m.queryIdx].pt};
+		if (m.trainIdx < k1.fKeypoints.size() and m.queryIdx < k2.fKeypoints.size()) {
+			FeaturePair fp = {m.trainIdx, k1.fKeypoints[m.trainIdx].pt, m.queryIdx, k2.fKeypoints[m.queryIdx].pt};
 			featurePairs.push_back (fp);
 		}
 	}
@@ -177,7 +149,7 @@ KeyFrame::match (const KeyFrame &kf,
 
 	// Matching itself
 	vector<cv::DMatch> kf2fMatches;
-	matcher->match(frame.fDescriptors, kf.descriptors, kf2fMatches);
+	matcher->match(frame.fDescriptors, kf.fDescriptors, kf2fMatches);
 
 	// Sort descending based on distance
 	sort(kf2fMatches.begin(), kf2fMatches.end(),
@@ -195,24 +167,24 @@ KeyFrame::match (const KeyFrame &kf,
 	for (int i=0; i<kf2fMatches.size(); ++i) {
 		auto &m = kf2fMatches[i];
 
-		if (m.trainIdx >= kf.keypoints.size() or m.queryIdx >= frame.fKeypoints.size())
+		if (m.trainIdx >= kf.fKeypoints.size() or m.queryIdx >= frame.fKeypoints.size())
 			continue;
 
 		const cv::Point2f &frameKp = frame.fKeypoints[m.queryIdx].pt;
 
 		if (doDebugMatch) {
 			if (i<=maxDebugMatchPair)
-			cv::line(newColorImage, kf.keypoints[m.trainIdx].pt, frameKp, cv::Scalar(0,255,0));
+			cv::line(newColorImage, kf.fKeypoints[m.trainIdx].pt, frameKp, cv::Scalar(0,255,0));
 		}
 
 		/*
 		 * XXX: We need an implementation of semi optical flow here
 		 */
-		float projDev = (convertToEigen(frameKp) - convertToEigen(kf.keypoints[m.trainIdx].pt)).norm();
+		float projDev = (convertToEigen(frameKp) - convertToEigen(kf.fKeypoints[m.trainIdx].pt)).norm();
 		if (projDev >= pixelReprojectionError)
 			continue;
 
-		FeaturePair fp = {m.trainIdx, kf.keypoints[m.trainIdx].pt, m.queryIdx, frame.fKeypoints[m.queryIdx].pt};
+		FeaturePair fp = {m.trainIdx, kf.fKeypoints[m.trainIdx].pt, m.queryIdx, frame.fKeypoints[m.queryIdx].pt};
 		featurePairs.push_back(fp);
 
 	}
@@ -229,16 +201,16 @@ void KeyFrame::matchSubset (
 	std::vector<FeaturePair> &featurePairs,
 	const kpidField &kp1list, const kpidField &kp2list)
 {
-	assert (kp1list.size()==k1.keypoints.size());
-	assert (kp2list.size()==k2.keypoints.size());
+	assert (kp1list.size()==k1.fKeypoints.size());
+	assert (kp2list.size()==k2.fKeypoints.size());
 
 	cv::Mat mask = kpidField::createMask(kp1list, kp2list);
 	vector<cv::DMatch> k12matches;
-	matcher->match(k2.descriptors, k1.descriptors, k12matches, mask);
+	matcher->match(k2.fDescriptors, k1.fDescriptors, k12matches, mask);
 
 	for (auto &m: k12matches) {
-		if (m.trainIdx < k1.keypoints.size() and m.queryIdx < k2.keypoints.size()) {
-			FeaturePair fp = {m.trainIdx, k1.keypoints[m.trainIdx].pt, m.queryIdx, k2.keypoints[m.queryIdx].pt};
+		if (m.trainIdx < k1.fKeypoints.size() and m.queryIdx < k2.fKeypoints.size()) {
+			FeaturePair fp = {m.trainIdx, k1.fKeypoints[m.trainIdx].pt, m.queryIdx, k2.fKeypoints[m.queryIdx].pt};
 			featurePairs.push_back (fp);
 		}
 	}
@@ -256,8 +228,8 @@ void KeyFrame::triangulate (
 {
 	set<uint> badMatches;
 
-	const poseMatrix &pm1 = kf1->projMatrix,
-		&pm2 = kf2->projMatrix;
+	const poseMatrix pm1 = kf1->projectionMatrix(),
+		pm2 = kf2->projectionMatrix();
 
 	mapPointList.clear();
 
@@ -278,13 +250,13 @@ void KeyFrame::triangulate (
 
 		// checking for regularity of triangulation result
 		// 1: Point must be in front of camera
-		Vector3d v1 = pointm - kf1->mPosition;
-		double cos1 = v1.dot(kf1->normal) / v1.norm();
+		Vector3d v1 = pointm - kf1->position();
+		double cos1 = v1.dot(kf1->normal()) / v1.norm();
 		if (cos1 < 0)
 			continue;
 		double dist1 = v1.norm();
-		Vector3d v2 = pointm - kf2->mPosition;
-		double cos2 = v2.dot(kf2->normal) / v2.norm();
+		Vector3d v2 = pointm - kf2->position();
+		double cos2 = v2.dot(kf2->normal()) / v2.norm();
 		if (cos2 < 0)
 			continue;
 		double dist2 = v2.norm();
@@ -299,13 +271,6 @@ void KeyFrame::triangulate (
 		mapPointToKeyPointInKeyFrame1[newMp] = fp.kpid1;
 		mapPointToKeyPointInKeyFrame2[newMp] = fp.kpid2;
 	}
-}
-
-
-Vector2d KeyFrame::project(const Vector3d &pt3) const
-{
-	Vector3d ptx = projMatrix * pt3.homogeneous();
-	return ptx.head(2) / ptx[2];
 }
 
 
@@ -330,14 +295,6 @@ KeyFrame::projectAllMapPoints() const
 	}
 
 	return projectionResult;
-}
-
-
-Eigen::Vector3d
-KeyFrame::transform (const Eigen::Vector3d &pt3) const
-{
-	Vector4d ptx = externalParamMatrix4()* pt3.homogeneous();
-	return ptx.hnormalized();
 }
 
 
