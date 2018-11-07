@@ -29,10 +29,9 @@ Launch file available parameters:
 
 ### Subscriptions/Publications
 
-
 ```
 Publications: 
- * /image_depth [sensor_msgs/Image]
+ * /image_cloud [sensor_msgs/Image]
 
 Subscriptions: 
  * /points_raw [sensor_msgs/PointCloud type]

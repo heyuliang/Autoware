@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        rospy
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -24,6 +25,7 @@ catkin_package(CATKIN_DEPENDS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        rospy
         )
 
 find_package(Qt5Core REQUIRED)
@@ -47,8 +49,6 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         include
 )
-
-SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 link_directories(${PCL_LIBRARY_DIRS})
 

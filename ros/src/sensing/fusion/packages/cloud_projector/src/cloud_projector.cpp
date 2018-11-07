@@ -62,38 +62,38 @@ void RosCloudProjectorApp::CloudCallback(const sensor_msgs::PointCloud2::ConstPt
     return;
   }
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*in_cloud_msg, *in_cloud);
+  pcl::PointCloud<pcl::PointXYZ> in_cloud;
+  pcl::fromROSMsg(*in_cloud_msg, in_cloud);
 
-  std::vector<pcl::PointXYZ> cam_cloud(in_cloud->points.size());
+  std::vector<pcl::PointXYZ> cam_cloud(in_cloud.points.size());
   cv::Mat cloud_projected_image(image_size_.height, image_size_.width, CV_32FC1);
   cv::Mat normalized_output;
 
-#pragma omp for
-  for (size_t i = 0; i < in_cloud->points.size(); i++)
+//#pragma omp for
+  for (size_t i = 0; i < in_cloud.points.size(); i++)
   {
-    cam_cloud[i] = TransformPoint(in_cloud->points[i], camera_lidar_tf_);
+    cam_cloud[i] = TransformPoint(in_cloud.points[i], camera_lidar_tf_);
     int u = int(cam_cloud[i].x * fx_ / cam_cloud[i].z + cx_);
     int v = int(cam_cloud[i].y * fy_ / cam_cloud[i].z + cy_);
     if ((u >= 0) && (u < image_size_.width)
         && (v >= 0) && (v < image_size_.height)
-        && cam_cloud[i].z > 0
-        && cam_cloud[i].z < 70
+        && cam_cloud[i].z > 2
+        && cam_cloud[i].z < 80
       )
     {
       //cloud_projected_image.at<float>(cv::Point(u, v)) = cam_cloud[i].z;
-      cv::circle(cloud_projected_image, cv::Point(u, v), 4, cv::Scalar_<float>(cam_cloud[i].z), -1);
+      cv::circle(cloud_projected_image, cv::Point(u, v), 1, cv::Scalar_<float>(cam_cloud[i].z), -1);
     }
   }
 
   //normalize
-  cv::normalize(cloud_projected_image, normalized_output, 255, 0, cv::NORM_MINMAX, CV_8UC1);
+  cv::normalize(cloud_projected_image, normalized_output, 255, 0, cv::NORM_MINMAX, CV_16UC1);
 
   // Publish
   cv_bridge::CvImage out_msg;
   out_msg.header = in_cloud_msg->header;
   out_msg.header.frame_id   = image_frame_id_;
-  out_msg.encoding = sensor_msgs::image_encodings::MONO8;
+  out_msg.encoding = sensor_msgs::image_encodings::MONO16;
   out_msg.image    = normalized_output; // Your cv::Mat
 
   publisher_projected_cloud_.publish(out_msg.toImageMsg());
@@ -153,7 +153,7 @@ RosCloudProjectorApp::FindTransform(const std::string &in_target_frame, const st
 void RosCloudProjectorApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 {
   //get params
-  std::string points_src, image_src, camera_info_src, projected_topic_str = "/image_depth";
+  std::string points_src, image_src, camera_info_src, projected_topic_str = "/image_cloud";
   std::string name_space_str = ros::this_node::getNamespace();
 
   ROS_INFO("[%s] This node requires: Registered TF(Lidar-Camera), CameraInfo, Image, and PointCloud.", __APP_NAME__);
