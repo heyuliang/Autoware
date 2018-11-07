@@ -161,13 +161,10 @@ MapBuilder2::runFromDataset(GenericDataset *ds)
 }
 
 
-/*
- * XXX: Unfinished
- */
 void
 MapBuilder2::mapPointCulling()
 {
-	cout << "Culling points...";
+	cout << "Culling points..." << flush;
 
 	vector<mpid> mpToRemove;
 	const int minKfRelatedFromMP = 3;
@@ -182,11 +179,14 @@ MapBuilder2::mapPointCulling()
 		}
 	}
 
-	for (auto mp: mpToRemove) {
-		cMap->removeMapPoint(mp);
-	}
+	cout << "Detected " << mpToRemove.size() << " points\n" << flush;
 
-	cout << "Removed " << mpToRemove.size() << " out of " << N << " points";
+//	for (auto mp: mpToRemove) {
+//		cMap->removeMapPoint(mp);
+//	}
+	cMap->removeMapPointsBatch(mpToRemove);
+
+	cout << "Removed " << mpToRemove.size() << " out of " << N << " points" << flush;
 }
 
 

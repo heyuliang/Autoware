@@ -90,6 +90,14 @@ DatasetBrowser::setImageOnPosition (int v)
 
 
 void
+DatasetBrowser::disableControlsOnPlaying (bool state)
+{
+	timelineSlider->setDisabled(state);
+	saveImageButton->setDisabled(state);
+}
+
+
+void
 DatasetBrowser::on_playButton_clicked(bool checked)
 {
 	static bool playStarted = false;
@@ -99,7 +107,7 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 	[&]()
 	{
 		const int startPos = timelineSlider->sliderPosition();
-		timelineSlider->setDisabled(true);
+		disableControlsOnPlaying(true);
 		for (int p=startPos; p<=timelineSlider->maximum(); p++) {
 
 			ptime t1x = getCurrentTime();
@@ -117,7 +125,7 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 				std::this_thread::sleep_for(std::chrono::milliseconds(td.total_milliseconds()));
 			}
 		}
-		timelineSlider->setDisabled(false);
+		disableControlsOnPlaying(false);
 	};
 
 	if (checked==true) {

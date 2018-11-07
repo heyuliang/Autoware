@@ -274,13 +274,6 @@ void KeyFrame::triangulate (
 }
 
 
-Eigen::Vector2d
-KeyFrame::project (const MapPoint &pt3) const
-{
-	return project(pt3.getPosition());
-}
-
-
 vector<Vector2d>
 KeyFrame::projectAllMapPoints() const
 {
@@ -309,4 +302,11 @@ void
 KeyFrame::debugKeyPoints() const
 {
 
+}
+
+
+void
+KeyFrame::perturb (PerturbationMode h, bool useRandomMotion, const double displacement, const double rotationAngle)
+{
+	// XXX: Unfinished
 }

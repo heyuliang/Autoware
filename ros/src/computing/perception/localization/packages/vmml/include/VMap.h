@@ -195,6 +195,7 @@ public:
 	void trackMapPoints (const kfid kf1, const kfid kf2);
 
 	bool removeMapPoint (const mpid &i);
+	bool removeMapPointsBatch (const vector<mpid> &mplist);
 
 	typedef std::map<std::string,std::string> mapKeyValueInfo;
 

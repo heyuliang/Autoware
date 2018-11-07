@@ -693,6 +693,31 @@ VMap::removeMapPoint (const mpid &i)
 }
 
 
+bool
+VMap::removeMapPointsBatch (const vector<mpid> &mplist)
+{
+	set<kfid> kfModified;
+
+	for (auto &pt: mplist) {
+		mappointInvIdx.erase(pt);
+		set<kfid> kfAppears = pointAppearances[pt];
+		for (auto kf: kfAppears) {
+			kfModified.insert(kf);
+			const kpid kp = framePoints[kf].at(pt);
+			framePoints[kf].erase(pt);
+		}
+
+		pointAppearances.erase(pt);
+	}
+
+	for (auto kf: kfModified) {
+		updateCovisibilityGraph(kf);
+	}
+
+	return true;
+}
+
+
 void
 VMap::fixFramePointsInv ()
 {

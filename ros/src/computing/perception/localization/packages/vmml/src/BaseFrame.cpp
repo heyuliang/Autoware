@@ -6,6 +6,7 @@
  */
 
 #include "BaseFrame.h"
+#include "MapPoint.h"
 
 
 using namespace Eigen;
@@ -32,6 +33,14 @@ BaseFrame::project (const Eigen::Vector3d &pt3) const
 	Vector3d ptx = projectionMatrix() * pt3.homogeneous();
 	return ptx.head(2) / ptx[2];
 }
+
+
+Eigen::Vector2d
+BaseFrame::project (const MapPoint &pt3) const
+{
+	return project(pt3.getPosition());
+}
+
 
 
 Vector3d

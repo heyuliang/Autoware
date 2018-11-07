@@ -51,6 +51,7 @@ private:
 	void setImageOnPosition (int v);
 	void startPlayBag();
 	void stopPlayBag();
+	void disableControlsOnPlaying (bool state);
 
 	GenericDataItem::ConstPtr dataItem0;
 };

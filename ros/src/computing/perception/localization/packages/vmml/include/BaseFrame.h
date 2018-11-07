@@ -17,6 +17,9 @@
 #include "utilities.h"
 
 
+class MapPoint;
+
+
 class BaseFrame
 {
 public:
@@ -40,6 +43,8 @@ public:
 
 	// Project to 2D
 	Eigen::Vector2d project (const Eigen::Vector3d &pt3) const;
+
+	Eigen::Vector2d project (const MapPoint &pt3) const;
 
 	// Transform a point in World coordinate to Frame-centric one
 	Eigen::Vector3d transform (const Eigen::Vector3d &pt3) const;

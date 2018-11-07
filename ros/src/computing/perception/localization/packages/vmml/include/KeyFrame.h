@@ -113,9 +113,6 @@ public:
 	int getCameraId() const
 	{ return cameraId; }
 
-	// Project to 2D
-	Eigen::Vector2d project (const MapPoint &pt3) const;
-
 	static std::set<kpid> allKeyPointId (const KeyFrame &kf);
 
 	cv::Mat getImage() const
@@ -136,6 +133,14 @@ public:
 	void debugKeyPoints() const;
 
 	void updateNormal();
+
+	enum PerturbationMode {
+		Lateral,
+		Longitudinal,
+		Vertical
+	};
+
+	void perturb (PerturbationMode h, bool useRandomMotion, const double displacement=0, const double rotationAngle=0);
 
 protected:
 

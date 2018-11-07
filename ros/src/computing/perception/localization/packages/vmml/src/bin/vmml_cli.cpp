@@ -669,7 +669,7 @@ private:
 
 	void debug(const string &s, double is_error=false)
 	{
-		cerr << s << endl;
+		cerr << s << endl << flush;
 	}
 
 	void dataset_set_zoom(const string &zstr)
