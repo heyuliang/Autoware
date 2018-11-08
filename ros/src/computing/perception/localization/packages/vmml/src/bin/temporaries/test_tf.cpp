@@ -19,9 +19,9 @@ using namespace Eigen;
 
 int main (int argc, char *argv[])
 {
-	TTransform
-		car(1,0,0, 0,0,0.79),
-		camera(0,1,0, 0,0,-0.79);
+//	TTransform
+//		car(1,0,0, 0,0,0.79),
+//		camera(0,1,0, 0,0,-0.79);
 
 //	TTransform world_camera;
 //	world_camera = car * camera;

@@ -105,6 +105,15 @@ protected:
 };
 
 
+#define RecordRuntime(CALL) { \
+	ptime _t1_ = getCurrentTime(); \
+	CALL ; \
+	ptime _t2_ = getCurrentTime(); \
+	tduration _td_ = _t2_ - _t1_ ; \
+	debug("Time elapsed (seconds): " + to_string(double(_td_.total_microseconds()) / 1e6)); \
+}
+
+
 int localize_seq_slam (SequenceSLAM *seqSl, OxfordImagePreprocessor &proc, const string &imgPath)
 {
 	cv::Mat image = proc.load(imgPath);
@@ -213,10 +222,10 @@ public:
 				doExit = true;
 
 			else if (command[0]=="map")
-				map_open_cmd(command[1]);
+				{ RecordRuntime( map_open_cmd(command[1]) ); }
 
 			else if (command[0]=="dataset")
-				dataset_open_cmd(command[1], command[2]);
+				{ RecordRuntime(dataset_open_cmd(command[1], command[2])); }
 
 			else if (command[0]=="map_pcl")
 				map_dump_pcl();
@@ -251,7 +260,7 @@ public:
 			// To ask a subset, specify `start' and `stop' offset from beginning
 			// as optional parameters
 			else if (command[0]=="map_create")
-				map_create_cmd(stringTokens(command.begin()+1, command.end()));
+				{ RecordRuntime( map_create_cmd(stringTokens(command.begin()+1, command.end())) ); }
 
 			else if (command[0]=="map_info")
 				map_info_cmd();
@@ -266,7 +275,7 @@ public:
 				dataset_set_param(command);
 
 			else if (command[0]=="build")
-				dataset_build(command);
+				{ RecordRuntime( dataset_build(command) ); }
 
 			else if (command[0]=="map_images")
 				map_dump_images();
@@ -357,16 +366,6 @@ private:
 		}
 	}
 
-//	const string imageDumpSeqSlam = "/tmp/seqslam.png";
-//	void dataset_simulate_seqslam(const string &cs)
-//	{
-//		double dt = std::stod(cs);
-//		cv::Mat img = localizTestDataSrc->atDurationSecond(dt).getImage();
-//		cv::cvtColor(img, img, CV_BGR2GRAY);
-//		img = seqSlProv->normalizePatch(img, 8);
-//		cv::imwrite(imageDumpSeqSlam, img);
-//		debug("Dumped image to "+imageDumpSeqSlam);
-//	}
 
 	const string viewerWindowName="Dataset Viewer";
 	void dataset_view(const string &durationSecStr)
@@ -396,8 +395,6 @@ private:
 				debug ("Parameters must be set with commands `velodyne' and `pcdmap'");
 				return;
 			}
-
-			ptime tbuild1 = getCurrentTime();
 
 			MeidaiBagDataset::Ptr nuDataset;
 			bool resetSubset;
@@ -429,10 +426,6 @@ private:
 
 			nuDataset->setLidarParameters(meidaiNdtParameters.velodyneCalibrationPath, meidaiNdtParameters.pcdMapPath, meidaiNdtParameters.lidarToCamera);
 			nuDataset->forceCreateCache(resetSubset, useNdt);
-			ptime tbuild2 = getCurrentTime();
-
-			tduration td = tbuild2 - tbuild1;
-			debug ("Cache build finished in " + to_string(double(td.total_microseconds()) / 1e6) + " seconds");
 		}
 
 		else {
@@ -575,13 +568,9 @@ private:
 		}
 
 		else if (datasetPath.extension()==".bag") {
-			ptime t_open_1 = getCurrentTime();
 			loadedDataset = MeidaiBagDataset::load(datasetPath.string());
 			slDatasourceType = MEIDAI_DATASET_TYPE;
 			debug ("Nagoya University Dataset Loaded");
-			ptime t_open_2 = getCurrentTime();
-			tduration td = t_open_2 - t_open_1;
-			debug ("Time to open: " + to_string(double(td.total_microseconds()) / 1e6) + " seconds");
 		}
 
 		else {
@@ -772,7 +761,7 @@ private:
 		mapBld.getMap()->save(mapFilePath);
 
 		debug ("Mapping done");
-		debug ("Time elapsed: " + to_string(duration) + " seconds");
+		debug ("Dataset time elapsed: " + to_string(duration) + " seconds");
 		debug ("Path: " + mapFilePath);
 
 	}
