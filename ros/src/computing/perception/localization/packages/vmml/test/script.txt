@@ -34,4 +34,4 @@ detect 933.51
 # Fringe cases
 detect 932.16
 detect 3148.25
-detect /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/test/places/test-0.png
+detect /home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/test/places/test-2.png

@@ -5,7 +5,8 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS 
 	rviz
-	pcl_ros)
+	pcl_ros
+	vector_map)
 find_package(Qt5 REQUIRED Core Widgets)
 find_package(PCL REQUIRED)
 
@@ -25,6 +26,7 @@ add_library(
 		rviz_plugins/PCDFileDisplay.cpp
 		rviz_plugins/CSVTrajectory.cpp
 		rviz_plugins/FileProperty.cpp
+		rviz_plugins/VectorMapDisplay.cpp
 )
 
 target_link_libraries(

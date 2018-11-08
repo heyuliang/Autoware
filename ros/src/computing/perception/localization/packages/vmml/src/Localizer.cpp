@@ -74,6 +74,8 @@ Localizer::debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, co
 bool
 Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 {
+	const bool debugMatching = false;
+
 	cv::Mat rzImg;
 	if (frmImg.cols != localizerCamera.width) {
 		float ratio = float(localizerCamera.width) / float(frmImg.cols);
@@ -112,12 +114,17 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 		int numMatches = SearchBoW (kf, frame, mapPointMatches);
 		if (numMatches >= 15) {
 			isValidKfs[i] = true;
-//			debug_KF_F_Matching(kf, frame, mapPointMatches);
+
+			if (debugMatching==true)
+				debug_KF_F_Matching(kf, frame, mapPointMatches);
 
 			// store index of inlier pairs here
 			vector<int> inliers;
 
 			solvePose(kf, frame, mapPointMatches, currentFramePose, &inliers);
+
+			if (debugMatching==true)
+				debug_KF_F_Matching(kf, frame, mapPointMatches);
 
 			// Store the inliers
 			for (auto iidx: inliers) {

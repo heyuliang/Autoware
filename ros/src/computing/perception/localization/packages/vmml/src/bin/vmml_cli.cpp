@@ -255,7 +255,7 @@ public:
 				dataset_view(command[1]);
 
 			else if (command[0]=="detect")
-				map_detect_cmd(command[1]);
+				{ RecordRuntime( map_detect_cmd(command[1]) ); }
 
 			// To ask a subset, specify `start' and `stop' offset from beginning
 			// as optional parameters
@@ -617,14 +617,10 @@ private:
 			img = di->getImage();
 		}
 
-		ptime t_detect_1 = getCurrentTime();
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 		kfid kmap;
 		Pose computedPose;
 		bool gotplace = localizer->detect(img, kmap, computedPose);
-		ptime t_detect_2 = getCurrentTime();
-		tduration td = t_detect_2 - t_detect_1;
-		debug("Time to detect: " + to_string(double(td.total_microseconds() / 1e6)) + " seconds");
 
 		if (gotplace) {
 			debug(computedPose.str());

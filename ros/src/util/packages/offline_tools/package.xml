@@ -10,6 +10,8 @@
   <license>BSD</license>
 
   <depend>rviz</depend>
+  
+  <depend>vector_map</depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
