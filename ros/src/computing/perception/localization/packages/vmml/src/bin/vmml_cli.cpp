@@ -105,15 +105,6 @@ protected:
 };
 
 
-#define RecordRuntime(CALL) { \
-	ptime _t1_ = getCurrentTime(); \
-	CALL ; \
-	ptime _t2_ = getCurrentTime(); \
-	tduration _td_ = _t2_ - _t1_ ; \
-	debug("Time elapsed (seconds): " + to_string(double(_td_.total_microseconds()) / 1e6)); \
-}
-
-
 int localize_seq_slam (SequenceSLAM *seqSl, OxfordImagePreprocessor &proc, const string &imgPath)
 {
 	cv::Mat image = proc.load(imgPath);
@@ -222,10 +213,10 @@ public:
 				doExit = true;
 
 			else if (command[0]=="map")
-				{ RecordRuntime( map_open_cmd(command[1]) ); }
+				{ RecordRuntime("MapOpen", map_open_cmd(command[1]) ); }
 
 			else if (command[0]=="dataset")
-				{ RecordRuntime(dataset_open_cmd(command[1], command[2])); }
+				{ RecordRuntime("DatasetOpen", dataset_open_cmd(command[1], command[2])); }
 
 			else if (command[0]=="map_pcl")
 				map_dump_pcl();
@@ -255,12 +246,12 @@ public:
 				dataset_view(command[1]);
 
 			else if (command[0]=="detect")
-				{ RecordRuntime( map_detect_cmd(command[1]) ); }
+				{ RecordRuntime("PlaceDetection", map_detect_cmd(command[1]) ); }
 
 			// To ask a subset, specify `start' and `stop' offset from beginning
 			// as optional parameters
 			else if (command[0]=="map_create")
-				{ RecordRuntime( map_create_cmd(stringTokens(command.begin()+1, command.end())) ); }
+				{ RecordRuntime("MapCreate", map_create_cmd(stringTokens(command.begin()+1, command.end())) ); }
 
 			else if (command[0]=="map_info")
 				map_info_cmd();
@@ -275,7 +266,7 @@ public:
 				dataset_set_param(command);
 
 			else if (command[0]=="build")
-				{ RecordRuntime( dataset_build(command) ); }
+				{ RecordRuntime("DatasetBuild", dataset_build(command) ); }
 
 			else if (command[0]=="map_images")
 				map_dump_images();
@@ -654,7 +645,10 @@ private:
 
 	void debug(const string &s, double is_error=false)
 	{
-		cerr << s << endl << flush;
+		if (!is_error)
+			cerr << s << endl << flush;
+		else
+			cout << s << endl << flush;
 	}
 
 	void dataset_set_zoom(const string &zstr)

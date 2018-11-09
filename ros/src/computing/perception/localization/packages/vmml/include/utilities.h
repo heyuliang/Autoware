@@ -38,8 +38,6 @@ typedef uint64_t mpid;
 typedef decltype(cv::DMatch::trainIdx) kpid;
 
 
-typedef Eigen::Affine3d Transform3d;
-
 typedef boost::posix_time::ptime ptime;
 typedef boost::posix_time::time_duration tduration;
 
@@ -154,7 +152,6 @@ Quaterniond fromRPY (double roll, double pitch, double yaw);
 
 Vector3d quaternionToRPY (const Quaterniond &q);
 
-
 class TQuaternion : public Eigen::Quaterniond
 {
 public:
@@ -168,11 +165,30 @@ public:
 		coeffs() = q.coeffs();
 	}
 
+	inline TQuaternion(const Quaterniond &q)
+	{ coeffs() = q.coeffs(); }
+
+	inline TQuaternion(const Eigen::Matrix3d &R)
+	{
+		Quaterniond Q(R);
+		coeffs() = Q.coeffs();
+	}
+
 	inline TQuaternion& operator=(const Quaterniond &q)
 	{
 		coeffs() = q.coeffs();
 		return *this;
 	}
+
+	inline double roll() const
+	{ return quaternionToRPY(*this).x(); }
+
+	inline double pitch() const
+	{ return quaternionToRPY(*this).y(); }
+
+	inline double yaw() const
+	{ return quaternionToRPY(*this).z(); }
+
 };
 
 
@@ -204,8 +220,8 @@ struct TTransform : public Eigen::Affine3d
 	inline const Vector3d position() const
 	{ return this->translation(); }
 
-	inline const Quaterniond orientation() const
-	{ return Eigen::Quaterniond(this->rotation()); }
+	inline const TQuaternion orientation() const
+	{ return TQuaternion(this->rotation()); }
 
 	std::string
 	str () const;
@@ -273,5 +289,16 @@ std::string dumpVector(const Eigen::Quaterniond &v);
 inline ptime getCurrentTime ()
 { return boost::posix_time::microsec_clock::local_time(); }
 
+
+void debugMsg(const std::string &s, double is_error=false);
+
+
+#define RecordRuntime(funcDef, CALL) { \
+	ptime _t1_ = getCurrentTime(); \
+	CALL ; \
+	ptime _t2_ = getCurrentTime(); \
+	tduration _td_ = _t2_ - _t1_ ; \
+	debugMsg(string(funcDef) + " (seconds): " + to_string(double(_td_.total_microseconds()) / 1e6)); \
+}
 
 #endif /* UTILITIES_H_ */

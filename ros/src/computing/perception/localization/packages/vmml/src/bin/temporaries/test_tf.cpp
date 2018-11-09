@@ -19,14 +19,11 @@ using namespace Eigen;
 
 int main (int argc, char *argv[])
 {
-//	TTransform
-//		car(1,0,0, 0,0,0.79),
-//		camera(0,1,0, 0,0,-0.79);
+	Pose A(1,0,0, 0,0,0);
+	TTransform V(0,0,0, 0.79,0,0);
 
-//	TTransform world_camera;
-//	world_camera = car * camera;
+	A = V*A;
 
-//	cout << world_camera;
-
+//	cout << A << endl;
 	return 0;
 }

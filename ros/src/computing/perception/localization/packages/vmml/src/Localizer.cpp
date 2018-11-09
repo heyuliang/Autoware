@@ -87,6 +87,7 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 	Frame frame (rzImg, this);
 	frame.sourceMap = sourceMap;
 	frame.cameraParam = &this->localizerCamera;
+	frame.computeBoW(*imgDb);
 
 	vector<kfid> placeCandidates = imgDb->findCandidates(frame);
 

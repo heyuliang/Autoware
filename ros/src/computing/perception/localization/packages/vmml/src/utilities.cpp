@@ -199,3 +199,12 @@ dumpVector(const Quaterniond &v)
 	s << v.x() << " " << v.y() << " " << v.z() << ' ' << v.w();
 	return s.str();
 }
+
+
+void debugMsg(const string &s, double is_error)
+{
+	if (!is_error)
+		cerr << s << endl << flush;
+	else
+		cout << s << endl << flush;
+}

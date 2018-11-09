@@ -128,15 +128,13 @@ ImageDatabase::find (Frame &f, bool simple) const
 
 
 vector<kfid>
-ImageDatabase::findCandidates (Frame &f) const
+ImageDatabase::findCandidates (const Frame &frame) const
 {
-	f.computeBoW(*this);
-
 	map<kfid, uint> kfCandidates;
 	kfCandidates.clear();
 
 	int maxCommonWords = 0;
-	for (auto &bWrdPtr : f.getWords()) {
+	for (auto &bWrdPtr : frame.getWords()) {
 		auto wordId = bWrdPtr.first;
 		const set<kfid> &relatedKf = invertedKeywordDb.at(wordId);
 
@@ -166,7 +164,7 @@ ImageDatabase::findCandidates (Frame &f) const
 		if (ptr.second < minCommonWords)
 			tKfCandidateScores[k] = 0;
 		else
-			tKfCandidateScores[k] = myVoc.score(f.getWords(), BoWList.at(k));
+			tKfCandidateScores[k] = myVoc.score(frame.getWords(), BoWList.at(k));
 	}
 
 	// Accumulate score by covisibility

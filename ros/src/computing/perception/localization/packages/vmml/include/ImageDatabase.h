@@ -111,8 +111,12 @@ public:
 
 	kfid find (Frame &f, bool simple=false) const;
 
+	/*
+	 * Find matched keyframe candidates from database using BoW method.
+	 * The candidates are sorted according to number of similar words
+	 */
 	std::vector<kfid>
-	findCandidates (Frame &f) const;
+	findCandidates (const Frame &f) const;
 
 	DBoW2::BowVector getWords (const kfid &k)
 	{ return BoWList[k]; }
