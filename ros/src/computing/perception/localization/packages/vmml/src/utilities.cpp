@@ -16,7 +16,18 @@ using namespace std;
 using namespace Eigen;
 
 
-#define dPrecision 10
+#define dPrecision 3
+
+
+class VStream: public std::stringstream
+{
+public:
+VStream()
+{
+	setf(ios::fixed, ios::floatfield);
+	precision(dPrecision);
+}
+};
 
 
 Quaterniond fromRPY (double roll, double pitch, double yaw)
@@ -184,8 +195,7 @@ cdf (const cv::Mat &grayImage, const cv::Mat &mask)
 string
 dumpVector(const Vector3d &v)
 {
-	stringstream s;
-	s.precision(dPrecision);
+	VStream s;
 	s << v.x() << " " << v.y() << " " << v.z();
 	return s.str();
 }
@@ -194,9 +204,24 @@ dumpVector(const Vector3d &v)
 string
 dumpVector(const Quaterniond &v)
 {
-	stringstream s;
-	s.precision(dPrecision);
+	VStream s;
 	s << v.x() << " " << v.y() << " " << v.z() << ' ' << v.w();
+	return s.str();
+}
+
+
+std::string
+dumpVector(const TTransform &P)
+{
+	Vector3d xyz = P.position();
+	TQuaternion qxyz = P.orientation();
+	Vector3d RPY = quaternionToRPY(qxyz);
+
+	VStream s;
+	s << "XYZ: " << dumpVector(xyz) << endl;
+	s << "RPY (rad): " << dumpVector(RPY) << endl;
+	s << "QXYZW: " << dumpVector(qxyz) << endl;
+
 	return s.str();
 }
 

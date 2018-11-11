@@ -285,6 +285,8 @@ std::string dumpVector(const Eigen::Vector3d &v);
 
 std::string dumpVector(const Eigen::Quaterniond &v);
 
+std::string dumpVector(const TTransform &P);
+
 
 inline ptime getCurrentTime ()
 { return boost::posix_time::microsec_clock::local_time(); }
