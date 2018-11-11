@@ -93,7 +93,7 @@ void ReadNMEASentence::Parse(char letter)
 			{
 				HEHDT();
 			}
-			else if (nmeaCmd == "GPGGA")
+			else if (nmeaCmd == "GPGGA" || nmeaCmd == "GNGGA")
 			{
 				GPGGA();
 			}

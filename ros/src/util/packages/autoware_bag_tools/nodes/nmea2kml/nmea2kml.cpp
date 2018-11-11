@@ -61,10 +61,11 @@
 
 
 #define MAX_SAT_NUM 15
+#define MIN_SAT_NUM 3
 #define LINE_WIDTH 8
 #define GROUND_RELATIVE_HRIGHT 8
 
-static std::string nmea_topic_name = "/nmea_sentence";
+static std::string nmea_topic_name = "/gps_m2/nmea_sentence";
 
 
 int g_prev_sat_number = 0;
@@ -292,7 +293,7 @@ void ParseAndWrite(const nmea_msgs::SentenceConstPtr& msg, std::ofstream& _ofs)
 	  _parser.Parse(msg->sentence.at(i));
   }
 
-  if(_parser.gpgga.count == 1)
+  if(_parser.gpgga.count == 1 && _parser.gpgga.longitude > 0 && _parser.gpgga.latitude > 0)
   {
 	  if(_parser.gpgga.satellites > MAX_SAT_NUM)
 		  _parser.gpgga.satellites = MAX_SAT_NUM;
@@ -324,7 +325,17 @@ void ParseAndWrite(const nmea_msgs::SentenceConstPtr& msg, std::ofstream& _ofs)
 			  g_line_points.push_back(GPS_Point(_parser.gpgga.latitude, _parser.gpgga.longitude, _parser.gpgga.altitude));
 	  }
 
-	  std::cout << "GPGGA: " << _parser.gpgga.longitude << ", " << _parser.gpgga.latitude <<", " << _parser.gpgga.altitude << ", " << g_max_sat << ", " << g_min_sat << std::endl;
+//	  if(_parser.gpgga.longitude == 0 || _parser.gpgga.latitude == 0)
+//	  {
+//
+//		  std::cout << "Bad Sentence  >>> " <<  msg->sentence << std::endl;
+//		  std::cout << "GPGGA: " << _parser.gpgga.longitude << ", " << _parser.gpgga.latitude <<", " << _parser.gpgga.altitude << ", " << g_max_sat << ", " << g_min_sat << "," << _parser.gpgga.satellites << std::endl <<std::endl;
+//	  }
+//	  else
+//	  {
+//		  std::cout << "Good Sentence  >>> " <<  msg->sentence << std::endl;
+//		  std::cout << "GPGGA: " << _parser.gpgga.longitude << ", " << _parser.gpgga.latitude <<", " << _parser.gpgga.altitude << ", " << g_max_sat << ", "  << g_min_sat<< "," << _parser.gpgga.satellites << std::endl;
+//	  }
   }
 }
 
