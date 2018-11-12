@@ -74,6 +74,7 @@ Localizer::debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, co
 bool
 Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 {
+	// Should only be set during debugging session
 	const bool debugMatching = false;
 
 	cv::Mat rzImg;
@@ -89,7 +90,7 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 	frame.cameraParam = &this->localizerCamera;
 	frame.computeBoW(*imgDb);
 
-	vector<kfid> placeCandidates = imgDb->findCandidates(frame);
+	auto placeCandidates = imgDb->findCandidates(frame);
 
 	// for debugging
 	vector<dataItemId> srcInfo(placeCandidates.size());
@@ -113,6 +114,7 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 		vector<pair<mpid,kpid>> mapPointMatches;
 
 		int numMatches = SearchBoW (kf, frame, mapPointMatches);
+
 		if (numMatches >= 15) {
 			isValidKfs[i] = true;
 
@@ -141,7 +143,6 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 			srcMapKfId = kf.getId();
 			continue;
 		}
-
 	}
 
 	if (gotValidPose==true) {
@@ -256,9 +257,6 @@ Localizer::solvePose (
 	vector<int> *inliers)
 const
 {
-	// XXX: Use cv::solvePnPRansac()
-	// XXX: Need to clarify utilization of the camera poses
-
 	Eigen::Matrix4d eKfExt = kf.externalParamMatrix4();
 
 	Eigen::Matrix3d eKfRotMat = eKfExt.block<3,3>(0,0);

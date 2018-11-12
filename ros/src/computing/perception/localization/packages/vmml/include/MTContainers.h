@@ -29,15 +29,30 @@ class vector : public std::vector<T>
 {
 public:
 
+	typedef std::vector<T> MtVecBase;
+
+	vector () : MtVecBase()
+	{}
+
+	// Copy constructor
+	vector (const MtVecBase &vc) noexcept:
+		MtVecBase(vc)
+	{}
+
+	// Move constructor
+	vector (MtVecBase &&vm) noexcept:
+		MtVecBase (vm)
+	{}
+
 	void push_back (const T& val)
 	{
-		cLock.lock();
+		ngelock.lock();
 		std::vector<T>::push_back(val);
-		cLock.unlock();
+		ngelock.unlock();
 	}
 
 protected:
-	std::mutex cLock;
+	std::mutex ngelock;
 };
 
 

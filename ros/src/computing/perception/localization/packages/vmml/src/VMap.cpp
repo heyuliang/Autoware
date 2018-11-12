@@ -523,6 +523,23 @@ CameraPinholeParams::operator* (const float r) const
 }
 
 
+#include <cmath>
+
+float
+CameraPinholeParams::getHorizontalFoV() const
+{
+	double tanT = cx / fx;
+	return 2 * atan(tanT);
+}
+
+float
+CameraPinholeParams::getVerticalFoV() const
+{
+	double tanT = cy / fy;
+	return 2 * atan(tanT);
+}
+
+
 void
 VMap::reset()
 {

@@ -291,16 +291,18 @@ std::string dumpVector(const TTransform &P);
 inline ptime getCurrentTime ()
 { return boost::posix_time::microsec_clock::local_time(); }
 
+inline double td_seconds (const tduration &td)
+{ return (double(td.total_microseconds()) / 1e6); }
 
 void debugMsg(const std::string &s, double is_error=false);
 
 
-#define RecordRuntime(funcDef, CALL) { \
+#define RecordRuntime(funcDef, CALL)  \
 	ptime _t1_ = getCurrentTime(); \
 	CALL ; \
 	ptime _t2_ = getCurrentTime(); \
 	tduration _td_ = _t2_ - _t1_ ; \
 	debugMsg(string(funcDef) + " (seconds): " + to_string(double(_td_.total_microseconds()) / 1e6)); \
-}
+
 
 #endif /* UTILITIES_H_ */

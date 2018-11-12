@@ -47,6 +47,9 @@ struct CameraPinholeParams
 
 	CameraPinholeParams
 	operator* (const float f) const;
+
+	float getHorizontalFoV () const;
+	float getVerticalFoV () const;
 };
 
 

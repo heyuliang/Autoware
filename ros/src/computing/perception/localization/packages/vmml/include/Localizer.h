@@ -17,6 +17,7 @@
 #include "ImageDatabase.h"
 
 
+
 class Localizer
 {
 public:
