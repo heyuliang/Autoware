@@ -236,9 +236,9 @@ folder actuation {
 }
 
 folder vehicle {
-    [low_level_controller and vehicle] as low_level_controller
+    [Vehicle ECU] as vehicle_ecu
     'inputs
-    vehicle_communication --> low_level_controller
+    vehicle_communication --> vehicle_ecu
 }
 
 @enduml
