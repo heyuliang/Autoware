@@ -43,10 +43,15 @@ find_package (G2O REQUIRED)
 # Shell-like interface for testing image-based recognition and localization
 find_package (Libedit REQUIRED)	
 
-
 find_package (Qt5Widgets CONFIG REQUIRED)
 
 add_subdirectory (DBoW2)
+
+if (OPENMP_FOUND)
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 
 catkin_package(
@@ -114,6 +119,7 @@ add_library(
 		src/datasets/MeidaiLocalizerNDT.cpp
 		src/datasets/NdtLocalizer.cpp
 )
+
 
 # Dataset Browser
 add_executable(dataset_browser

@@ -14,6 +14,8 @@
 #include "Optimizer.h"
 #include "utilities.h"
 
+#include <omp.h>
+
 
 const int OrbDescriptorDistanceUpperThreshold = 100;
 const int OrbDescriptorDistanceLowerThreshold = 50;
@@ -76,6 +78,7 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 {
 	// Should only be set during debugging session
 	const bool debugMatching = false;
+	ptime t1;
 
 	cv::Mat rzImg;
 	if (frmImg.cols != localizerCamera.width) {
@@ -103,6 +106,8 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 	bool gotValidPose = false;
 	Pose currentFramePose;
 
+	int numCpu = omp_get_num_procs();
+
 	for (int i=0; i<placeCandidates.size(); i++) {
 
 		const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[i]);
@@ -113,7 +118,16 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 		 */
 		vector<pair<mpid,kpid>> mapPointMatches;
 
+		t1 = getCurrentTime();
+		/*
+		 * Notes: this routine eats up the most significant runtime inside place detection.
+		 * Solution:
+		 * 1. Parallelization
+		 * 2. ?
+		 */
 		int numMatches = SearchBoW (kf, frame, mapPointMatches);
+		debugMsg("1: " + to_string(double((getCurrentTime() - t1).total_microseconds()) / 1e6));
+
 
 		if (numMatches >= 15) {
 			isValidKfs[i] = true;
@@ -124,7 +138,9 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 			// store index of inlier pairs here
 			vector<int> inliers;
 
+			t1 = getCurrentTime();
 			solvePose(kf, frame, mapPointMatches, currentFramePose, &inliers);
+			debugMsg("2: " + to_string(double((getCurrentTime() - t1).total_microseconds()) / 1e6));
 
 			if (debugMatching==true)
 				debug_KF_F_Matching(kf, frame, mapPointMatches);
@@ -135,8 +151,10 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 				frame.vfMapPoints[p.first] = p.second;
 			}
 
-			// XXX: Call pose optimization
+			t1 = getCurrentTime();
 			int numInliers = optimize_pose(frame, currentFramePose, sourceMap);
+			debugMsg("3: " + to_string(double((getCurrentTime() - t1).total_microseconds()) / 1e6));
+
 			if (numInliers >= numMatches/2 and gotValidPose==false)
 				gotValidPose = true;
 
@@ -157,7 +175,7 @@ Localizer::detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
  * Match the map points in kf to keypoints in frame
  */
 int
-Localizer::SearchBoW (const KeyFrame &kf, Frame &frame, vector<pair<mpid,kpid>> &mapPtMatchPairs, const float matchNNRatio)
+Localizer::SearchBoW (const KeyFrame &kf, const Frame &frame, vector<pair<mpid,kpid>> &mapPtMatchPairs, const float matchNNRatio) const
 {
 	auto mapPtsInKF = sourceMap->allMapPointsAtKeyFrame(kf.getId());
 	auto KeyFrameFeatureVec = imgDb->getFeatureVectorFromKeyFrame(kf.getId());
@@ -179,6 +197,7 @@ Localizer::SearchBoW (const KeyFrame &kf, Frame &frame, vector<pair<mpid,kpid>> 
 
 			const auto vIndicesKF = KFit->second;
 			const auto vIndicesF = Fit->second;
+			int vInxSz = vIndicesKF.size();
 
 			for (uint32_t iKF=0; iKF<vIndicesKF.size(); iKF++) {
 
@@ -303,4 +322,97 @@ const
 	}
 
 	return true;
+}
+
+
+bool
+Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
+{
+	// Should only be set during debugging session
+	const bool debugMatching = false;
+	ptime t1;
+
+	cv::Mat rzImg;
+	if (frmImg.cols != localizerCamera.width) {
+		float ratio = float(localizerCamera.width) / float(frmImg.cols);
+		cv::resize(frmImg, rzImg, cv::Size(), ratio, ratio, cv::INTER_CUBIC);
+	}
+	else
+		rzImg = frmImg;
+
+	Frame frame (rzImg, this);
+	frame.sourceMap = sourceMap;
+	frame.cameraParam = &this->localizerCamera;
+	frame.computeBoW(*imgDb);
+
+	auto placeCandidates = imgDb->findCandidates(frame);
+
+	// for debugging
+	vector<dataItemId> srcInfo(placeCandidates.size());
+	for (int i=0; i<placeCandidates.size(); ++i) {
+		srcInfo[i] = sourceMap->keyframe(placeCandidates[i])->getSourceItemId();
+	}
+
+	size_t bestKfScore=0;
+	vector<bool> isValidKfs (placeCandidates.size(), false);
+	bool gotValidPose = false;
+	Pose currentFramePose;
+
+	const int numCpu = omp_get_num_procs();
+	const int numRepeatSearch = (placeCandidates.size() + numCpu - 1) / numCpu;
+	vector<int> numValidMatches (numCpu, 0);
+	vector < vector <pair <mpid,kpid> > > mapPointMatches (numCpu);
+
+	for (int r=0; r<numRepeatSearch; r++) {
+
+		int numProc;
+		if (r<numRepeatSearch-1)
+			numProc = numCpu;
+		else
+			numProc = placeCandidates.size() % numCpu;
+
+		// Parallelizable
+#pragma omp parallel for
+		for (int c=0; c<numProc; c++) {
+
+			int p = r*numCpu + c;
+			const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[p]);
+			mapPointMatches[p].clear();
+			numValidMatches[c] = SearchBoW(kf, frame, mapPointMatches[p]);
+
+		}
+
+		// Join. (only using single thread here)
+		vector<int> inliers;
+		for (int c=0; c<numProc; c++) {
+
+			if (numValidMatches[c] >= 15) {
+
+				int p = r*numCpu + c;
+				const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[p]);
+
+				solvePose(kf, frame, mapPointMatches[p], currentFramePose, &inliers);
+
+				// Store the inliers
+				for (auto iidx: inliers) {
+					const auto &match = mapPointMatches[p].at(iidx);
+					frame.vfMapPoints[match.first] = match.second;
+				}
+
+				int numInliers = optimize_pose(frame, currentFramePose, sourceMap);
+				if (numInliers >= numValidMatches[c]/2 and gotValidPose==false) {
+					gotValidPose = true;
+					srcMapKfId = kf.getId();
+				}
+
+				// XXX: Should we break off when pose is found ?
+
+				continue;
+			}
+		}
+
+		continue;
+	}
+
+	return gotValidPose;
 }

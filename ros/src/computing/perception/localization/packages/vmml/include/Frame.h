@@ -46,7 +46,7 @@ public:
 	const DBoW2::BowVector& getWords() const
 	{ return words; }
 
-	DBoW2::FeatureVector& getFeatureVector()
+	inline const DBoW2::FeatureVector& getFeatureVector() const
 	{ return featureVec; }
 
 	void debugKeyPoints () const;

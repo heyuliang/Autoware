@@ -615,7 +615,7 @@ private:
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 		kfid kmap;
 		Pose computedPose;
-		bool gotplace = localizer->detect(img, kmap, computedPose);
+		bool gotplace = localizer->detect_mt(img, kmap, computedPose);
 
 		if (gotplace) {
 			debug(computedPose.str());

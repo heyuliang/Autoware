@@ -31,6 +31,12 @@ public:
 	 */
 	bool detect (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose);
 
+	/*
+	 * Entry point to Place Recognition Routine
+	 * (Parallel style)
+	 */
+	bool detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose);
+
 	void setCameraParameter (const CameraPinholeParams &c)
 	{ localizerCamera = c; }
 
@@ -60,7 +66,12 @@ protected:
 
 	float projectionCheck (const Frame &frame, const kfid &keyframe) const;
 
-	int SearchBoW (const KeyFrame &kf, Frame &fi, vector<pair<mpid,kpid>> &mapPtMatchPairs, const float matchNNRatio=0.6);
+	int SearchBoW (
+		const KeyFrame &kf,
+		const Frame &fi,
+		vector<pair<mpid,kpid>> &mapPtMatchPairs,
+		const float matchNNRatio=0.6)
+	const;
 
 	bool solvePose (
 		const KeyFrame &kf,
