@@ -5,7 +5,7 @@ title Autoware Component Dependencies (v2.0)
 () "sensor_msgs::Image\n/image_raw" as image_raw
 () "sensor_msgs::PointCloud2\n/points_raw" as points_raw
 () "sensor_msgs::PointCloud2\n/filtered_points" as filtered_points
-() "sensor_msgs::Imu\n/imu_raw" as imu_raw 
+() "sensor_msgs::Imu\n/imu_raw" as imu_raw
 () "nmea_msgs::Sentence\n/nmea_sentence" as nmea_sentence
 
 folder sensing {
@@ -100,6 +100,16 @@ folder detection {
     'trafficlight_recognizer --> traffic_light_color
 }
 
+() "grid_map_msgs/GridMap\n/semantics/costmap" as costmap
+
+folder semantics {
+    [costmap_generator]
+    'inputs
+    detection_result --> costmap_generator
+    'outputs
+    costmap_generator --> costmap
+}
+
 'lidar_localizer
 () "sensor_msgs::PointCloud2\n/points_map" as points_map
 
@@ -144,53 +154,73 @@ folder localization {
 'folder mission {
 '}
 
-() "autoware_motion_msgs::VehicleCmd\n/motion/vehicle_cmd" as twist
+() "autoware_motion_msgs::VehicleCmd\n/motion/{type}/vehicle_cmd" as vehicle_cmd
 
 folder motion {
-    () "autoware_planning_msgs::Lane\n/motion/planner/waypoints" as final_waypoints
-    () "geometry_msgs::TwistStamped\n/motion/waypoint_follower/twist" as twist_cmd
-    () "geometry_msgs::TwistStamped\n/motion/motion_filter/twist" as twist_filtered
-    () "autoware_motion_msgs::VehicleCmd\n/motion/{type}/vehicle_cmd" as vehicle_cmd
-    () "autoware_motion_msgs::Pedal\n/motion/phisical_controller/pedal" as pedal
+    () "autoware_planning_msgs::Lane\n/motion/avoid_planner/waypoints" as avoid_waypoints
+    () "autoware_planning_msgs::Lane\n/motion/velocity_planner/waypoints" as final_waypoints
+    () "autoware_motion_msgs::TargetObjectArray\n/motion/target_detector/targets" as targets
+    () "autoware_motion_msgs::SpeedCmd\n/motion/motion_controller/speed_cmd" as speed_cmd_raw
+    () "autoware_motion_msgs::SteerCmd\n/motion/motion_controller/steer_cmd" as steer_cmd_raw
+    () "autoware_motion_msgs::SteerCmd\n/motion/steer_cmd" as steer_cmd
+    () "autoware_motion_msgs::SpeedCmd\n/motion/speed_cmd" as speed_cmd
+    () "autoware_motion_msgs::PedalCmd\n/motion/pedal_cmd" as pedal_cmd
 
-    [velocity_planner and trajectory_planner] as motion_planner
+    [avoid_planner]
     'inputs
-    detection_result --> motion_planner
-    current_pose --> motion_planner
-    current_velocity --> motion_planner
+    current_pose --> avoid_planner
+    current_velocity --> avoid_planner
+    detection_result --> avoid_planner
+    costmap --> avoid_planner
     'outputs
-    motion_planner --> final_waypoints
+    avoid_planner --> avoid_waypoints
 
-    [waypoint_follower]
+    [target_detector]
     'inputs
-    final_waypoints --> waypoint_follower
+    detection_result --> target_detector
+    costmap --> target_detector
+    avoid_waypoints --> target_detector
     'outputs
-    waypoint_follower --> twist_cmd
+    target_detector --> targets
+
+    [velocity_planner]
+    'inputs
+    current_pose --> velocity_planner
+    current_velocity --> velocity_planner
+    avoid_waypoints --> velocity_planner
+    targets --> velocity_planner
+    'outputs
+    velocity_planner --> final_waypoints
+
+    [motion_controller]
+    'inputs
+    final_waypoints --> motion_controller
+    'outputs
+    motion_controller --> speed_cmd_raw
+    motion_controller --> steer_cmd_raw
     'waypoint_follower --> ctrl_cmd
 
     [motion_filter]
     'inputs
-    twist_cmd --> motion_filter
+    speed_cmd_raw --> motion_filter
+    steer_cmd_raw --> motion_filter
     'outputs
-    motion_filter --> twist_filtered
+    motion_filter --> speed_cmd
+    motion_filter --> steer_cmd
 
-    [phisical_controller]
+    [pedal_controller]
     'inputs
-    twist_filtered --> phisical_controller
+    speed_cmd --> pedal_controller
     'outputs
-    phisical_controller --> pedal
+    pedal_controller --> pedal_cmd
 
-    [motion_interface]
-    'outputs
-    motion_interface --> vehicle_cmd
-
-    [motion_gateway]
+    [command_gateway]
     'inputs
-    vehicle_cmd --> motion_gateway
-    twist_filtered --> motion_gateway
-    pedal --> motion_gateway
+    speed_cmd --> command_gateway
+    steer_cmd --> command_gateway
+    pedal_cmd --> command_gateway
     'outputs
-    motion_gateway --> twist
+    command_gateway --> vehicle_cmd
 }
 
 () "CAN, Socket, Serial, etc" as vehicle_communication
@@ -199,7 +229,7 @@ folder motion {
 folder actuation {
     [vehicle_interface]
     'inputs
-    twist --> vehicle_interface
+    vehicle_cmd --> vehicle_interface
     'outputs
     vehicle_interface --> vehicle_status
     vehicle_interface --> vehicle_communication
