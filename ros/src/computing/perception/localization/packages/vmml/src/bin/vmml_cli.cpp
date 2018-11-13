@@ -434,6 +434,10 @@ private:
 		debug("# of keyframe(s): "+to_string(mapSrc->numOfKeyFrames()));
 		debug("# of map point(s): " +to_string(mapSrc->numOfMapPoints()));
 
+		auto camInfo = mapSrc->getCameraParameter(0);
+		debug("Horizontal FieldOfView (rad): " + to_string(camInfo.getHorizontalFoV()));
+		debug("Vertical FieldOfView (rad): " + to_string(camInfo.getVerticalFoV()));
+
 		auto &mapInfo = mapSrc->getAllInfo();
 		for (auto rInfo: mapInfo) {
 			const string
