@@ -377,8 +377,8 @@ Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 
 			int p = r*numCpu + c;
 			const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[p]);
-			mapPointMatches[p].clear();
-			numValidMatches[c] = SearchBoW(kf, frame, mapPointMatches[p]);
+			mapPointMatches[c].clear();
+			numValidMatches[c] = SearchBoW(kf, frame, mapPointMatches[c]);
 
 		}
 
@@ -391,11 +391,12 @@ Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 				int p = r*numCpu + c;
 				const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[p]);
 
-				solvePose(kf, frame, mapPointMatches[p], currentFramePose, &inliers);
+				inliers.clear();
+				solvePose(kf, frame, mapPointMatches[c], currentFramePose, &inliers);
 
 				// Store the inliers
 				for (auto iidx: inliers) {
-					const auto &match = mapPointMatches[p].at(iidx);
+					const auto &match = mapPointMatches[c].at(iidx);
 					frame.vfMapPoints[match.first] = match.second;
 				}
 

@@ -10,6 +10,7 @@
 
 
 using namespace std;
+using namespace boost::filesystem;
 
 
 const vector<string> VectorMapFileNames
@@ -73,13 +74,18 @@ U createObjectArray(const std::string& file_path)
 VectorMapLoader::VectorMapLoader(const std::string &directory) :
 	vmDir(directory)
 {
+	if (!is_directory(vmDir))
+		throw runtime_error("Not a directory");
+
 	loadAll ();
 }
 
 
 void VectorMapLoader::loadAll()
 {
+	for (directory_entry &fe: directory_iterator(vmDir)) {
 
+	}
 }
 
 
