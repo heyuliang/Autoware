@@ -36,6 +36,8 @@ Localizer::Localizer(VMap *parentMap, bool emptyMask) :
 		setMask(sourceMap->getMask());
 	else
 		setMask(cv::Mat());
+
+	lastGoodFrame = nullptr;
 }
 
 
@@ -340,12 +342,9 @@ Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 	else
 		rzImg = frmImg;
 
-	Frame frame (rzImg, this);
-	frame.sourceMap = sourceMap;
-	frame.cameraParam = &this->localizerCamera;
-	frame.computeBoW(*imgDb);
+	auto frame = createFrame(rzImg);
 
-	auto placeCandidates = imgDb->findCandidates(frame);
+	auto placeCandidates = imgDb->findCandidates(*frame);
 
 	// for debugging
 	vector<dataItemId> srcInfo(placeCandidates.size());
@@ -378,7 +377,7 @@ Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 			int p = r*numCpu + c;
 			const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[p]);
 			mapPointMatches[c].clear();
-			numValidMatches[c] = SearchBoW(kf, frame, mapPointMatches[c]);
+			numValidMatches[c] = SearchBoW(kf, *frame, mapPointMatches[c]);
 
 		}
 
@@ -392,15 +391,15 @@ Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 				const KeyFrame &kf = *sourceMap->keyframe(placeCandidates[p]);
 
 				inliers.clear();
-				solvePose(kf, frame, mapPointMatches[c], currentFramePose, &inliers);
+				solvePose(kf, *frame, mapPointMatches[c], currentFramePose, &inliers);
 
 				// Store the inliers
 				for (auto iidx: inliers) {
 					const auto &match = mapPointMatches[c].at(iidx);
-					frame.vfMapPoints[match.first] = match.second;
+					frame->vfMapPoints[match.first] = match.second;
 				}
 
-				int numInliers = optimize_pose(frame, currentFramePose, sourceMap);
+				int numInliers = optimize_pose(*frame, currentFramePose, sourceMap);
 				if (numInliers >= numValidMatches[c]/2 and gotValidPose==false) {
 					gotValidPose = true;
 					srcMapKfId = kf.getId();
@@ -412,8 +411,30 @@ Localizer::detect_mt (cv::Mat &frmImg, kfid &srcMapKfId, Pose &computedPose)
 			}
 		}
 
+		if (gotValidPose)
+			break;
+
 		continue;
 	}
 
+	if (gotValidPose) {
+		computedPose = currentFramePose;
+		lastGoodFrame = frame;
+	}
+	else {
+		lastGoodFrame = nullptr;
+	}
 	return gotValidPose;
 }
+
+
+shared_ptr<Frame>
+Localizer::createFrame (cv::Mat &imgSrc) const
+{
+	shared_ptr<Frame> newFrame (new Frame(imgSrc, this, &this->localizerCamera));
+	newFrame->sourceMap = sourceMap;
+	newFrame->computeBoW(*imgDb);
+
+	return newFrame;
+}
+

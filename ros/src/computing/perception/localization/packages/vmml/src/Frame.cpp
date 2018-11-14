@@ -20,11 +20,12 @@ using namespace Eigen;
 
 Frame::Frame(
 	cv::Mat &imgSrc,
-	const Localizer* parent) :
+	const Localizer* parent,
+	const CameraPinholeParams *camera) :
 
 	BaseFrame()
-
 {
+	cameraParam = const_cast<CameraPinholeParams*>(camera);
 	image = imgSrc;
 	computeFeatures(parent->getFeatureDetector(), parent->getMask());
 }
@@ -32,7 +33,6 @@ Frame::Frame(
 
 Frame::~Frame()
 {
-	// TODO Auto-generated destructor stub
 }
 
 

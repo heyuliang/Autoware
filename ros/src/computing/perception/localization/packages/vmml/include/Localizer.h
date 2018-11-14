@@ -8,6 +8,7 @@
 #ifndef LOCALIZER_H_
 #define LOCALIZER_H_
 
+#include <memory>
 
 #include <opencv2/opencv.hpp>
 #include <Eigen/Eigen>
@@ -54,6 +55,8 @@ public:
 	cv::Ptr<cv::FeatureDetector> getFeatureDetector() const
 	{ return featureDetector; }
 
+	std::shared_ptr<Frame> createFrame (cv::Mat &imgSrc) const;
+
 protected:
 	VMap *sourceMap;
 	ImageDatabase *imgDb;
@@ -82,6 +85,8 @@ protected:
 	const;
 
 	void debug_KF_F_Matching (const KeyFrame &keyframe, const Frame &frame, const vector<pair<mpid,kpid>> &mapPtMatchPairs);
+
+	std::shared_ptr<Frame> lastGoodFrame;
 };
 
 #endif /* LOCALIZER_H_ */

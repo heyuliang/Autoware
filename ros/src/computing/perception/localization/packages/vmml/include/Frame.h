@@ -38,7 +38,8 @@ public:
 	friend class Localizer;
 
 	Frame(cv::Mat &imgSrc,
-		const Localizer* parent);
+		const Localizer* parent,
+		const CameraPinholeParams *camera=nullptr);
 	virtual ~Frame();
 
 	void computeBoW (const ImageDatabase &idb);
