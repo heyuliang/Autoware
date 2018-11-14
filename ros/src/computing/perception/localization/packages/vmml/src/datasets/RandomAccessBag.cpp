@@ -9,6 +9,11 @@
 #include <rosbag/query.h>
 #include "datasets/RandomAccessBag.h"
 
+#include "access_private.hpp"
+
+
+
+ACCESS_PRIVATE_FIELD(rosbag::MessageInstance, rosbag::IndexEntry const, index_entry_);
 
 
 

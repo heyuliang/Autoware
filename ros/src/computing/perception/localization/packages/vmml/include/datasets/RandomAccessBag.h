@@ -16,11 +16,6 @@
 #include <rosbag/view.h>
 #include <memory>
 
-#include "access_private.hpp"
-
-
-
-ACCESS_PRIVATE_FIELD(rosbag::MessageInstance, rosbag::IndexEntry const, index_entry_);
 
 //ACCESS_PRIVATE_FUN(rosbag::Bag,
 //	void(uint64_t) const,

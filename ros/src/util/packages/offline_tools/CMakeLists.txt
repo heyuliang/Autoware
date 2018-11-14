@@ -14,7 +14,8 @@ catkin_package()
 
 include_directories(
 	${catkin_INCLUDE_DIRS}
-	${PCL_INCLUDE_DIRS})
+	${PCL_INCLUDE_DIRS}
+	common)
 
 link_directories(
 	${catkin_LIBRARY_DIRS})
