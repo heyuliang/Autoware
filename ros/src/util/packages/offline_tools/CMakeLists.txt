@@ -28,6 +28,7 @@ add_library(
 		rviz_plugins/CSVTrajectory.cpp
 		rviz_plugins/FileProperty.cpp
 		rviz_plugins/VectorMapDisplay.cpp
+		rviz_plugins/VectorMapLoader.cpp
 )
 
 target_link_libraries(

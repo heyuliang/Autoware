@@ -8,31 +8,12 @@
 #ifndef _VECTORMAPDISPLAY_H_
 #define _VECTORMAPDISPLAY_H_
 
-#include <string>
-#include <boost/filesystem.hpp>
 #include <rviz/display.h>
-#include <visualization_msgs/MarkerArray.h>
-
-#include <vector_map/vector_map.h>
-
-
-class VectorMapLoader : public vector_map::VectorMap
-{
-public:
-	friend class VectorMapDisplay;
-
-	VectorMapLoader(const std::string &directory);
-
-private:
-	boost::filesystem::path vmDir;
-	visualization_msgs::MarkerArray marker_array;
-
-	void loadAll ();
-};
+#include <rviz/default_plugin/marker_array_display.h>
+#include "VectorMapLoader.h"
 
 
-
-class VectorMapDisplay: public rviz::Display
+class VectorMapDisplay: public rviz::MarkerArrayDisplay
 {
 Q_OBJECT
 
