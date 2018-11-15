@@ -1541,31 +1541,38 @@ void VectorMapLoader::loadAll()
 	updateFence (access_private::map_(access_private::fence_(*this)), FenceArrayObj);
 	updateRailCrossing (access_private::map_(access_private::rail_crossing_(*this)), RailCrossingArrayObj);
 
-	// Do insertion to marker_array here
-	insertMarkerArray(marker_array, createRoadEdgeMarkerArray(*this, Color::GRAY));
-	insertMarkerArray(marker_array, createGutterMarkerArray(*this, Color::GRAY, Color::GRAY, Color::GRAY));
-	insertMarkerArray(marker_array, createCurbMarkerArray(*this, Color::GRAY));
-	insertMarkerArray(marker_array, createWhiteLineMarkerArray(*this, Color::WHITE, Color::YELLOW));
-	insertMarkerArray(marker_array, createStopLineMarkerArray(*this, Color::WHITE));
-	insertMarkerArray(marker_array, createZebraZoneMarkerArray(*this, Color::WHITE));
-	insertMarkerArray(marker_array, createCrossWalkMarkerArray(*this, Color::WHITE));
-	insertMarkerArray(marker_array, createRoadMarkMarkerArray(*this, Color::WHITE));
-	insertMarkerArray(marker_array, createRoadPoleMarkerArray(*this, Color::GRAY));
-	insertMarkerArray(marker_array, createRoadSignMarkerArray(*this, Color::GREEN, Color::GRAY));
-	insertMarkerArray(marker_array, createSignalMarkerArray(*this, Color::RED, Color::BLUE, Color::YELLOW, Color::CYAN,
-														  Color::GRAY));
-	insertMarkerArray(marker_array, createStreetLightMarkerArray(*this, Color::YELLOW, Color::GRAY));
-	insertMarkerArray(marker_array, createUtilityPoleMarkerArray(*this, Color::GRAY));
-	insertMarkerArray(marker_array, createGuardRailMarkerArray(*this, Color::LIGHT_BLUE));
-	insertMarkerArray(marker_array, createSideWalkMarkerArray(*this, Color::GRAY));
-	insertMarkerArray(marker_array, createDriveOnPortionMarkerArray(*this, Color::LIGHT_CYAN));
-	insertMarkerArray(marker_array, createCrossRoadMarkerArray(*this, Color::LIGHT_GREEN));
-	insertMarkerArray(marker_array, createSideStripMarkerArray(*this, Color::GRAY));
-	insertMarkerArray(marker_array, createCurveMirrorMarkerArray(*this, Color::MAGENTA, Color::GRAY));
-	insertMarkerArray(marker_array, createWallMarkerArray(*this, Color::LIGHT_YELLOW));
-	insertMarkerArray(marker_array, createFenceMarkerArray(*this, Color::LIGHT_RED));
-	insertMarkerArray(marker_array, createRailCrossingMarkerArray(*this, Color::LIGHT_MAGENTA));
-
+	// At this point, the files have been loaded.
 }
 
+
+visualization_msgs::MarkerArray::ConstPtr
+VectorMapLoader::getAsMessages()
+{
+	visualization_msgs::MarkerArray::Ptr msgPtr(new visualization_msgs::MarkerArray);
+	insertMarkerArray(*msgPtr, createRoadEdgeMarkerArray(*this, Color::GRAY));
+	insertMarkerArray(*msgPtr, createGutterMarkerArray(*this, Color::GRAY, Color::GRAY, Color::GRAY));
+	insertMarkerArray(*msgPtr, createCurbMarkerArray(*this, Color::GRAY));
+	insertMarkerArray(*msgPtr, createWhiteLineMarkerArray(*this, Color::WHITE, Color::YELLOW));
+	insertMarkerArray(*msgPtr, createStopLineMarkerArray(*this, Color::WHITE));
+	insertMarkerArray(*msgPtr, createZebraZoneMarkerArray(*this, Color::WHITE));
+	insertMarkerArray(*msgPtr, createCrossWalkMarkerArray(*this, Color::WHITE));
+	insertMarkerArray(*msgPtr, createRoadMarkMarkerArray(*this, Color::WHITE));
+	insertMarkerArray(*msgPtr, createRoadPoleMarkerArray(*this, Color::GRAY));
+	insertMarkerArray(*msgPtr, createRoadSignMarkerArray(*this, Color::GREEN, Color::GRAY));
+	insertMarkerArray(*msgPtr, createSignalMarkerArray(*this, Color::RED, Color::BLUE, Color::YELLOW, Color::CYAN,
+														  Color::GRAY));
+	insertMarkerArray(*msgPtr, createStreetLightMarkerArray(*this, Color::YELLOW, Color::GRAY));
+	insertMarkerArray(*msgPtr, createUtilityPoleMarkerArray(*this, Color::GRAY));
+	insertMarkerArray(*msgPtr, createGuardRailMarkerArray(*this, Color::LIGHT_BLUE));
+	insertMarkerArray(*msgPtr, createSideWalkMarkerArray(*this, Color::GRAY));
+	insertMarkerArray(*msgPtr, createDriveOnPortionMarkerArray(*this, Color::LIGHT_CYAN));
+	insertMarkerArray(*msgPtr, createCrossRoadMarkerArray(*this, Color::LIGHT_GREEN));
+	insertMarkerArray(*msgPtr, createSideStripMarkerArray(*this, Color::GRAY));
+	insertMarkerArray(*msgPtr, createCurveMirrorMarkerArray(*this, Color::MAGENTA, Color::GRAY));
+	insertMarkerArray(*msgPtr, createWallMarkerArray(*this, Color::LIGHT_YELLOW));
+	insertMarkerArray(*msgPtr, createFenceMarkerArray(*this, Color::LIGHT_RED));
+	insertMarkerArray(*msgPtr, createRailCrossingMarkerArray(*this, Color::LIGHT_MAGENTA));
+
+	return msgPtr;
+}
 

@@ -44,10 +44,11 @@ VectorMapDisplay::changeDir()
 {
 	const string vectorMapDirName = vMapDir_->getStdString();
 	mapData = shared_ptr<VectorMapLoader> (new VectorMapLoader(vectorMapDirName));
+	auto visMsgs = mapData->getAsMessages();
 
 	markers_.clear();
 
-	for (auto &markerM: mapData->marker_array.markers) {
+	for (auto &markerM: visMsgs->markers) {
 		rviz::MarkerBasePtr marker(rviz::createMarker(markerM.type, this, context_, scene_node_));
 		markers_.insert(marker);
 	}

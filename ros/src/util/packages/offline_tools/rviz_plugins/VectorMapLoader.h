@@ -23,12 +23,14 @@ public:
 
 	VectorMapLoader(const std::string &directory);
 
-	inline visualization_msgs::MarkerArray::ConstPtr ConstPtr()
-	{ return visualization_msgs::MarkerArray::ConstPtr(&marker_array); }
+//	inline visualization_msgs::MarkerArray::ConstPtr ConstPtr()
+//	{ return visualization_msgs::MarkerArray::ConstPtr(&marker_array); }
+
+	visualization_msgs::MarkerArray::ConstPtr getAsMessages();
 
 private:
 	boost::filesystem::path vmDir;
-	visualization_msgs::MarkerArray marker_array;
+//	visualization_msgs::MarkerArray marker_array;
 
 	void loadAll ();
 };
