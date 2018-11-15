@@ -1541,7 +1541,9 @@ void VectorMapLoader::loadAll()
 	updateFence (access_private::map_(access_private::fence_(*this)), FenceArrayObj);
 	updateRailCrossing (access_private::map_(access_private::rail_crossing_(*this)), RailCrossingArrayObj);
 
-	// At this point, the files have been loaded.
+	// At this point, the files have been loaded. Let's backup the points before any transform operation
+	const auto &pointMap = access_private::map_(access_private::point_(*this));
+	pointOrig.insert(pointMap.begin(), pointMap.end());
 }
 
 
@@ -1576,3 +1578,16 @@ VectorMapLoader::getAsMessages()
 	return msgPtr;
 }
 
+
+void
+VectorMapLoader::setPointOffset
+(const ptScalar x_offset, const ptScalar y_offset, const ptScalar z_offset)
+{
+	auto &pointMap = access_private::map_(access_private::point_(*this));
+	for (auto &pt: pointOrig) {
+		auto key = pt.first;
+		pointMap[key].bx = pt.second.bx + x_offset;
+		pointMap[key].ly = pt.second.ly + y_offset;
+		pointMap[key].h = pt.second.h + z_offset;
+	}
+}

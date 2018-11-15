@@ -12,6 +12,9 @@
 
 using namespace std;
 
+const VectorMapLoader::ptScalar defaultPointOffset[3] =
+{18500, 93800, -33};
+
 
 VectorMapDisplay::VectorMapDisplay():
 	rviz::MarkerArrayDisplay()
@@ -44,6 +47,7 @@ VectorMapDisplay::changeDir()
 {
 	const string vectorMapDirName = vMapDir_->getStdString();
 	mapData = shared_ptr<VectorMapLoader> (new VectorMapLoader(vectorMapDirName));
+	mapData->setPointOffset(defaultPointOffset[0], defaultPointOffset[1], defaultPointOffset[2]);
 	auto visMsgs = mapData->getAsMessages();
 
 	markers_.clear();
