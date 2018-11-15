@@ -9,14 +9,29 @@
 #define _VECTORMAPDISPLAY_H_
 
 #include <memory>
+#include <set>
 
-#include <rviz/display.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
 #include <rviz/default_plugin/marker_array_display.h>
 #include <rviz/properties/string_property.h>
+#include <rviz/default_plugin/markers/marker_base.h>
+#include <rviz/default_plugin/marker_utils.h>
+#include "rviz/default_plugin/markers/marker_base.h"
+#include "rviz/default_plugin/marker_utils.h"
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/billboard_line.h"
+#include "rviz/ogre_helpers/shape.h"
+
 #include "VectorMapLoader.h"
 
 
-// XXX: Please change to rviz::Display to bypass
+//typedef std::shared_ptr<rviz::MarkerBase> MarkerBasePtr;
+
+
 class VectorMapDisplay: public rviz::MarkerArrayDisplay
 {
 Q_OBJECT
@@ -37,7 +52,9 @@ protected:
 
 	rviz::StringProperty *vMapDir_;
 
-	std::shared_ptr<VectorMapLoader> mapData = nullptr;
+	std::shared_ptr<VectorMapLoader> mapData;
+
+	std::set<rviz::MarkerBasePtr> markers_;
 
 	virtual void onEnable();
 	virtual void onDisable();

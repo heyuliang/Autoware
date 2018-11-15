@@ -89,11 +89,361 @@ using vector_map::RailCrossingArray;
 
 using vector_map::Handle;
 
+
 /*
- * These function declarations are defined in vector_map.cpp, but somehow not exposed outside.
+ * Need to copy these functions from inside vector_map.cpp,
+ * because because protected inside anonymous namespace
  */
-namespace vector_map {
-	void updatePoint(std::map<Key<Point>, Point>& map, const PointArray& msg);
+void updatePoint(std::map<Key<Point>, Point>& map, const PointArray& msg)
+{
+  map = std::map<Key<Point>, Point>();
+  for (const auto& item : msg.data)
+  {
+    if (item.pid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Point>(item.pid), item));
+  }
+}
+
+void updateVector(std::map<Key<Vector>, Vector>& map, const VectorArray& msg)
+{
+  map = std::map<Key<Vector>, Vector>();
+  for (const auto& item : msg.data)
+  {
+    if (item.vid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Vector>(item.vid), item));
+  }
+}
+
+void updateLine(std::map<Key<Line>, Line>& map, const LineArray& msg)
+{
+  map = std::map<Key<Line>, Line>();
+  for (const auto& item : msg.data)
+  {
+    if (item.lid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Line>(item.lid), item));
+  }
+}
+
+void updateArea(std::map<Key<Area>, Area>& map, const AreaArray& msg)
+{
+  map = std::map<Key<Area>, Area>();
+  for (const auto& item : msg.data)
+  {
+    if (item.aid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Area>(item.aid), item));
+  }
+}
+
+void updatePole(std::map<Key<Pole>, Pole>& map, const PoleArray& msg)
+{
+  map = std::map<Key<Pole>, Pole>();
+  for (const auto& item : msg.data)
+  {
+    if (item.plid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Pole>(item.plid), item));
+  }
+}
+
+void updateBox(std::map<Key<Box>, Box>& map, const BoxArray& msg)
+{
+  map = std::map<Key<Box>, Box>();
+  for (const auto& item : msg.data)
+  {
+    if (item.bid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Box>(item.bid), item));
+  }
+}
+
+void updateDTLane(std::map<Key<DTLane>, DTLane>& map, const DTLaneArray& msg)
+{
+  map = std::map<Key<DTLane>, DTLane>();
+  for (const auto& item : msg.data)
+  {
+    if (item.did == 0)
+      continue;
+    map.insert(std::make_pair(Key<DTLane>(item.did), item));
+  }
+}
+
+void updateNode(std::map<Key<Node>, Node>& map, const NodeArray& msg)
+{
+  map = std::map<Key<Node>, Node>();
+  for (const auto& item : msg.data)
+  {
+    if (item.nid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Node>(item.nid), item));
+  }
+}
+
+void updateLane(std::map<Key<Lane>, Lane>& map, const LaneArray& msg)
+{
+  map = std::map<Key<Lane>, Lane>();
+  for (const auto& item : msg.data)
+  {
+    if (item.lnid == 0)
+      continue;
+    map.insert(std::make_pair(Key<Lane>(item.lnid), item));
+  }
+}
+
+void updateWayArea(std::map<Key<WayArea>, WayArea>& map, const WayAreaArray& msg)
+{
+  map = std::map<Key<WayArea>, WayArea>();
+  for (const auto& item : msg.data)
+  {
+    if (item.waid == 0)
+      continue;
+    map.insert(std::make_pair(Key<WayArea>(item.waid), item));
+  }
+}
+
+void updateRoadEdge(std::map<Key<RoadEdge>, RoadEdge>& map, const RoadEdgeArray& msg)
+{
+  map = std::map<Key<RoadEdge>, RoadEdge>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<RoadEdge>(item.id), item));
+  }
+}
+
+void updateGutter(std::map<Key<Gutter>, Gutter>& map, const GutterArray& msg)
+{
+  map = std::map<Key<Gutter>, Gutter>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<Gutter>(item.id), item));
+  }
+}
+
+void updateCurb(std::map<Key<Curb>, Curb>& map, const CurbArray& msg)
+{
+  map = std::map<Key<Curb>, Curb>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<Curb>(item.id), item));
+  }
+}
+
+void updateWhiteLine(std::map<Key<WhiteLine>, WhiteLine>& map, const WhiteLineArray& msg)
+{
+  map = std::map<Key<WhiteLine>, WhiteLine>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<WhiteLine>(item.id), item));
+  }
+}
+
+void updateStopLine(std::map<Key<StopLine>, StopLine>& map, const StopLineArray& msg)
+{
+  map = std::map<Key<StopLine>, StopLine>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<StopLine>(item.id), item));
+  }
+}
+
+void updateZebraZone(std::map<Key<ZebraZone>, ZebraZone>& map, const ZebraZoneArray& msg)
+{
+  map = std::map<Key<ZebraZone>, ZebraZone>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<ZebraZone>(item.id), item));
+  }
+}
+
+void updateCrossWalk(std::map<Key<CrossWalk>, CrossWalk>& map, const CrossWalkArray& msg)
+{
+  map = std::map<Key<CrossWalk>, CrossWalk>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<CrossWalk>(item.id), item));
+  }
+}
+
+void updateRoadMark(std::map<Key<RoadMark>, RoadMark>& map, const RoadMarkArray& msg)
+{
+  map = std::map<Key<RoadMark>, RoadMark>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<RoadMark>(item.id), item));
+  }
+}
+
+void updateRoadPole(std::map<Key<RoadPole>, RoadPole>& map, const RoadPoleArray& msg)
+{
+  map = std::map<Key<RoadPole>, RoadPole>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<RoadPole>(item.id), item));
+  }
+}
+
+void updateRoadSign(std::map<Key<RoadSign>, RoadSign>& map, const RoadSignArray& msg)
+{
+  map = std::map<Key<RoadSign>, RoadSign>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<RoadSign>(item.id), item));
+  }
+}
+
+void updateSignal(std::map<Key<Signal>, Signal>& map, const SignalArray& msg)
+{
+  map = std::map<Key<Signal>, Signal>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<Signal>(item.id), item));
+  }
+}
+
+void updateStreetLight(std::map<Key<StreetLight>, StreetLight>& map, const StreetLightArray& msg)
+{
+  map = std::map<Key<StreetLight>, StreetLight>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<StreetLight>(item.id), item));
+  }
+}
+
+void updateUtilityPole(std::map<Key<UtilityPole>, UtilityPole>& map, const UtilityPoleArray& msg)
+{
+  map = std::map<Key<UtilityPole>, UtilityPole>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<UtilityPole>(item.id), item));
+  }
+}
+
+void updateGuardRail(std::map<Key<GuardRail>, GuardRail>& map, const GuardRailArray& msg)
+{
+  map = std::map<Key<GuardRail>, GuardRail>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<GuardRail>(item.id), item));
+  }
+}
+
+void updateSideWalk(std::map<Key<SideWalk>, SideWalk>& map, const SideWalkArray& msg)
+{
+  map = std::map<Key<SideWalk>, SideWalk>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<SideWalk>(item.id), item));
+  }
+}
+
+void updateDriveOnPortion(std::map<Key<DriveOnPortion>, DriveOnPortion>& map, const DriveOnPortionArray& msg)
+{
+  map = std::map<Key<DriveOnPortion>, DriveOnPortion>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<DriveOnPortion>(item.id), item));
+  }
+}
+
+void updateCrossRoad(std::map<Key<CrossRoad>, CrossRoad>& map, const CrossRoadArray& msg)
+{
+  map = std::map<Key<CrossRoad>, CrossRoad>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<CrossRoad>(item.id), item));
+  }
+}
+
+void updateSideStrip(std::map<Key<SideStrip>, SideStrip>& map, const SideStripArray& msg)
+{
+  map = std::map<Key<SideStrip>, SideStrip>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<SideStrip>(item.id), item));
+  }
+}
+
+void updateCurveMirror(std::map<Key<CurveMirror>, CurveMirror>& map, const CurveMirrorArray& msg)
+{
+  map = std::map<Key<CurveMirror>, CurveMirror>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<CurveMirror>(item.id), item));
+  }
+}
+
+void updateWall(std::map<Key<Wall>, Wall>& map, const WallArray& msg)
+{
+  map = std::map<Key<Wall>, Wall>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<Wall>(item.id), item));
+  }
+}
+
+void updateFence(std::map<Key<Fence>, Fence>& map, const FenceArray& msg)
+{
+  map = std::map<Key<Fence>, Fence>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<Fence>(item.id), item));
+  }
+}
+
+void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const RailCrossingArray& msg)
+{
+  map = std::map<Key<RailCrossing>, RailCrossing>();
+  for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
+    map.insert(std::make_pair(Key<RailCrossing>(item.id), item));
+  }
 }
 bool isValidMarker(const visualization_msgs::Marker& marker);
 
@@ -949,278 +1299,241 @@ VectorMapLoader::VectorMapLoader(const std::string &directory) :
 }
 
 // Strange bits for accessing private members
-typedef	vector_map::Handle<	Point	,	PointArray	>	HandlePoint	;
-typedef	vector_map::Handle<	Vector	,	VectorArray	>	HandleVector	;
-typedef	vector_map::Handle<	Line	,	LineArray	>	HandleLine	;
-typedef	vector_map::Handle<	Area	,	AreaArray	>	HandleArea	;
-typedef	vector_map::Handle<	Pole	,	PoleArray	>	HandlePole	;
-typedef	vector_map::Handle<	Box	,	BoxArray	>	HandleBox	;
-typedef	vector_map::Handle<	DTLane	,	DTLaneArray	>	HandleDTLane	;
-typedef	vector_map::Handle<	Node	,	NodeArray	>	HandleNode	;
-typedef	vector_map::Handle<	Lane	,	LaneArray	>	HandleLane	;
-typedef	vector_map::Handle<	WayArea	,	WayAreaArray	>	HandleWayArea	;
-typedef	vector_map::Handle<	RoadEdge	,	RoadEdgeArray	>	HandleRoadEdge	;
-typedef	vector_map::Handle<	Gutter	,	GutterArray	>	HandleGutter	;
-typedef	vector_map::Handle<	Curb	,	CurbArray	>	HandleCurb	;
-typedef	vector_map::Handle<	WhiteLine	,	WhiteLineArray	>	HandleWhiteLine	;
-typedef	vector_map::Handle<	StopLine	,	StopLineArray	>	HandleStopLine	;
-typedef	vector_map::Handle<	ZebraZone	,	ZebraZoneArray	>	HandleZebraZone	;
-typedef	vector_map::Handle<	CrossWalk	,	CrossWalkArray	>	HandleCrossWalk	;
-typedef	vector_map::Handle<	RoadMark	,	RoadMarkArray	>	HandleRoadMark	;
-typedef	vector_map::Handle<	RoadPole	,	RoadPoleArray	>	HandleRoadPole	;
-typedef	vector_map::Handle<	RoadSign	,	RoadSignArray	>	HandleRoadSign	;
-typedef	vector_map::Handle<	Signal	,	SignalArray	>	HandleSignal	;
-typedef	vector_map::Handle<	StreetLight	,	StreetLightArray	>	HandleStreetLight	;
-typedef	vector_map::Handle<	UtilityPole	,	UtilityPoleArray	>	HandleUtilityPole	;
-typedef	vector_map::Handle<	GuardRail	,	GuardRailArray	>	HandleGuardRail	;
-typedef	vector_map::Handle<	SideWalk	,	SideWalkArray	>	HandleSideWalk	;
-typedef	vector_map::Handle<	DriveOnPortion	,	DriveOnPortionArray	>	HandleDriveOnPortion	;
-typedef	vector_map::Handle<	CrossRoad	,	CrossRoadArray	>	HandleCrossRoad	;
-typedef	vector_map::Handle<	SideStrip	,	SideStripArray	>	HandleSideStrip	;
-typedef	vector_map::Handle<	CurveMirror	,	CurveMirrorArray	>	HandleCurveMirror	;
-typedef	vector_map::Handle<	Wall	,	WallArray	>	HandleWall	;
-typedef	vector_map::Handle<	Fence	,	FenceArray	>	HandleFence	;
-typedef	vector_map::Handle<	RailCrossing	,	RailCrossingArray	>	HandleRailCrossing	;
 
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandlePoint, point_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleVector, vector_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleLine, line_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleArea, area_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandlePole, pole_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleBox, box_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleDTLane, dtlane_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleNode, node_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleLane, lane_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleWayArea, way_area_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleRoadEdge, road_edge_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleGutter, gutter_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleCurb, curb_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleWhiteLine, white_line_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleStopLine, stop_line_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleZebraZone, zebra_zone_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleCrossWalk, cross_walk_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleRoadMark, road_mark_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleRoadPole, road_pole_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleRoadSign, road_sign_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleSignal, signal_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleStreetLight, street_light_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleUtilityPole, utility_pole_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleGuardRail, guard_rail_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleSideWalk, side_walk_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleDriveOnPortion, drive_on_portion_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleCrossRoad, cross_road_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleSideStrip, side_strip_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleCurveMirror, curve_mirror_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleWall, wall_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleFence, fence_);
-ACCESS_PRIVATE_FIELD(vector_map::VectorMap, HandleRailCrossing, rail_crossing_);
+typedef vector_map::Handle<Point, PointArray> _HandlePoint;
+typedef vector_map::Handle<Vector, VectorArray> _HandleVector;
+typedef vector_map::Handle<Line, LineArray> _HandleLine;
+typedef vector_map::Handle<Area, AreaArray> _HandleArea;
+typedef vector_map::Handle<Pole, PoleArray> _HandlePole;
+typedef vector_map::Handle<Box, BoxArray> _HandleBox;
+typedef vector_map::Handle<DTLane, DTLaneArray> _HandleDTLane;
+typedef vector_map::Handle<Node, NodeArray> _HandleNode;
+typedef vector_map::Handle<Lane, LaneArray> _HandleLane;
+typedef vector_map::Handle<WayArea, WayAreaArray> _HandleWayArea;
+typedef vector_map::Handle<RoadEdge, RoadEdgeArray> _HandleRoadEdge;
+typedef vector_map::Handle<Gutter, GutterArray> _HandleGutter;
+typedef vector_map::Handle<Curb, CurbArray> _HandleCurb;
+typedef vector_map::Handle<WhiteLine, WhiteLineArray> _HandleWhiteLine;
+typedef vector_map::Handle<StopLine, StopLineArray> _HandleStopLine;
+typedef vector_map::Handle<ZebraZone, ZebraZoneArray> _HandleZebraZone;
+typedef vector_map::Handle<CrossWalk, CrossWalkArray> _HandleCrossWalk;
+typedef vector_map::Handle<RoadMark, RoadMarkArray> _HandleRoadMark;
+typedef vector_map::Handle<RoadPole, RoadPoleArray> _HandleRoadPole;
+typedef vector_map::Handle<RoadSign, RoadSignArray> _HandleRoadSign;
+typedef vector_map::Handle<Signal, SignalArray> _HandleSignal;
+typedef vector_map::Handle<StreetLight, StreetLightArray> _HandleStreetLight;
+typedef vector_map::Handle<UtilityPole, UtilityPoleArray> _HandleUtilityPole;
+typedef vector_map::Handle<GuardRail, GuardRailArray> _HandleGuardRail;
+typedef vector_map::Handle<SideWalk, SideWalkArray> _HandleSideWalk;
+typedef vector_map::Handle<DriveOnPortion, DriveOnPortionArray> _HandleDriveOnPortion;
+typedef vector_map::Handle<CrossRoad, CrossRoadArray> _HandleCrossRoad;
+typedef vector_map::Handle<SideStrip, SideStripArray> _HandleSideStrip;
+typedef vector_map::Handle<CurveMirror, CurveMirrorArray> _HandleCurveMirror;
+typedef vector_map::Handle<Wall, WallArray> _HandleWall;
+typedef vector_map::Handle<Fence, FenceArray> _HandleFence;
+typedef vector_map::Handle<RailCrossing, RailCrossingArray> _HandleRailCrossing;
 
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandlePoint, point_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleVector, vector_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleLine, line_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleArea, area_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandlePole, pole_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleBox, box_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleDTLane, dtlane_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleNode, node_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleLane, lane_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleWayArea, way_area_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleRoadEdge, road_edge_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleGutter, gutter_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleCurb, curb_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleWhiteLine, white_line_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleStopLine, stop_line_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleZebraZone, zebra_zone_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleCrossWalk, cross_walk_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleRoadMark, road_mark_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleRoadPole, road_pole_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleRoadSign, road_sign_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleSignal, signal_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleStreetLight, street_light_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleUtilityPole, utility_pole_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleGuardRail, guard_rail_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleSideWalk, side_walk_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleDriveOnPortion, drive_on_portion_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleCrossRoad, cross_road_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleSideStrip, side_strip_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleCurveMirror, curve_mirror_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleWall, wall_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleFence, fence_);
+ACCESS_PRIVATE_FIELD(vector_map::VectorMap, _HandleRailCrossing, rail_crossing_);
 
-ACCESS_PRIVATE_FUN(HandlePoint, void(const PointArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleVector, void(const VectorArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleLine, void(const LineArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleArea, void(const AreaArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandlePole, void(const PoleArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleBox, void(const BoxArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleDTLane, void(const DTLaneArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleNode, void(const NodeArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleLane, void(const LaneArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleWayArea, void(const WayAreaArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleRoadEdge, void(const RoadEdgeArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleGutter, void(const GutterArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleCurb, void(const CurbArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleWhiteLine, void(const WhiteLineArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleStopLine, void(const StopLineArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleZebraZone, void(const ZebraZoneArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleCrossWalk, void(const CrossWalkArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleRoadMark, void(const RoadMarkArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleRoadPole, void(const RoadPoleArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleRoadSign, void(const RoadSignArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleSignal, void(const SignalArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleStreetLight, void(const StreetLightArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleUtilityPole, void(const UtilityPoleArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleGuardRail, void(const GuardRailArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleSideWalk, void(const SideWalkArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleDriveOnPortion, void(const DriveOnPortionArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleCrossRoad, void(const CrossRoadArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleSideStrip, void(const SideStripArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleCurveMirror, void(const CurveMirrorArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleWall, void(const WallArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleFence, void(const FenceArray&), subscribe);
-ACCESS_PRIVATE_FUN(HandleRailCrossing, void(const RailCrossingArray&), subscribe);
+typedef std::map<vector_map::Key<Point>, Point> _MapPoint;
+typedef std::map<vector_map::Key<Vector>, Vector> _MapVector;
+typedef std::map<vector_map::Key<Line>, Line> _MapLine;
+typedef std::map<vector_map::Key<Area>, Area> _MapArea;
+typedef std::map<vector_map::Key<Pole>, Pole> _MapPole;
+typedef std::map<vector_map::Key<Box>, Box> _MapBox;
+typedef std::map<vector_map::Key<DTLane>, DTLane> _MapDTLane;
+typedef std::map<vector_map::Key<Node>, Node> _MapNode;
+typedef std::map<vector_map::Key<Lane>, Lane> _MapLane;
+typedef std::map<vector_map::Key<WayArea>, WayArea> _MapWayArea;
+typedef std::map<vector_map::Key<RoadEdge>, RoadEdge> _MapRoadEdge;
+typedef std::map<vector_map::Key<Gutter>, Gutter> _MapGutter;
+typedef std::map<vector_map::Key<Curb>, Curb> _MapCurb;
+typedef std::map<vector_map::Key<WhiteLine>, WhiteLine> _MapWhiteLine;
+typedef std::map<vector_map::Key<StopLine>, StopLine> _MapStopLine;
+typedef std::map<vector_map::Key<ZebraZone>, ZebraZone> _MapZebraZone;
+typedef std::map<vector_map::Key<CrossWalk>, CrossWalk> _MapCrossWalk;
+typedef std::map<vector_map::Key<RoadMark>, RoadMark> _MapRoadMark;
+typedef std::map<vector_map::Key<RoadPole>, RoadPole> _MapRoadPole;
+typedef std::map<vector_map::Key<RoadSign>, RoadSign> _MapRoadSign;
+typedef std::map<vector_map::Key<Signal>, Signal> _MapSignal;
+typedef std::map<vector_map::Key<StreetLight>, StreetLight> _MapStreetLight;
+typedef std::map<vector_map::Key<UtilityPole>, UtilityPole> _MapUtilityPole;
+typedef std::map<vector_map::Key<GuardRail>, GuardRail> _MapGuardRail;
+typedef std::map<vector_map::Key<SideWalk>, SideWalk> _MapSideWalk;
+typedef std::map<vector_map::Key<DriveOnPortion>, DriveOnPortion> _MapDriveOnPortion;
+typedef std::map<vector_map::Key<CrossRoad>, CrossRoad> _MapCrossRoad;
+typedef std::map<vector_map::Key<SideStrip>, SideStrip> _MapSideStrip;
+typedef std::map<vector_map::Key<CurveMirror>, CurveMirror> _MapCurveMirror;
+typedef std::map<vector_map::Key<Wall>, Wall> _MapWall;
+typedef std::map<vector_map::Key<Fence>, Fence> _MapFence;
+typedef std::map<vector_map::Key<RailCrossing>, RailCrossing> _MapRailCrossing;
+
+ACCESS_PRIVATE_FIELD(_HandlePoint, _MapPoint, map_);
+ACCESS_PRIVATE_FIELD(_HandleVector, _MapVector, map_);
+ACCESS_PRIVATE_FIELD(_HandleLine, _MapLine, map_);
+ACCESS_PRIVATE_FIELD(_HandleArea, _MapArea, map_);
+ACCESS_PRIVATE_FIELD(_HandlePole, _MapPole, map_);
+ACCESS_PRIVATE_FIELD(_HandleBox, _MapBox, map_);
+ACCESS_PRIVATE_FIELD(_HandleDTLane, _MapDTLane, map_);
+ACCESS_PRIVATE_FIELD(_HandleNode, _MapNode, map_);
+ACCESS_PRIVATE_FIELD(_HandleLane, _MapLane, map_);
+ACCESS_PRIVATE_FIELD(_HandleWayArea, _MapWayArea, map_);
+ACCESS_PRIVATE_FIELD(_HandleRoadEdge, _MapRoadEdge, map_);
+ACCESS_PRIVATE_FIELD(_HandleGutter, _MapGutter, map_);
+ACCESS_PRIVATE_FIELD(_HandleCurb, _MapCurb, map_);
+ACCESS_PRIVATE_FIELD(_HandleWhiteLine, _MapWhiteLine, map_);
+ACCESS_PRIVATE_FIELD(_HandleStopLine, _MapStopLine, map_);
+ACCESS_PRIVATE_FIELD(_HandleZebraZone, _MapZebraZone, map_);
+ACCESS_PRIVATE_FIELD(_HandleCrossWalk, _MapCrossWalk, map_);
+ACCESS_PRIVATE_FIELD(_HandleRoadMark, _MapRoadMark, map_);
+ACCESS_PRIVATE_FIELD(_HandleRoadPole, _MapRoadPole, map_);
+ACCESS_PRIVATE_FIELD(_HandleRoadSign, _MapRoadSign, map_);
+ACCESS_PRIVATE_FIELD(_HandleSignal, _MapSignal, map_);
+ACCESS_PRIVATE_FIELD(_HandleStreetLight, _MapStreetLight, map_);
+ACCESS_PRIVATE_FIELD(_HandleUtilityPole, _MapUtilityPole, map_);
+ACCESS_PRIVATE_FIELD(_HandleGuardRail, _MapGuardRail, map_);
+ACCESS_PRIVATE_FIELD(_HandleSideWalk, _MapSideWalk, map_);
+ACCESS_PRIVATE_FIELD(_HandleDriveOnPortion, _MapDriveOnPortion, map_);
+ACCESS_PRIVATE_FIELD(_HandleCrossRoad, _MapCrossRoad, map_);
+ACCESS_PRIVATE_FIELD(_HandleSideStrip, _MapSideStrip, map_);
+ACCESS_PRIVATE_FIELD(_HandleCurveMirror, _MapCurveMirror, map_);
+ACCESS_PRIVATE_FIELD(_HandleWall, _MapWall, map_);
+ACCESS_PRIVATE_FIELD(_HandleFence, _MapFence, map_);
+ACCESS_PRIVATE_FIELD(_HandleRailCrossing, _MapRailCrossing, map_);
+
 
 
 void VectorMapLoader::loadAll()
 {
-	for (directory_entry &fe: directory_iterator(vmDir)) {
-		string file_name = basename(fe);
-		if (file_name == "idx.csv")
-		{
-			; // XXX: This version of Autoware don't support index csv file now.
-		}
-		else if (file_name == "point.csv")
-		{
-			auto objArray = createObjectArray<Point, PointArray>(fe.path().string());
-			call_private::subscribe(access_private::point_(*this), objArray);
-		}
+	auto point_pth = vmDir / path("point.csv");
+	auto vector_pth = vmDir / path("vector.csv");
+	auto line_pth = vmDir / path("line.csv");
+	auto area_pth = vmDir / path("area.csv");
+	auto pole_pth = vmDir / path("pole.csv");
+	auto box_pth = vmDir / path("box.csv");
+	auto dtlane_pth = vmDir / path("dtlane.csv");
+	auto node_pth = vmDir / path("node.csv");
+	auto lane_pth = vmDir / path("lane.csv");
+	auto way_area_pth = vmDir / path("wayarea.csv");
+	auto road_edge_pth = vmDir / path("roadedge.csv");
+	auto gutter_pth = vmDir / path("gutter.csv");
+	auto curb_pth = vmDir / path("curb.csv");
+	auto white_line_pth = vmDir / path("whiteline.csv");
+	auto stop_line_pth = vmDir / path("stopline.csv");
+	auto zebra_zone_pth = vmDir / path("zebrazone.csv");
+	auto cross_walk_pth = vmDir / path("crosswalk.csv");
+	auto road_mark_pth = vmDir / path("road_surface_mark.csv");
+	auto road_pole_pth = vmDir / path("poledata.csv");
+	auto road_sign_pth = vmDir / path("roadsign.csv");
+	auto signal_pth = vmDir / path("signaldata.csv");
+	auto street_light_pth = vmDir / path("streetlight.csv");
+	auto utility_pole_pth = vmDir / path("utilitypole.csv");
+	auto guard_rail_pth = vmDir / path("guardrail.csv");
+	auto side_walk_pth = vmDir / path("sidewalk.csv");
+	auto drive_on_portion_pth = vmDir / path("driveon_portion.csv");
+	auto cross_road_pth = vmDir / path("intersection.csv");
+	auto side_strip_pth = vmDir / path("sidestrip.csv");
+	auto curve_mirror_pth = vmDir / path("curvemirror.csv");
+	auto wall_pth = vmDir / path("wall.csv");
+	auto fence_pth = vmDir / path("fence.csv");
+	auto rail_crossing_pth = vmDir / path("railroad_crossing.csv");
 
-	    else if (file_name == "vector.csv")
-	    {
-	    	auto objArray = createObjectArray<Vector, VectorArray>(fe.path().string());
-	    	call_private::subscribe(access_private::vector_(*this), objArray);
-	    }
-	    else if (file_name == "line.csv")
-	    {
-	    	auto objArray = createObjectArray<Line, LineArray>(fe.path().string());
-	    	call_private::subscribe(access_private::line_(*this), objArray);
-	    }
-	    else if (file_name == "area.csv")
-	    {
-	    	auto objArray = createObjectArray<Area, AreaArray>(fe.path().string());
-	    	call_private::subscribe(access_private::area_(*this), objArray);
-	    }
-	    else if (file_name == "pole.csv")
-	    {
-	    	auto objArray = createObjectArray<Pole, PoleArray>(fe.path().string());
-	    	call_private::subscribe(access_private::pole_(*this), objArray);
-	    }
-	    else if (file_name == "box.csv")
-	    {
-	    	auto objArray = createObjectArray<Box, BoxArray>(fe.path().string());
-	    	call_private::subscribe(access_private::box_(*this), objArray);
-	    }
-	    else if (file_name == "dtlane.csv")
-	    {
-	    	auto objArray = createObjectArray<DTLane, DTLaneArray>(fe.path().string());
-	    	call_private::subscribe(access_private::dtlane_(*this), objArray);
-	    }
-	    else if (file_name == "node.csv")
-	    {
-	    	auto objArray = createObjectArray<Node, NodeArray>(fe.path().string());
-	    	call_private::subscribe(access_private::node_(*this), objArray);
-	    }
-	    else if (file_name == "lane.csv")
-	    {
-	    	auto objArray = createObjectArray<Lane, LaneArray>(fe.path().string());
-	    	call_private::subscribe(access_private::lane_(*this), objArray);
-	    }
-	    else if (file_name == "wayarea.csv")
-	    {
-	    	auto objArray = createObjectArray<WayArea, WayAreaArray>(fe.path().string());
-	    	call_private::subscribe(access_private::way_area_(*this), objArray);
-	    }
-	    else if (file_name == "roadedge.csv")
-	    {
-	    	auto objArray = createObjectArray<RoadEdge, RoadEdgeArray>(fe.path().string());
-	    	call_private::subscribe(access_private::road_edge_(*this), objArray);
-	    }
-	    else if (file_name == "gutter.csv")
-	    {
-	    	auto objArray = createObjectArray<Gutter, GutterArray>(fe.path().string());
-	    	call_private::subscribe(access_private::gutter_(*this), objArray);
-	    }
-	    else if (file_name == "curb.csv")
-	    {
-	    	auto objArray = createObjectArray<Curb, CurbArray>(fe.path().string());
-	    	call_private::subscribe(access_private::curb_(*this), objArray);
-	    }
-	    else if (file_name == "whiteline.csv")
-	    {
-	    	auto objArray = createObjectArray<WhiteLine, WhiteLineArray>(fe.path().string());
-	    	call_private::subscribe(access_private::white_line_(*this), objArray);
-	    }
-	    else if (file_name == "stopline.csv")
-	    {
-	    	auto objArray = createObjectArray<StopLine, StopLineArray>(fe.path().string());
-	    	call_private::subscribe(access_private::stop_line_(*this), objArray);
-	    }
-	    else if (file_name == "zebrazone.csv")
-	    {
-	    	auto objArray = createObjectArray<ZebraZone, ZebraZoneArray>(fe.path().string());
-	    	call_private::subscribe(access_private::zebra_zone_(*this), objArray);
-	    }
-	    else if (file_name == "crosswalk.csv")
-	    {
-	    	auto objArray = createObjectArray<CrossWalk, CrossWalkArray>(fe.path().string());
-	    	call_private::subscribe(access_private::cross_walk_(*this), objArray);
-	    }
-	    else if (file_name == "road_surface_mark.csv")
-	    {
-	    	auto objArray = createObjectArray<RoadMark, RoadMarkArray>(fe.path().string());
-	    	call_private::subscribe(access_private::road_mark_(*this), objArray);
-	    }
-	    else if (file_name == "poledata.csv")
-	    {
-	    	auto objArray = createObjectArray<RoadPole, RoadPoleArray>(fe.path().string());
-	    	call_private::subscribe(access_private::road_pole_(*this), objArray);
-	    }
-	    else if (file_name == "roadsign.csv")
-	    {
-	    	auto objArray = createObjectArray<RoadSign, RoadSignArray>(fe.path().string());
-	    	call_private::subscribe(access_private::road_sign_(*this), objArray);
-	    }
-	    else if (file_name == "signaldata.csv")
-	    {
-	    	auto objArray = createObjectArray<Signal, SignalArray>(fe.path().string());
-	    	call_private::subscribe(access_private::signal_(*this), objArray);
-	    }
-	    else if (file_name == "streetlight.csv")
-	    {
-	    	auto objArray = createObjectArray<StreetLight, StreetLightArray>(fe.path().string());
-	    	call_private::subscribe(access_private::street_light_(*this), objArray);
-	    }
-	    else if (file_name == "utilitypole.csv")
-	    {
-	    	auto objArray = createObjectArray<UtilityPole, UtilityPoleArray>(fe.path().string());
-	    	call_private::subscribe(access_private::utility_pole_(*this), objArray);
-	    }
-	    else if (file_name == "guardrail.csv")
-	    {
-	    	auto objArray = createObjectArray<GuardRail, GuardRailArray>(fe.path().string());
-	    	call_private::subscribe(access_private::guard_rail_(*this), objArray);
-	    }
-	    else if (file_name == "sidewalk.csv")
-	    {
-	    	auto objArray = createObjectArray<SideWalk, SideWalkArray>(fe.path().string());
-	    	call_private::subscribe(access_private::side_walk_(*this), objArray);
-	    }
-	    else if (file_name == "driveon_portion.csv")
-	    {
-	    	auto objArray = createObjectArray<DriveOnPortion, DriveOnPortionArray>(fe.path().string());
-	    	call_private::subscribe(access_private::drive_on_portion_(*this), objArray);
-	    }
-	    else if (file_name == "intersection.csv")
-	    {
-	    	auto objArray = createObjectArray<CrossRoad, CrossRoadArray>(fe.path().string());
-	    	call_private::subscribe(access_private::cross_road_(*this), objArray);
-	    }
-	    else if (file_name == "sidestrip.csv")
-	    {
-	    	auto objArray = createObjectArray<SideStrip, SideStripArray>(fe.path().string());
-	    	call_private::subscribe(access_private::side_strip_(*this), objArray);
-	    }
-	    else if (file_name == "curvemirror.csv")
-	    {
-	    	auto objArray = createObjectArray<CurveMirror, CurveMirrorArray>(fe.path().string());
-	    	call_private::subscribe(access_private::curve_mirror_(*this), objArray);
-	    }
-	    else if (file_name == "wall.csv")
-	    {
-	    	auto objArray = createObjectArray<Wall, WallArray>(fe.path().string());
-	    	call_private::subscribe(access_private::wall_(*this), objArray);
-	    }
-	    else if (file_name == "fence.csv")
-	    {
-	    	auto objArray = createObjectArray<Fence, FenceArray>(fe.path().string());
-	    	call_private::subscribe(access_private::fence_(*this), objArray);
-	    }
-	    else if (file_name == "railroad_crossing.csv")
-	    {
-	    	auto objArray = createObjectArray<RailCrossing, RailCrossingArray>(fe.path().string());
-	    	call_private::subscribe(access_private::rail_crossing_(*this), objArray);
-	    }
+	auto PointArrayObj = createObjectArray<Point, PointArray> (point_pth.string());
+	auto VectorArrayObj = createObjectArray<Vector, VectorArray> (vector_pth.string());
+	auto LineArrayObj = createObjectArray<Line, LineArray> (line_pth.string());
+	auto AreaArrayObj = createObjectArray<Area, AreaArray> (area_pth.string());
+	auto PoleArrayObj = createObjectArray<Pole, PoleArray> (pole_pth.string());
+	auto BoxArrayObj = createObjectArray<Box, BoxArray> (box_pth.string());
+	auto DTLaneArrayObj = createObjectArray<DTLane, DTLaneArray> (dtlane_pth.string());
+	auto NodeArrayObj = createObjectArray<Node, NodeArray> (node_pth.string());
+	auto LaneArrayObj = createObjectArray<Lane, LaneArray> (lane_pth.string());
+	auto WayAreaArrayObj = createObjectArray<WayArea, WayAreaArray> (way_area_pth.string());
+	auto RoadEdgeArrayObj = createObjectArray<RoadEdge, RoadEdgeArray> (road_edge_pth.string());
+	auto GutterArrayObj = createObjectArray<Gutter, GutterArray> (gutter_pth.string());
+	auto CurbArrayObj = createObjectArray<Curb, CurbArray> (curb_pth.string());
+	auto WhiteLineArrayObj = createObjectArray<WhiteLine, WhiteLineArray> (white_line_pth.string());
+	auto StopLineArrayObj = createObjectArray<StopLine, StopLineArray> (stop_line_pth.string());
+	auto ZebraZoneArrayObj = createObjectArray<ZebraZone, ZebraZoneArray> (zebra_zone_pth.string());
+	auto CrossWalkArrayObj = createObjectArray<CrossWalk, CrossWalkArray> (cross_walk_pth.string());
+	auto RoadMarkArrayObj = createObjectArray<RoadMark, RoadMarkArray> (road_mark_pth.string());
+	auto RoadPoleArrayObj = createObjectArray<RoadPole, RoadPoleArray> (road_pole_pth.string());
+	auto RoadSignArrayObj = createObjectArray<RoadSign, RoadSignArray> (road_sign_pth.string());
+	auto SignalArrayObj = createObjectArray<Signal, SignalArray> (signal_pth.string());
+	auto StreetLightArrayObj = createObjectArray<StreetLight, StreetLightArray> (street_light_pth.string());
+	auto UtilityPoleArrayObj = createObjectArray<UtilityPole, UtilityPoleArray> (utility_pole_pth.string());
+	auto GuardRailArrayObj = createObjectArray<GuardRail, GuardRailArray> (guard_rail_pth.string());
+	auto SideWalkArrayObj = createObjectArray<SideWalk, SideWalkArray> (side_walk_pth.string());
+	auto DriveOnPortionArrayObj = createObjectArray<DriveOnPortion, DriveOnPortionArray> (drive_on_portion_pth.string());
+	auto CrossRoadArrayObj = createObjectArray<CrossRoad, CrossRoadArray> (cross_road_pth.string());
+	auto SideStripArrayObj = createObjectArray<SideStrip, SideStripArray> (side_strip_pth.string());
+	auto CurveMirrorArrayObj = createObjectArray<CurveMirror, CurveMirrorArray> (curve_mirror_pth.string());
+	auto WallArrayObj = createObjectArray<Wall, WallArray> (wall_pth.string());
+	auto FenceArrayObj = createObjectArray<Fence, FenceArray> (fence_pth.string());
+	auto RailCrossingArrayObj = createObjectArray<RailCrossing, RailCrossingArray> (rail_crossing_pth.string());
 
-	}
+	updatePoint (access_private::map_(access_private::point_(*this)), PointArrayObj);
+	updateVector (access_private::map_(access_private::vector_(*this)), VectorArrayObj);
+	updateLine (access_private::map_(access_private::line_(*this)), LineArrayObj);
+	updateArea (access_private::map_(access_private::area_(*this)), AreaArrayObj);
+	updatePole (access_private::map_(access_private::pole_(*this)), PoleArrayObj);
+	updateBox (access_private::map_(access_private::box_(*this)), BoxArrayObj);
+	updateDTLane (access_private::map_(access_private::dtlane_(*this)), DTLaneArrayObj);
+	updateNode (access_private::map_(access_private::node_(*this)), NodeArrayObj);
+	updateLane (access_private::map_(access_private::lane_(*this)), LaneArrayObj);
+	updateWayArea (access_private::map_(access_private::way_area_(*this)), WayAreaArrayObj);
+	updateRoadEdge (access_private::map_(access_private::road_edge_(*this)), RoadEdgeArrayObj);
+	updateGutter (access_private::map_(access_private::gutter_(*this)), GutterArrayObj);
+	updateCurb (access_private::map_(access_private::curb_(*this)), CurbArrayObj);
+	updateWhiteLine (access_private::map_(access_private::white_line_(*this)), WhiteLineArrayObj);
+	updateStopLine (access_private::map_(access_private::stop_line_(*this)), StopLineArrayObj);
+	updateZebraZone (access_private::map_(access_private::zebra_zone_(*this)), ZebraZoneArrayObj);
+	updateCrossWalk (access_private::map_(access_private::cross_walk_(*this)), CrossWalkArrayObj);
+	updateRoadMark (access_private::map_(access_private::road_mark_(*this)), RoadMarkArrayObj);
+	updateRoadPole (access_private::map_(access_private::road_pole_(*this)), RoadPoleArrayObj);
+	updateRoadSign (access_private::map_(access_private::road_sign_(*this)), RoadSignArrayObj);
+	updateSignal (access_private::map_(access_private::signal_(*this)), SignalArrayObj);
+	updateStreetLight (access_private::map_(access_private::street_light_(*this)), StreetLightArrayObj);
+	updateUtilityPole (access_private::map_(access_private::utility_pole_(*this)), UtilityPoleArrayObj);
+	updateGuardRail (access_private::map_(access_private::guard_rail_(*this)), GuardRailArrayObj);
+	updateSideWalk (access_private::map_(access_private::side_walk_(*this)), SideWalkArrayObj);
+	updateDriveOnPortion (access_private::map_(access_private::drive_on_portion_(*this)), DriveOnPortionArrayObj);
+	updateCrossRoad (access_private::map_(access_private::cross_road_(*this)), CrossRoadArrayObj);
+	updateSideStrip (access_private::map_(access_private::side_strip_(*this)), SideStripArrayObj);
+	updateCurveMirror (access_private::map_(access_private::curve_mirror_(*this)), CurveMirrorArrayObj);
+	updateWall (access_private::map_(access_private::wall_(*this)), WallArrayObj);
+	updateFence (access_private::map_(access_private::fence_(*this)), FenceArrayObj);
+	updateRailCrossing (access_private::map_(access_private::rail_crossing_(*this)), RailCrossingArrayObj);
 
 	// Do insertion to marker_array here
 	insertMarkerArray(marker_array, createRoadEdgeMarkerArray(*this, Color::GRAY));

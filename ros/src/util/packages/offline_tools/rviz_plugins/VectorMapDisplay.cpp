@@ -5,10 +5,9 @@
  *      Author: sujiwo
  */
 
+#include "VectorMapDisplay.h"
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/int_property.h>
-
-#include "VectorMapDisplay.h"
 
 
 using namespace std;
@@ -26,12 +25,10 @@ VectorMapDisplay::VectorMapDisplay():
 
 	marker_topic_property_->hide();
 	queue_size_property_->hide();
-//	namespaces_category_->hide();
 }
 
 VectorMapDisplay::~VectorMapDisplay()
 {
-	// TODO Auto-generated destructor stub
 }
 
 
@@ -48,14 +45,20 @@ VectorMapDisplay::changeDir()
 	const string vectorMapDirName = vMapDir_->getStdString();
 	mapData = shared_ptr<VectorMapLoader> (new VectorMapLoader(vectorMapDirName));
 
-	incomingMarkerArray(mapData->ConstPtr());
+	markers_.clear();
+
+	for (auto &markerM: mapData->marker_array.markers) {
+		rviz::MarkerBasePtr marker(rviz::createMarker(markerM.type, this, context_, scene_node_));
+		markers_.insert(marker);
+	}
+
+	context_->queueRender();
 }
 
 
 void
 VectorMapDisplay::onEnable()
 {
-
 }
 
 
