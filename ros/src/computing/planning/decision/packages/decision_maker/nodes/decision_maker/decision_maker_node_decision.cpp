@@ -1,5 +1,5 @@
-#include <numeric>
 #include <stdio.h>
+#include <numeric>
 #include <numeric>
 
 #include <geometry_msgs/PoseStamped.h>
@@ -8,8 +8,8 @@
 #include <std_msgs/String.h>
 #include <tf/transform_listener.h>
 
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -56,7 +56,7 @@ bool DecisionMakerNode::waitForEvent(cstring_t& key, const bool& flag, const dou
   }
   return false;
 }
-double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane& laneinArea)
+double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea)
 {
   double diff = 0.0;
   if (laneinArea.waypoints.empty())
@@ -79,8 +79,7 @@ bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _c
   static std::vector<double> distances;
   static uint32_t distances_count = 0;
   static geometry_msgs::Point prev_point;
-
-  static const int param_convergence_count_ = 10;
+  static const int param_convergence_count = 10;
 
   bool ret = false;
 
@@ -92,7 +91,7 @@ bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _c
   }
 
   distances.push_back(amathutils::find_distance(prev_point, _current_point));
-  if (++distances_count > 10) /* num of count to judge convergence*/
+  if (++distances_count > param_convergence_count) /* num of count to judge convergence*/
   {
     distances.erase(distances.begin());
     distances_count--;

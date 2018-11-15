@@ -250,10 +250,10 @@ void DecisionMakerNode::createPublisher(void)
 
   // for controlling other planner
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
-  Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color_managed", 1);
+  Pubs["light_color"] = nh_.advertise<autoware_msgs::TrafficLight>("/light_color_managed", 1);
 
   // for controlling vehicle
-  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
+  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::LampCmd>("/lamp_cmd", 1);
 
   // for visualize status
   Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
@@ -325,11 +325,11 @@ void DecisionMakerNode::initROS()
   // for controlling other planner
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
-  Pubs["states"] = nh_.advertise<autoware_msgs::state>("/decisionmaker/states", 1, true);
-  Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color_managed", 1);
+  Pubs["states"] = nh_.advertise<autoware_msgs::State>("/decisionmaker/states", 1, true);
+  Pubs["light_color"] = nh_.advertise<autoware_msgs::TrafficLight>("/light_color_managed", 1);
 
   // for controlling vehicle
-  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
+  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::LampCmd>("/lamp_cmd", 1);
 
   // for visualize status
   Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);

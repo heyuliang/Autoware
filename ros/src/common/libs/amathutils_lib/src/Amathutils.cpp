@@ -2,10 +2,6 @@
 
 namespace amathutils
 {
-geometry_msgs::Point getCrossPoint(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Point &_l1_p2,
-                                   const geometry_msgs::Point &_l2_p1, const geometry_msgs::Point &_l2_p2)
-{
-}
 geometry_msgs::Point getNearPtOnLine(const geometry_msgs::Point &_p, const geometry_msgs::Point &_a,
                                      const geometry_msgs::Point &_b)
 {
@@ -17,17 +13,17 @@ geometry_msgs::Point getNearPtOnLine(const geometry_msgs::Point &_p, const geome
 
   vnab.x = (_b.x - _a.x) / len;
   vnab.y = (_b.y - _a.y) / len;
-  vnab.z = 0;  //(_b.z - _a.z) / len;
+  vnab.z = (_b.z - _a.z) / len;
 
   vap.x = _p.x - _a.x;
   vap.y = _p.y - _a.y;
-  vap.z = 0;  //_p.z - _a.z;
+  vap.z = _p.z - _a.z;
 
-  double dist_ax = vnab.x * vap.x + vnab.y * vap.y + vnab.z + vap.z;
+  double dist_ax = vnab.x * vap.x + vnab.y * vap.y + vnab.z * vap.z;
 
   ret.x = _a.x + (vnab.x * dist_ax);
   ret.y = _a.y + (vnab.y * dist_ax);
-  ret.z = 0;  //_a.z + (vnab.z * dist_ax);
+  ret.z = _a.z + (vnab.z * dist_ax);
 
   return ret;
 }

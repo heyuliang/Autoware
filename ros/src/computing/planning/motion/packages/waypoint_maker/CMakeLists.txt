@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map
         lane_planner
         autoware_msgs
+				autoware_config_msgs
         )
 
 find_package(Boost REQUIRED)
@@ -28,6 +29,7 @@ catkin_package(
         vector_map
         lane_planner
         autoware_msgs
+				autoware_config_msgs
 )
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")

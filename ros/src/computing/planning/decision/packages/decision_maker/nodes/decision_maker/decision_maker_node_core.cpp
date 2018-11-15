@@ -12,7 +12,7 @@
 #include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
-#include <autoware_msgs/lane.h>
+#include <autoware_msgs/Lane.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <random>
@@ -28,10 +28,6 @@ void DecisionMakerNode::tryNextState(const std::string& key)
   ctx_vehicle->nextState(key);
   ctx_mission->nextState(key);
   ctx_drive->nextState(key);
-#if 0
-  std_msgs::String msg;
-  msg.data = Pubs[""].publish
-#endif
 }
 
 void DecisionMakerNode::update(void)
@@ -52,8 +48,6 @@ void DecisionMakerNode::run(void)
   while (ros::ok())
   {
     update();
-    if (enableDisplayMarker)
-      displayMarker();
 
     loop_rate.sleep();
   }

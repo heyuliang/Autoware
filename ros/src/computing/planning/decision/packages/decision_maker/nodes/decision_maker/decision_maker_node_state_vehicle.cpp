@@ -48,6 +48,7 @@ void DecisionMakerNode::updateSensorInitState(cstring_t& state_name, int status)
   {
     ROS_INFO("DecisionMaker is in simulation mode");
     tryNextState("sensor_is_ready");
+    return;
   }
   else if (isEventFlagTrue("received_pointcloud_for_NDT"))
   {
@@ -76,7 +77,7 @@ void DecisionMakerNode::updateMapInitState(cstring_t& state_name, int status)
   {
     ROS_WARN("Necessary vectormap have not been loaded");
     ROS_WARN("DecisionMaker keeps on waiting until it loads");
-    if(disuse_vector_map_)
+    if (disuse_vector_map_)
     {
       ROS_WARN("Disuse vectormap mode.");
       tryNextState("map_is_ready");

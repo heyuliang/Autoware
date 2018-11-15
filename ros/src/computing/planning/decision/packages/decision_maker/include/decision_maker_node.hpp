@@ -27,16 +27,14 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <autoware_config_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/ConfigDecisionMaker.h>
+#include <autoware_msgs/Lane.h>
 #include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/State.h>
+#include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/VehicleCmd.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/state.h>
-#include <autoware_msgs/state.h>
-#include <autoware_msgs/traffic_light.h>
-#include <autoware_msgs/waypoint.h>
+#include <autoware_msgs/Waypoint.h>
 #include <vector_map/vector_map.h>
 
 #include <amathutils_lib/amathutils.hpp>
@@ -97,7 +95,7 @@ struct AutowareStatus
   // planning status
   autoware_msgs::LaneArray using_lane_array;  // with wpstate
   autoware_msgs::LaneArray based_lane_array;
-  autoware_msgs::lane finalwaypoints;
+  autoware_msgs::Lane finalwaypoints;
   int closest_waypoint;
   int obstacle_waypoint;
   int change_flag;
@@ -141,6 +139,12 @@ private:
   jsk_rviz_plugins::OverlayText state_text_msg;
 
   // ROS Messages(Autoware)
+  autoware_msgs::Lane current_finalwaypoints_;
+  vector_map_msgs::AreaArray vMap_Areas;
+  vector_map_msgs::PointArray vMap_Points;
+  vector_map_msgs::LineArray vMap_Lines;
+  vector_map_msgs::CrossRoadArray vMap_CrossRoads;
+
   std::vector<geometry_msgs::Point> inside_points_;
 
   tf::TransformListener tflistener_baselink;
@@ -148,7 +152,7 @@ private:
   int closest_stop_waypoint_;
   int closest_stopline_waypoint_;
   int goal_waypoint_;
-  autoware_msgs::waypoint CurrentStoplineTarget_;
+  autoware_msgs::Waypoint CurrentStoplineTarget_;
 
   double average_velocity_;
   int closest_waypoint_;
@@ -206,10 +210,8 @@ private:
   void update(void);
   void update_msgs(void);
   void update_pubsub(void);
-  void displayMarker(void);
 
   void publishToVelocityArray();
-  std::string createStateMessageText();
   int createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale);
 
   /* for planning according to state*/
@@ -231,7 +233,7 @@ private:
   /* decision */
   void tryNextState(cstring_t& key);
   bool isArrivedGoal(void);
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
+  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
   bool handleStateCmd(const uint64_t _state_num);
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
@@ -240,7 +242,7 @@ private:
   bool waitForEvent(cstring_t& key, const bool& flag, const double& timeout);
   bool drivingMissionCheck(void);
 
-  double calcIntersectWayAngle(const autoware_msgs::lane& laneinArea);
+  double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
   double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
   double calcPosesAngleDiffN(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
   double getPoseAngle(const geometry_msgs::Pose& p);
@@ -358,13 +360,13 @@ private:
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped& msg);
   void callbackFromClosestWaypoint(const std_msgs::Int32& msg);
-  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event);
+  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const>& event);
   void callbackFromLaneChangeFlag(const std_msgs::Int32& msg);
-  void callbackFromFinalWaypoint(const autoware_msgs::lane& msg);
+  void callbackFromFinalWaypoint(const autoware_msgs::Lane& msg);
   void callbackFromLaneWaypoint(const autoware_msgs::LaneArray& msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped& msg);
-  void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
   void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);
@@ -396,19 +398,16 @@ public:
     , use_management_system_(false)
     , param_num_of_steer_behind_(30)
   {
-    std::string file_name;
     std::string file_name_mission;
     std::string file_name_drive;
     std::string file_name_vehicle;
-    private_nh_.getParam("state_file_name", file_name);
     private_nh_.getParam("state_vehicle_file_name", file_name_vehicle);
     private_nh_.getParam("state_mission_file_name", file_name_mission);
     private_nh_.getParam("state_drive_file_name", file_name_drive);
 
-    // ctx = new state_machine::StateContext(file_name);
-    ctx_vehicle = new state_machine::StateContext(file_name_vehicle);
-    ctx_mission = new state_machine::StateContext(file_name_mission);
-    ctx_drive = new state_machine::StateContext(file_name_drive);
+    ctx_vehicle = new state_machine::StateContext(file_name_vehicle, "autoware_states_vehicle");
+    ctx_mission = new state_machine::StateContext(file_name_mission, "autoware_states_mission");
+    ctx_drive = new state_machine::StateContext(file_name_drive, "autoware_states_drive");
     init();
     setupStateCallback();
 

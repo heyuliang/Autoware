@@ -6,7 +6,7 @@
 #include <geometry_msgs/Point.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 
-#include <autoware_msgs/lane.h>
+#include <autoware_msgs/Lane.h>
 
 namespace decision_maker
 {

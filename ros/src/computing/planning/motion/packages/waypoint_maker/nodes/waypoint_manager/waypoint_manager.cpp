@@ -72,7 +72,7 @@ void WaypointManager::laneCallback(const autoware_msgs::LaneArray::ConstPtr& lan
   publishLaneArray();
 }
 
-void WaypointManager::configCallback(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf)
+void WaypointManager::configCallback(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf)
 {
   replanning_mode_ = conf->replanning_mode;
   replanner_.initParameter(conf);

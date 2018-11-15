@@ -9,8 +9,8 @@
 #include <std_msgs/UInt8.h>
 
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -30,7 +30,6 @@ void DecisionMakerNode::callbackFromFilteredPoints(const sensor_msgs::PointCloud
 void DecisionMakerNode::callbackFromSimPose(const geometry_msgs::PoseStamped& msg)
 {
   ROS_INFO("Received system is going to simulation mode");
-  // handleStateCmd(state_machine::DRIVE_STATE);
   Subs["sim_pose"].shutdown();
 }
 
@@ -38,7 +37,6 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::String& msg)
 {
   //  ROS_INFO("Received State Command");
   tryNextState(msg.data);
-  // handleStateCmd((uint64_t)1ULL << (uint64_t)msg.data);
 }
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
@@ -46,7 +44,7 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
   current_status_.change_flag = msg.data;
 }
 
-void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker& msg)
+void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg)
 {
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
@@ -61,28 +59,9 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   disuse_vector_map_ = msg.disuse_vector_map;
 }
 
-void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const>& event)
+void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const>& event)
 {
-#if 0
-  const autoware_msgs::traffic_light *light = event.getMessage().get();
-  //  const ros::M_string &header = event.getConnectionHeader();
-  //  std::string topic = header.at("topic");
-
-  if (!isManualLight)
-  {  // && topic.find("manage") == std::string::npos){
-    current_traffic_light_ = light->traffic_light;
-    if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
-    {
-      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-      ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-    }
-    else
-    {
-      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-      ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-    }
-  }
-#endif
+  ROS_WARN("%s is not implemented", __func__);
 }
 
 void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg)
@@ -151,13 +130,13 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           // area's
           if (area.insideLanes.empty() || wp.gid != area.insideLanes.back().waypoints.back().gid + 1)
           {
-            autoware_msgs::lane nlane;
+            autoware_msgs::Lane nlane;
             area.insideLanes.push_back(nlane);
             area.bbox.pose.orientation = wp.pose.pose.orientation;
           }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
-          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::waypoint
+          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::Waypoint
           // lane's wp
           wp.wpstate.aid = area.area_id;
         }
@@ -176,13 +155,10 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
   // intersects.clear();
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
-  bool existInsideLanes = false;
-
   for (auto& area : intersects)
   {
     for (auto& laneinArea : area.insideLanes)
     {
-      existInsideLanes = true;
       // To straight/left/right recognition by using angle
       // between first-waypoint and end-waypoint in intersection area.
       int angle_deg = ((int)std::floor(calcIntersectWayAngle(laneinArea)));  // normalized
@@ -220,10 +196,6 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
       }
     }
   }
-  if(!existInsideLanes)
-    for (auto& lane : lane_array.lanes)
-      for (auto& wp : lane.waypoints)
-          wp.wpstate.steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
@@ -258,7 +230,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
                 amathutils::getNearPtOnLine(center_point, lane.waypoints.at(wp_idx).pose.pose.position,
                                             lane.waypoints.at(wp_idx + 1).pose.pose.position);
 
-            autoware_msgs::waypoint wp = lane.waypoints.at(wp_idx);
+            autoware_msgs::Waypoint wp = lane.waypoints.at(wp_idx);
             wp.wpstate.stop_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
             wp.pose.pose.position.x = interpolation_point.x;
             wp.pose.pose.position.y = interpolation_point.y;
@@ -371,123 +343,10 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray&
   setEventFlag("received_based_lane_waypoint", true);
 }
 
-void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane& msg)
+void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane& msg)
 {
   current_status_.finalwaypoints = msg;
   setEventFlag("received_finalwaypoints", true);
-
-#if 0
-  if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
-  {
-    ROS_DEBUG("State is not DRIVE_STATE[%s]", ctx->getCurrentStateName().c_str());
-    return;
-  }
-
-  // cached
-  current_finalwaypoints_ = msg;
-  if (current_finalwaypoints_.waypoints.empty())
-  {
-    return;
-  }
-
-  // stopline
-  static size_t previous_idx = 0;
-
-  size_t idx;
-  idx = param_stopline_target_waypoint_ + (current_velocity_ * param_stopline_target_ratio_);
-  idx = current_finalwaypoints_.waypoints.size() - 1 > idx ? idx : current_finalwaypoints_.waypoints.size() - 1;
-
-  CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
-  try
-  {
-    for (size_t i = (previous_idx > idx) ? idx : previous_idx; i <= idx; i++)
-    {
-      if (i < current_finalwaypoints_.waypoints.size())
-      {
-        if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
-        {
-          ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-          closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
-        }
-        if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
-        {
-          ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
-          closest_stop_waypoint_ = CurrentStoplineTarget_.gid;
-        }
-      }
-    }
-  }
-  catch (std::out_of_range &oor)
-  {
-    fprintf(stderr, "[%s:%d]: access=%d, size=%d\n", __FILE__, __LINE__, idx, current_finalwaypoints_.waypoints.size());
-  }
-  previous_idx = idx;
-// steering
-#if 0
-  idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
-            param_target_waypoint_ :
-            current_finalwaypoints_.waypoints.size() - 1;
-#endif
-  double _distance = 0.0;
-  double _distance_threshold = 30;  // 30[m] is decided by japanese law.
-
-  //
-  amathutils::point _prev_point(current_finalwaypoints_.waypoints.at(0).pose.pose.position.x,
-                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.y,
-                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.z);
-
-  idx = 0;
-  for (auto &wp : current_finalwaypoints_.waypoints)
-  {
-    amathutils::point _next_point(wp.pose.pose.position.x, wp.pose.pose.position.y, wp.pose.pose.position.z);
-
-    _distance += amathutils::find_distance(&_prev_point, &_next_point);
-    idx++;
-    if (_distance >= _distance_threshold)
-    {
-      break;
-    }
-    if (idx >= current_finalwaypoints_.waypoints.size())
-    {
-      idx -= 1;
-      break;
-    }
-    _prev_point = _next_point;
-  }
-
-  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
-  {
-    ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
-  }
-  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
-  {
-    ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-  }
-  else
-  {
-    idx = (idx >= current_finalwaypoints_.waypoints.size()) ? idx = current_finalwaypoints_.waypoints.size() - 1 : idx;
-    try
-    {
-      state_machine::StateFlags _TargetStateFlag;
-      for (size_t i = idx; i > 0; i--)
-      {
-        _TargetStateFlag = getStateFlags(current_finalwaypoints_.waypoints.at(i).wpstate.steering_state);
-        if (_TargetStateFlag != state_machine::DRIVE_STR_STRAIGHT_STATE)
-        {
-          break;
-        }
-      }
-      ctx->setCurrentState(_TargetStateFlag);
-    }
-    catch (std::out_of_range &oor)
-    {
-      fprintf(stderr, "[%s:%d]: access=%d, size=%d\n", __FILE__, __LINE__, idx,
-              current_finalwaypoints_.waypoints.size());
-    }
-  }
-  // for publish plan of velocity
-  publishToVelocityArray();
-#endif
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg)
 {
