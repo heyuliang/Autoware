@@ -168,6 +168,26 @@ target_link_libraries(compare_map_filter
         )
 add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
 
+# Depth Completer
+file(GLOB
+  depth_completer_srcs
+  nodes/depth_completer/*.cpp)
+
+add_executable(depth_completer
+  ${depth_completer_srcs}
+  )
+
+target_include_directories(depth_completer PRIVATE
+  ${OpenCV_INCLUDE_DIRS}
+  )
+
+target_link_libraries(depth_completer
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  )
+
+add_dependencies(depth_completer ${catkin_EXPORTED_TARGETS})
+
 ### Unit Tests ###
 #if (CATKIN_ENABLE_TESTING)
 #    find_package(rostest REQUIRED)
@@ -185,7 +205,7 @@ add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
 #endif ()
 
 
-install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter compare_map_filter
+install(TARGETS depth_completer cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter compare_map_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
