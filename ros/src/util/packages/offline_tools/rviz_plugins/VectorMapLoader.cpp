@@ -1586,8 +1586,8 @@ VectorMapLoader::setPointOffset
 	auto &pointMap = access_private::map_(access_private::point_(*this));
 	for (auto &pt: pointOrig) {
 		auto key = pt.first;
-		pointMap[key].bx = pt.second.bx + x_offset;
-		pointMap[key].ly = pt.second.ly + y_offset;
+		pointMap[key].bx = pt.second.bx + y_offset;
+		pointMap[key].ly = pt.second.ly + x_offset;
 		pointMap[key].h = pt.second.h + z_offset;
 	}
 }
