@@ -445,7 +445,13 @@ void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const Ra
     map.insert(std::make_pair(Key<RailCrossing>(item.id), item));
   }
 }
-bool isValidMarker(const visualization_msgs::Marker& marker);
+
+namespace {
+bool isValidMarker(const visualization_msgs::Marker& marker)
+{
+	return marker.action == visualization_msgs::Marker::ADD;
+}
+}
 
 
 const vector<string> VectorMapFileNames
