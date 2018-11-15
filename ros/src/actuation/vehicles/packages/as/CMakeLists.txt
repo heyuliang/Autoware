@@ -7,6 +7,7 @@ find_package(
   message_filters
   std_msgs
   geometry_msgs
+  autoware_msgs
   automotive_platform_msgs
   dbw_mkz_msgs
 )
