@@ -54,6 +54,9 @@ VectorMapDisplay::changeDir()
 
 	for (auto &markerM: visMsgs->markers) {
 		rviz::MarkerBasePtr marker(rviz::createMarker(markerM.type, this, context_, scene_node_));
+		if (marker) {
+			marker->setMessage(markerM);
+		}
 		markers_.insert(marker);
 	}
 
