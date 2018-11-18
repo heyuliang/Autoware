@@ -9,10 +9,8 @@
 using vector_map::isValidMarker;
 using vector_map::createVectorMarker;
 using vector_map::createAreaMarker;
-
 using vector_map::Color;
 using vector_map::VectorMap;
-
 
 void insertMarkerArray(visualization_msgs::MarkerArray& a1, const visualization_msgs::MarkerArray& a2)
 {
@@ -28,7 +26,6 @@ U createObjectArray(const std::vector<T> data)
     // obj_array.header.stamp = ros::Time::now();
     obj_array.header.frame_id = "map";
     obj_array.data = data;
-    // test();
     return obj_array;
 }
 
@@ -40,6 +37,39 @@ visualization_msgs::Marker createLinkedLineMarker(const std::string& ns, int id,
     area.aid = 1; // must set valid aid
     area.slid = line.lid;
     return createAreaMarker(ns, id, color, vmap, area);
+}
+
+visualization_msgs::MarkerArray createAreaMarkerArray(const VectorMap& vmap, Color color)
+{
+    visualization_msgs::MarkerArray marker_array;
+    int id = 0;
+    for (const auto& area : vmap.findByFilter([] (const vector_map_msgs::Area& a){return true; }))
+    {
+        marker_array.markers.push_back(createAreaMarker("area", id++, color, vmap, area));
+    }
+    return marker_array;
+}
+
+visualization_msgs::MarkerArray createLaneMarkerArray(const VectorMap& vmap, Color color)
+{
+    visualization_msgs::MarkerArray marker_array;
+    int id = 1;
+    for (const auto& lane : vmap.findByFilter([] (const vector_map_msgs::Lane& l){return true; }))
+    {
+        vector_map_msgs::Node node1 = vmap.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
+        vector_map_msgs::Node node2 = vmap.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
+        vector_map_msgs::Line line;
+        line.lid = id;
+        line.bpid = node1.pid;
+        line.fpid = node2.pid;
+        line.blid = 0;
+        line.flid = 0;
+
+        visualization_msgs::Marker marker = createLineMarker("lane", id++, color, vmap, line);
+        if (isValidMarker(marker))
+          marker_array.markers.push_back(marker);
+    }
+    return marker_array;
 }
 
 visualization_msgs::MarkerArray createStopLineMarkerArray(const VectorMap& vmap, Color color)
@@ -272,7 +302,6 @@ void createAreas(std::vector<autoware_map_msgs::Area> awm_areas, std::vector<vec
 
             vmap_lines.push_back(line);
             vmap_area.elid = line_id;
-
             line_id++;
         }
         vmap_areas.push_back(vmap_area);
@@ -294,7 +323,6 @@ void createCrossRoads(std::vector<autoware_map_msgs::LaneAttrRelation> awm_lane_
             cross_road.id = id++;
             cross_road.aid = awm_relation.area_id;
             cross_road.linkid = 0;
-
             vmap_cross_roads.push_back(cross_road);
         }
     }
@@ -315,7 +343,6 @@ void createCrossWalks(std::vector<autoware_map_msgs::LaneAttrRelation> awm_lane_
             cross_walk.id = id++;
             cross_walk.aid = awm_relation.area_id;
             cross_walk.linkid = 0;
-
             vmap_cross_walks.push_back(cross_walk);
         }
     }
@@ -343,7 +370,6 @@ void createPoints(std::vector<autoware_map_msgs::Point> awm_points, std::vector<
             epsg_fail_flag = true;
             vmap_point.ref = 0;
         }
-
         //cannot convert mcodes from autoware_map_format
         vmap_point.mcode1 = 0;
         vmap_point.mcode2 = 0;
@@ -354,7 +380,6 @@ void createPoints(std::vector<autoware_map_msgs::Point> awm_points, std::vector<
     {
         ROS_WARN_STREAM("no corresponding Japanese Plane Rectangular CS Number for specified epsg value");
     }
-
 }
 
 
@@ -423,7 +448,6 @@ int getJunctionType(const std::vector<autoware_map_msgs::WaypointRelation> awm_w
             right_branching_cnt++;
         }
     }
-
     for(auto idx : merging_idx)
     {
         if( awm_waypoint_relations.at(idx).blinker == 1 )
@@ -435,13 +459,10 @@ int getJunctionType(const std::vector<autoware_map_msgs::WaypointRelation> awm_w
             right_merging_cnt++;
         }
     }
-
-
     if( branching_idx.size() >= 3 || merging_idx.size() >= 3 || (branching_idx.size() >= 2 && merging_idx.size() >= 2) )
     {
         return vector_map_msgs::Lane::COMPOSITION;
     }
-
     if ( right_branching_cnt >= 1 )
     {
         return vector_map_msgs::Lane::RIGHT_BRANCHING;
@@ -591,18 +612,14 @@ void createSignals(     std::vector<autoware_map_msgs::SignalLight> awm_signal_l
                         std::vector<vector_map_msgs::Vector> &vmap_vectors,
                         std::vector<vector_map_msgs::Pole> &vmap_dummy_poles,
                         const std::vector<autoware_map_msgs::WaypointRelation> awm_waypoint_relations,
-                        const autoware_map::AutowareMap awm
-
-                        )
+                        const autoware_map::AutowareMap awm)
 {
 
     unsigned int vector_id = 1;
     for ( auto awm_signal_light : awm_signal_lights)
     {
         vector_map_msgs::Signal vmap_signal;
-
         vmap_signal.id = awm_signal_light.signal_light_id;
-        //use signal_id as pole_id;
         vmap_signal.plid = awm_signal_light.signal_id;
 
         //create dummy poles
@@ -629,11 +646,9 @@ void createSignals(     std::vector<autoware_map_msgs::SignalLight> awm_signal_l
         vmap_signal.vid = vector_id;
         vector_id += 1;
 
-
         auto lane_signal_itr = std::find_if(   awm_lane_signal_relations.begin(),
                                                awm_lane_signal_relations.end(),
                                                [awm_signal_light](autoware_map_msgs::LaneSignalLightRelation lslr){ return lslr.signal_light_id == awm_signal_light.signal_light_id; });
-
         auto awm_lane = awm.findByKey(autoware_map::Key<autoware_map_msgs::Lane>(lane_signal_itr->lane_id));
 
         int linkid = 0;
@@ -755,16 +770,13 @@ void createStopLines( const std::vector<autoware_map_msgs::Waypoint> awm_waypoin
 }
 void createDummyRoadSign(std::vector<vector_map_msgs::RoadSign> &vmap_road_signs)
 {
-
     vector_map_msgs::RoadSign road_sign;
     road_sign.id = 1;
     road_sign.vid = 0;
     road_sign.plid = 0;
     road_sign.type = 1;
     road_sign.linkid = 0;
-
     vmap_road_signs.push_back(road_sign);
-
 }
 
 
@@ -920,6 +932,9 @@ int main(int argc, char **argv)
     insertMarkerArray(marker_array, createSignalMarkerArray(vmap, vector_map::Color::RED, vector_map::Color::BLUE, vector_map::Color::YELLOW, vector_map::Color::CYAN,
                                                             vector_map::Color::GRAY));
     insertMarkerArray(marker_array, createCrossRoadMarkerArray(vmap, vector_map::Color::LIGHT_GREEN));
+    // insertMarkerArray(marker_array, createAreaMarkerArray(vmap, vector_map::Color::WHITE));
+    insertMarkerArray(marker_array, createLaneMarkerArray(vmap, vector_map::Color::YELLOW));
+
     // insertMarkerArray(marker_array, createRailCrossingMarkerArray(vmap, vector_map::Color::LIGHT_MAGENTA));
     marker_array_pub.publish(marker_array);
 
