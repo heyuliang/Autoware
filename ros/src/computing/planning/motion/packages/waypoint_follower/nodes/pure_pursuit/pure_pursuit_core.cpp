@@ -132,7 +132,7 @@ void PurePursuitNode::run()
   }
 }
 
-void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const double &kappa) const
+void PurePursuitNode::publishTwistStamped(const bool& can_get_curvature, const double& kappa) const
 {
   geometry_msgs::TwistStamped ts;
   ts.header.stamp = ros::Time::now();
@@ -141,7 +141,7 @@ void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const d
   pub1_.publish(ts);
 }
 
-void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const
+void PurePursuitNode::publishControlCommandStamped(const bool& can_get_curvature, const double& kappa) const
 {
   if (!publishes_for_steering_robot_)
     return;
@@ -196,7 +196,7 @@ double PurePursuitNode::computeAngularGravity(double velocity, double kappa) con
   return (velocity * velocity) / (1.0 / kappa * gravity);
 }
 
-void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config)
+void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr& config)
 {
   param_flag_ = config->param_flag;
   const_lookahead_distance_ = config->lookahead_distance;
@@ -206,8 +206,8 @@ void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypo
   is_config_set_ = true;
 }
 
-void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
-                                                      const std::vector<autoware_msgs::Waypoint> &waypoints) const
+void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point& point,
+                                                      const std::vector<autoware_msgs::Waypoint>& waypoints) const
 {
   // Calculate the deviation of current position from the waypoint approximate line
 
@@ -226,29 +226,29 @@ void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point
   pub17_.publish(msg);
 }
 
-void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
   pp_.setCurrentPose(msg);
   is_pose_set_ = true;
 }
 
-void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
+void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   current_linear_velocity_ = msg->twist.linear.x;
   pp_.setCurrentVelocity(current_linear_velocity_);
   is_velocity_set_ = true;
 }
 
-void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg)
+void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr& msg)
 {
   command_linear_velocity_ = (!msg->waypoints.empty()) ? msg->waypoints.at(0).twist.twist.linear.x : 0;
-  autoware_msgs::lane expanded_lane(*msg);
+  autoware_msgs::Lane expanded_lane(*msg);
   connectVirtualLastWaypoints(&expanded_lane);
   pp_.setCurrentWaypoints(expanded_lane.waypoints);
   is_waypoint_set_ = true;
 }
 
-void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)
+void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::Lane* lane)
 {
   if (lane->waypoints.size() < 2)
   {
@@ -261,7 +261,7 @@ void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)
   const int dir = (rlt.x > 0) ? 1 : -1;
   const double interval = getPlaneDistance(p0.position, p1.position);
 
-  autoware_msgs::waypoint virtual_last_waypoint;
+  autoware_msgs::Waypoint virtual_last_waypoint;
   virtual_last_waypoint.pose.pose.orientation = pn.orientation;
   virtual_last_waypoint.twist.twist.linear.x = 0.0;
 
@@ -274,7 +274,7 @@ void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)
   }
 }
 
-void PurePursuitNode::callbackFromState(const std_msgs::StringConstPtr &msg)
+void PurePursuitNode::callbackFromState(const std_msgs::StringConstPtr& msg)
 {
   const bool is_ps = (msg->data.find("PositionStop") != std::string::npos);
   if (is_ps)
@@ -287,7 +287,7 @@ void PurePursuitNode::callbackFromState(const std_msgs::StringConstPtr &msg)
   }
 }
 
-double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
+double convertCurvatureToSteeringAngle(const double& wheel_base, const double& kappa)
 {
   return atan(wheel_base * kappa);
 }

@@ -49,7 +49,7 @@ WaypointReplanner::~WaypointReplanner()
 {
 }
 
-void WaypointReplanner::initParameter(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf)
+void WaypointReplanner::initParameter(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf)
 {
   velocity_max_ = kmph2mps(conf->velocity_max);
   velocity_min_ = kmph2mps(conf->velocity_min);
@@ -64,11 +64,11 @@ void WaypointReplanner::initParameter(const autoware_msgs::ConfigWaypointReplann
   resample_interval_ = conf->resample_interval;
   velocity_offset_ = conf->velocity_offset;
   end_point_offset_ = conf->end_point_offset;
+  constant_vmax_mode_ = conf->constant_vmax_mode;
   r_inf_ = 10 * r_th_;
-  vel_param_ = calcVelParam();
 }
 
-void WaypointReplanner::changeVelSign(autoware_msgs::lane* lane, bool positive) const
+void WaypointReplanner::changeVelSign(autoware_msgs::Lane* lane, bool positive) const
 {
   const int sgn = positive ? 1 : -1;
   for (auto& el : lane->waypoints)
@@ -77,12 +77,12 @@ void WaypointReplanner::changeVelSign(autoware_msgs::lane* lane, bool positive) 
   }
 }
 
-int WaypointReplanner::getDirection(const autoware_msgs::lane& lane) const
+int WaypointReplanner::getDirection(const autoware_msgs::Lane& lane) const
 {
   return lane.waypoints[0].twist.twist.linear.x < 0 ? -1 : 1;
 }
 
-void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
+void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane* lane)
 {
   if (lane->waypoints.empty())
   {
@@ -137,23 +137,7 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
   }
 }
 
-<<<<<<< 5160399124888a67fdc3b4ea046776fbb88b6547
-geometry_msgs::Point WaypointReplanner::calcRelativePoint(const geometry_msgs::Point& input_point,
-                                                          const geometry_msgs::Pose& pose)
-{
-  tf::Transform inverse;
-  tf::poseMsgToTF(pose, inverse);
-  tf::Transform transform = inverse.inverse();
-
-  tf::Point p;
-  pointMsgToTF(input_point, p);
-  tf::Point tf_p = transform * p;
-  geometry_msgs::Point tf_point_msg;
-  pointTFToMsg(tf_p, tf_point_msg);
-  return tf_point_msg;
-}
-
-void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane, int dir)
+void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane* lane, int dir)
 {
   if (lane->waypoints.size() < 2)
   {
@@ -168,7 +152,9 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
   {
     boost::circular_buffer<geometry_msgs::Point> curve_point = getCrvPointsOnResample(*lane, original_lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
-
+    lane->waypoints.back().twist.twist = original_lane.waypoints[i - 1].twist.twist;
+    lane->waypoints.back().wpstate = original_lane.waypoints[i - 1].wpstate;
+    lane->waypoints.back().change_flag = original_lane.waypoints[i - 1].change_flag;
     // if going straight
     if (curve_param.empty())
     {
@@ -179,9 +165,6 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
     {
       resampleOnCurve(curve_point[1], curve_param, lane, dir);
     }
-
-    lane->waypoints.back().wpstate = original_lane.waypoints[i].wpstate;
-    lane->waypoints.back().change_flag = original_lane.waypoints[i].change_flag;
   }
   lane->waypoints[0].pose.pose.orientation = lane->waypoints[1].pose.pose.orientation;
   lane->waypoints.back().twist.twist = original_lane.waypoints.back().twist.twist;
@@ -315,13 +298,13 @@ void WaypointReplanner::createRadiusList(const autoware_msgs::Lane& lane, std::v
   }
 }
 
-const double WaypointReplanner::calcVelParam() const
+const double WaypointReplanner::calcVelParam(const double vmax) const
 {
   if (fabs(r_th_ - r_min_) < 1e-8)
   {
     return DBL_MAX;  // error
   }
-  return (velocity_max_ - velocity_min_) / (r_th_ - r_min_);
+  return (vmax - velocity_min_) / (r_th_ - r_min_);
 }
 
 void WaypointReplanner::createCurveList(
@@ -360,7 +343,7 @@ void WaypointReplanner::createCurveList(
 }
 
 void WaypointReplanner::createVmaxList(
-    const autoware_msgs::lane& lane,
+    const autoware_msgs::Lane& lane,
     const std::unordered_map<unsigned long, std::pair<unsigned long, double> >& curve_list, unsigned long offset,
     std::unordered_map<unsigned long, std::pair<unsigned long, double> >* vmax_list)
 {
@@ -406,7 +389,7 @@ void WaypointReplanner::createVmaxList(
 }
 
 double WaypointReplanner::searchVmaxByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                            const autoware_msgs::lane& lane) const
+                                            const autoware_msgs::Lane& lane) const
 {
   if (offset > 0)
   {
@@ -423,7 +406,7 @@ double WaypointReplanner::searchVmaxByRange(unsigned long start_idx, unsigned lo
 }
 
 void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                           double vel, autoware_msgs::lane* lane)
+                                           double vel, autoware_msgs::Lane* lane)
 {
   if (offset > 0)
   {

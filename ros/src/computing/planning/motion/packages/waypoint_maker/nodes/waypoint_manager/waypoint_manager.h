@@ -33,14 +33,13 @@
 
 #include <ros/ros.h>
 #include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/ConfigWaypointReplanner.h>
-#include <autoware_msgs/ConfigWaypointFollower.h>
+#include <autoware_config_msgs/ConfigWaypointReplanner.h>
+#include <autoware_config_msgs/ConfigWaypointFollower.h>
 #include <std_msgs/String.h>
 #include "waypoint_replanner.h"
 
 namespace waypoint_maker
 {
-
 class WaypointManager
 {
 public:
@@ -54,11 +53,10 @@ private:
   bool replanning_mode_;
   WaypointReplanner replanner_;
   autoware_msgs::LaneArray lane_array_;
-  void replan(autoware_msgs::LaneArray *lane_array);
+  void replan(autoware_msgs::LaneArray* lane_array);
   void publishLaneArray();
   void laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array);
-  void configCallback(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf);
+  void configCallback(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf);
 };
-
 }
 #endif

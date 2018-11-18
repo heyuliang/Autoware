@@ -220,7 +220,7 @@ void WaypointLoaderNode::parseWaypointForVer3(const std::string& line, const std
   wp->change_flag = std::stoi(map["change_flag"]);
   wp->wpstate.steering_state = (map.find("steering_flag") != map.end()) ? std::stoi(map["steering_flag"]) : 0;
   wp->wpstate.accel_state = (map.find("accel_flag") != map.end()) ? std::stoi(map["accel_flag"]) : 0;
-  wp->wpstate.stopline_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
+  wp->wpstate.stop_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
   wp->wpstate.event_state = (map.find("event_flag") != map.end()) ? std::stoi(map["event_flag"]) : 0;
 }
 
