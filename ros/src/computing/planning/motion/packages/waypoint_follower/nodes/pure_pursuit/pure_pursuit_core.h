@@ -5,7 +5,8 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
- *  * Redistributions of source code must retain the above copyright notice, this
+ *  * Redistributions of source code must retain the above copyright notice,
+ * this
  *    list of conditions and the following disclaimer.
  *
  *  * Redistributions in binary form must reproduce the above copyright notice,
@@ -18,13 +19,16 @@
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
  *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
@@ -40,6 +44,7 @@
 #include <visualization_msgs/Marker.h>
 
 // User defined includes
+#include "accel.h"
 #include "autoware_config_msgs/ConfigWaypointFollower.h"
 #include "autoware_msgs/ControlCommandStamped.h"
 #include "autoware_msgs/Lane.h"
@@ -77,9 +82,11 @@ private:
 
   // class
   PurePursuit pp_;
-
+  Accel accel_;
   // publisher
   ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
+
+  ros::Publisher virtual_pose_pub_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_;
@@ -91,6 +98,7 @@ private:
   bool is_linear_interpolation_, publishes_for_steering_robot_;
   bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
   double current_linear_velocity_, command_linear_velocity_;
+  double current_angular_velocity_;
   double wheel_base_;
   bool positionstop_state_;
 
@@ -99,6 +107,7 @@ private:
   double const_velocity_;            // km/h
   double lookahead_distance_ratio_;
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
+  double delay_;
 
   // callbacks
   void callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr& config);
@@ -119,7 +128,6 @@ private:
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;
-  double computeCommandAccel() const;
   double computeAngularGravity(double velocity, double kappa) const;
 };
 
