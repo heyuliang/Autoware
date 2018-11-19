@@ -47,6 +47,7 @@ DatasetBrowser::DatasetBrowser(QWidget *parent):
 	timeOffsetLabel = ui.timeOffsetLabel;
 	saveImageButton = ui.saveImageButton;
 	playButton = ui.playButton;
+	enableLidarScanRender = ui.enableLidarScanRender;
 }
 
 DatasetBrowser::~DatasetBrowser()
@@ -91,7 +92,7 @@ DatasetBrowser::changeDataset(GenericDataset *ds, datasetType ty)
 }
 
 
-bool isInside (const LidarScanBag::Ptr &bg, ros::Time Tx)
+bool isTimeInside (const LidarScanBag::Ptr &bg, ros::Time Tx)
 {
 	return (Tx>=bg->startTime() and Tx<bg->stopTime());
 }
@@ -116,18 +117,16 @@ DatasetBrowser::setImageOnPosition (int v)
 	cv::cvtColor(image, image, CV_BGR2RGB);
 
 	try {
-		auto imageTime = ros::Time::fromBoost(curItem->getTimestamp());
+		if (enableLidarScanRender->isChecked()) {
 
-		if (meidaiPointClouds!=nullptr and isInside(meidaiPointClouds, imageTime)) {
+			auto imageTime = ros::Time::fromBoost(curItem->getTimestamp());
+			if (meidaiPointClouds!=nullptr and isTimeInside(meidaiPointClouds, imageTime)) {
 
-			uint32_t pcIdx = meidaiPointClouds->getPositionAtTime(imageTime);
-			auto pointCloud = meidaiPointClouds->at(pcIdx);
-			vector<cv::Point2f> projections = projectScan(pointCloud);
+				uint32_t pcIdx = meidaiPointClouds->getPositionAtTime(imageTime);
+				auto pointCloud = meidaiPointClouds->at(pcIdx);
+				vector<cv::Point2f> projections = projectScan(pointCloud);
 
-			for (auto &pt2d: projections) {
-				if ((pt2d.x>=0 and pt2d.x<image.cols) and (pt2d.y>=0 and pt2d.y<image.rows)) {
-					cv::circle(image, pt2d, 3, cv::Scalar(0,0,255));
-				}
+				drawPoints(image, projections);
 			}
 		}
 	} catch (const std::exception &e) {}
@@ -213,4 +212,18 @@ const
 	}
 
 	return projections;
+}
+
+
+const cv::Scalar projectionColor (255,0,0);
+
+void
+DatasetBrowser::drawPoints
+(cv::Mat &target, const std::vector<cv::Point2f> &pointList)
+{
+	for (auto &pt2d: pointList) {
+		if ((pt2d.x>=0 and pt2d.x<target.cols) and (pt2d.y>=0 and pt2d.y<target.rows)) {
+			cv::circle(target, pt2d, 2, projectionColor, -1);
+		}
+	}
 }

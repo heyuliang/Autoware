@@ -50,6 +50,7 @@ private:
 	RatioLayoutedFrame *frame;
 	QLabel *timeOffsetLabel;
 	QPushButton *saveImageButton;
+	QCheckBox *enableLidarScanRender;
 
 	QPushButton *playButton;
 
@@ -62,6 +63,8 @@ private:
 	std::vector<cv::Point2f> projectScan
 	(pcl::PointCloud<pcl::PointXYZ>::ConstPtr lidarScan)
 	const;
+
+	static void drawPoints (cv::Mat &target, const std::vector<cv::Point2f> &pointList);
 
 	GenericDataItem::ConstPtr dataItem0;
 
