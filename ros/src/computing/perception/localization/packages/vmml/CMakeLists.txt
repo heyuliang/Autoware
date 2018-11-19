@@ -118,6 +118,7 @@ add_library(
 		src/datasets/MeidaiLocalizerGNSS.cpp
 		src/datasets/MeidaiLocalizerNDT.cpp
 		src/datasets/NdtLocalizer.cpp
+		src/datasets/LidarScanBag.cpp
 )
 
 

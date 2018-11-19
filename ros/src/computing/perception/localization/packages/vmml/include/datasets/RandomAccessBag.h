@@ -42,7 +42,7 @@ public:
 		const ros::Time &startTime = ros::TIME_MIN,
 		const ros::Time &endTime = ros::TIME_MAX);
 
-	~RandomAccessBag();
+	virtual ~RandomAccessBag();
 
 	template<typename T>
 	boost::shared_ptr<T>

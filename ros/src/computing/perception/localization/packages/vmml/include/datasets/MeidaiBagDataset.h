@@ -26,11 +26,14 @@
 #include "utilities.h"
 #include "datasets/GenericDataset.h"
 #include "datasets/RandomAccessBag.h"
+#include "datasets/LidarScanBag.h"
 
 
 #ifndef _MEIDAIBAG_H_
 #define _MEIDAIBAG_H_
 
+
+extern const TTransform defaultLidarToCameraTransform;
 
 
 struct PoseTimestamp : public Pose
@@ -234,8 +237,10 @@ public:
 
 	float getZoomRatio () const;
 
-	RandomAccessBag::Ptr getVelodyneBag()
+	inline RandomAccessBag::Ptr getVelodyneBag()
 	{ return velodyneBag; }
+
+	LidarScanBag::Ptr getLidarScanBag ();
 
 	void setLidarParameters (
 		const std::string &pvelodyneCalibrationFile,

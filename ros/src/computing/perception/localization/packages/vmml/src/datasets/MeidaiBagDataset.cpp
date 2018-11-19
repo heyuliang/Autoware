@@ -30,6 +30,12 @@ const string
 	meidaiBagVelodyne   = "/velodyne_packets";
 
 
+const TTransform defaultLidarToCameraTransform =
+	TTransform::from_XYZ_RPY(
+		Vector3d(0.9, 0.3, -0.6),
+		-1.520777, -0.015, -1.5488);
+
+
 MeidaiBagDataset::MeidaiBagDataset(
 
 	const string &path,
