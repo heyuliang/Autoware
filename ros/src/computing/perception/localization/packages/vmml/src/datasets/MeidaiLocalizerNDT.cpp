@@ -44,6 +44,7 @@ createTrajectoryFromNDT (LidarScanBag &bagsrc, Trajectory &resultTrack, const Tr
 	if (bagsrc.getTopic() != "/velodyne_packets")
 		throw runtime_error("Not Velodyne bag");
 
+	bagsrc.filtered = true;
 	NdtLocalizer lidarLocalizer(NuInitialConfig);
 	lidarLocalizer.loadMap(pcdMapFile);
 	resultTrack.clear();

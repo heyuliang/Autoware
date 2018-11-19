@@ -64,10 +64,21 @@ RandomAccessBag::getPositionAtDurationSecond (const double S) const
 	ros::Time Tx = msgPtr.at(0).time + Sd;
 	assert (Tx>= msgPtr.at(0).time and Tx<=msgPtr.back().time);
 
-	auto it = std::lower_bound(msgPtr.begin(), msgPtr.end(), Tx,
+	return getPositionAtTime (Tx);
+}
+
+
+uint32_t
+RandomAccessBag::getPositionAtTime (const ros::Time &tx) const
+{
+	if (tx<=msgPtr.at(0).time or tx>msgPtr.back().time)
+		throw std::runtime_error("Specified time is outside the range");
+
+	auto it = std::lower_bound(msgPtr.begin(), msgPtr.end(), tx,
 		[](const rosbag::IndexEntry &iptr, const ros::Time &t)
 		{ return (iptr.time < t); }
 	);
+
 	return it - msgPtr.begin();
 }
 

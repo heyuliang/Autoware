@@ -44,9 +44,8 @@ public:
 	inline
 	pcl::PointCloud<pcl::PointXYZ>::ConstPtr
 	atDurationSecond (const double S)
-	{
-		return at (getPositionAtDurationSecond(S));
-	}
+	{ return at (getPositionAtDurationSecond(S)); }
+
 
 
 	bool filtered = false;

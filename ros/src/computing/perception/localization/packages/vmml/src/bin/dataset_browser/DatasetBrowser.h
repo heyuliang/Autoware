@@ -17,6 +17,7 @@
 #include "ratio_layouted_frame.h"
 
 #include "datasets/GenericDataset.h"
+#include "datasets/LidarScanBag.h"
 
 
 class DatasetBrowser: public QWidget
@@ -28,7 +29,12 @@ public:
 	explicit DatasetBrowser(QWidget *parent=NULL);
 	virtual ~DatasetBrowser();
 
-	void changeDataset(GenericDataset *ds);
+	enum datasetType {
+		OxfordType,
+		MeidaiType
+	};
+
+	void changeDataset(GenericDataset *ds, datasetType t);
 
 public slots:
 	void on_timelineSlider_sliderMoved(int value);
@@ -53,7 +59,14 @@ private:
 	void stopPlayBag();
 	void disableControlsOnPlaying (bool state);
 
+	std::vector<cv::Point2f> projectScan
+	(pcl::PointCloud<pcl::PointXYZ>::ConstPtr lidarScan)
+	const;
+
 	GenericDataItem::ConstPtr dataItem0;
+
+	// Special case for Meidai Bag Dataset: show projection of Velodyne scans
+	LidarScanBag::Ptr meidaiPointClouds = nullptr;
 };
 
 #endif /* _DATASETBROWSER_H_ */

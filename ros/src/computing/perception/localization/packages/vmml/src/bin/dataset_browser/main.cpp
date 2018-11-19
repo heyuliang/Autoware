@@ -32,12 +32,12 @@ int main (int argc, char *argv[])
 	if (boost::filesystem::is_directory(datasetPath)) {
 		auto o_dataset = new OxfordDataset(datasetPath.string(), oxfordModelDir);
 		o_dataset->setZoomRatio(0.5);
-		dbs.changeDataset(o_dataset);
+		dbs.changeDataset(o_dataset, DatasetBrowser::OxfordType);
 	}
 
 	else if (datasetPath.extension()==".bag") {
 		auto b_dataset = new MeidaiBagDataset(datasetPath.string(), 0, 1, "", false);
-		dbs.changeDataset(b_dataset);
+		dbs.changeDataset(b_dataset, DatasetBrowser::MeidaiType);
 	}
 
 	else {

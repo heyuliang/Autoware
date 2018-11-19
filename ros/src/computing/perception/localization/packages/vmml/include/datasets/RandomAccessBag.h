@@ -15,6 +15,7 @@
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <memory>
+#include <exception>
 
 
 //ACCESS_PRIVATE_FUN(rosbag::Bag,
@@ -30,6 +31,12 @@
 //	ros::M_string::const_iterator (ros::M_string const&, std::string const&, unsigned int, unsigned int, bool) const,
 //	checkField);
 
+
+class time_exception: public std::runtime_error
+{
+	virtual const char* what() const throw()
+	{ return "Invalid out-of-time requested"; }
+};
 
 
 class RandomAccessBag: public rosbag::View {
@@ -73,6 +80,8 @@ public:
 	{ return static_cast<size_t>(size_cache_); }
 
 	uint32_t getPositionAtDurationSecond (const double S) const;
+
+	uint32_t getPositionAtTime (const ros::Time &tx) const;
 
 	/*
 	 * Duration of this view in ros::Duration

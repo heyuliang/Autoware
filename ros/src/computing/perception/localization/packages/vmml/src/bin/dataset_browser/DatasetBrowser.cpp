@@ -18,9 +18,23 @@
 #include <QFileDialog>
 
 #include "DatasetBrowser.h"
+#include "BaseFrame.h"
+#include "datasets/MeidaiBagDataset.h"
 
 
 using namespace std;
+
+
+// XXX: Find a way to specify these values from external input
+CameraPinholeParams meidaiCamera1Params(
+	1150.96938467,	// fx
+	1150.96938467,	// fy
+	988.511326762,	// cx
+	692.803953253,	// cy
+	1920,			// width
+	1440			// height
+);
+
 
 
 DatasetBrowser::DatasetBrowser(QWidget *parent):
@@ -57,13 +71,29 @@ DatasetBrowser::on_saveImageButton_clicked(bool checked)
 }
 
 
+// XXX: Change this
+const string lidarCalibrationParams("/home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml");
+
 void
-DatasetBrowser::changeDataset(GenericDataset *ds)
+DatasetBrowser::changeDataset(GenericDataset *ds, datasetType ty)
 {
 	openDs = ds;
 	timelineSlider->setRange(0, ds->size()-1);
 	dataItem0 = ds->get(0);
+
+	if (ty==DatasetBrowser::MeidaiType) {
+		MeidaiBagDataset* meidaiDs = static_cast<MeidaiBagDataset*>(ds);
+		meidaiDs->setLidarParameters(lidarCalibrationParams, string(), defaultLidarToCameraTransform);
+		meidaiPointClouds = meidaiDs->getLidarScanBag();
+	}
+
 	setImageOnPosition(0);
+}
+
+
+bool isInside (const LidarScanBag::Ptr &bg, ros::Time Tx)
+{
+	return (Tx>=bg->startTime() and Tx<bg->stopTime());
 }
 
 
@@ -84,6 +114,24 @@ DatasetBrowser::setImageOnPosition (int v)
 
 	cv::Mat image = curItem->getImage();
 	cv::cvtColor(image, image, CV_BGR2RGB);
+
+	try {
+		auto imageTime = ros::Time::fromBoost(curItem->getTimestamp());
+
+		if (meidaiPointClouds!=nullptr and isInside(meidaiPointClouds, imageTime)) {
+
+			uint32_t pcIdx = meidaiPointClouds->getPositionAtTime(imageTime);
+			auto pointCloud = meidaiPointClouds->at(pcIdx);
+			vector<cv::Point2f> projections = projectScan(pointCloud);
+
+			for (auto &pt2d: projections) {
+				if ((pt2d.x>=0 and pt2d.x<image.cols) and (pt2d.y>=0 and pt2d.y<image.rows)) {
+					cv::circle(image, pt2d, 3, cv::Scalar(0,0,255));
+				}
+			}
+		}
+	} catch (const std::exception &e) {}
+
 	QImage curImage (image.data, image.cols, image.rows, image.step[0], QImage::Format_RGB888);
 	frame->setImage(curImage);
 }
@@ -142,4 +190,27 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 	}
 
 	return;
+}
+
+
+std::vector<cv::Point2f>
+DatasetBrowser::projectScan
+(pcl::PointCloud<pcl::PointXYZ>::ConstPtr lidarScan)
+const
+{
+	vector<cv::Point2f> projections;
+
+	// Create fake frame
+	BaseFrame frame;
+	frame.setPose(defaultLidarToCameraTransform);
+	frame.setCameraParam(&meidaiCamera1Params);
+
+	for (auto it=lidarScan->begin(); it!=lidarScan->end(); ++it) {
+		auto &pts = *it;
+		Vector3d pt3d (pts.x, pts.y, pts.z);
+		auto p2d = frame.project(pt3d);
+		projections.push_back(cv::Point2f(p2d.x(), p2d.y()));
+	}
+
+	return projections;
 }
