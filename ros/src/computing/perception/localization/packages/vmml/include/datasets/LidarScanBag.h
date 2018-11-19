@@ -21,6 +21,9 @@
 #include "RandomAccessBag.h"
 
 
+/*
+ * Representation of Rosbag Velodyne Scan as point cloud
+ */
 class LidarScanBag : public RandomAccessBag
 {
 public:

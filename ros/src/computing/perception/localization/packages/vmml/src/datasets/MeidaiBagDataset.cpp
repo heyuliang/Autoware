@@ -300,7 +300,8 @@ MeidaiBagDataset::createCache(bool useNdt)
 
 	if (useNdt==true) {
 		cout << "Creating NDT Trajectory\n";
-		createTrajectoryFromNDT(*velodyneBag, ndtTrack, gnssTrack, velodyneCalibrationFilePath, pcdMapFilePath);
+		auto lidarBag = getLidarScanBag();
+		createTrajectoryFromNDT(*lidarBag, ndtTrack, gnssTrack, velodyneCalibrationFilePath, pcdMapFilePath);
 		trajectorySrc = &ndtTrack;
 	}
 
@@ -357,6 +358,26 @@ const
 {
 	uint32_t pos = cameraRawBag->getPositionAtDurationSecond(second);
 	return get(pos);
+}
+
+
+LidarScanBag::Ptr
+MeidaiBagDataset::getLidarScanBag ()
+{
+	if (velodyneCalibrationFilePath.empty())
+		throw runtime_error("Velodyne calibration file not set");
+
+	ros::Time tstart, tstop;
+	if (isSubset()) {
+		tstart = subsetBeginTime;
+		tstart = subsetEndTime;
+	}
+	else {
+		tstart = ros::TIME_MIN;
+		tstop = ros::TIME_MAX;
+	}
+
+	return LidarScanBag::Ptr (new LidarScanBag(*bagfd, meidaiBagVelodyne, velodyneCalibrationFilePath, tstart, tstop));
 }
 
 

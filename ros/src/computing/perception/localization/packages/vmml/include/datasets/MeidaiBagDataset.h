@@ -304,7 +304,8 @@ void createTrajectoryFromGnssBag (
 	int plane_number=7);
 
 void createTrajectoryFromNDT (
-	RandomAccessBag &bagsrc,
+	LidarScanBag &bagsrc,
+//	RandomAccessBag &bagsrc,
 	Trajectory &resultTrack, const Trajectory &gnssTrack,
 	const std::string &velodyneParamFile, const std::string &pcdMapFile);
 
