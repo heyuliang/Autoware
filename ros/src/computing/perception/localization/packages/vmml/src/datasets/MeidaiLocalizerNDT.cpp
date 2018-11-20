@@ -36,8 +36,6 @@ const NdtLocalizerInitialConfig NuInitialConfig = {
 };
 
 
-
-
 void
 createTrajectoryFromNDT (LidarScanBag &bagsrc, Trajectory &resultTrack, const Trajectory &gnssTrack, const string &velodyneParamFile, const string &pcdMapFile)
 {
@@ -68,8 +66,6 @@ createTrajectoryFromNDT (LidarScanBag &bagsrc, Trajectory &resultTrack, const Tr
 				if (lidarLocalizer.isPointInsideMap(cGnssPos.position())==false)
 					throw out_of_range("Initialization point lies outside map");
 
-				Vector3d p = cGnssPos.position();
-				Quaterniond q = cGnssPos.orientation();
 				lidarLocalizer.putEstimation(cGnssPos);
 				cNdtPose = lidarLocalizer.localize(cscan);
 				initialized = true;
@@ -86,6 +82,7 @@ createTrajectoryFromNDT (LidarScanBag &bagsrc, Trajectory &resultTrack, const Tr
 			tpose.timestamp = scanTime;
 			resultTrack.push_back(tpose);
 
+
 		} catch (out_of_range &e) {
 			cerr << "Error: " << e.what() << endl;
 			resultTrack.clear();
@@ -94,4 +91,16 @@ createTrajectoryFromNDT (LidarScanBag &bagsrc, Trajectory &resultTrack, const Tr
 	}
 
 	return;
+}
+
+
+void
+createTrajectoryFromNDT2(
+	LidarScanBag &bagsrc,
+	Trajectory &resultTrack,
+	const Trajectory &gnssTrack,
+	const string &velodyneParamFile,
+	const string &pcdMapFile )
+{
+
 }
