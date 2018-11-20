@@ -19,6 +19,7 @@ add_message_files(
   ConfigCompareMapFilter.msg
   ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
+  ConfigFootprintFilter.msg
   ConfigICP.msg
   ConfigLaneRule.msg
   ConfigLaneSelect.msg

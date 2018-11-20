@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
         sensor_msgs
+        geometry_msgs
         pcl_ros
         pcl_conversions
         cv_bridge
@@ -18,6 +19,7 @@ catkin_package(CATKIN_DEPENDS
         roscpp
         std_msgs
         sensor_msgs
+        geometry_msgs
         pcl_ros
         pcl_conversions
         cv_bridge
@@ -167,6 +169,16 @@ target_link_libraries(compare_map_filter
         ${Qt5Core_LIBRARIES}
         )
 add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
+
+add_executable(footprint_filter
+        nodes/footprint_filter/footprint_filter.cpp
+        )
+target_link_libraries(footprint_filter
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
+        )
+add_dependencies(footprint_filter ${catkin_EXPORTED_TARGETS})
 
 ### Unit Tests ###
 #if (CATKIN_ENABLE_TESTING)

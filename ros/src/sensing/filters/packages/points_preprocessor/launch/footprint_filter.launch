@@ -1,0 +1,24 @@
+<launch>
+	<arg name="input_point_topic" default="/points_raw" />
+	<arg name="output_point_topic" default="/points_clipped" />
+
+	<arg name="baselink_frame" default="/base_link" />
+	<arg name="use_vehicle_info_param" default="true" />
+	<arg name="center_to_base" default="1.0" />
+	<arg name="length" default="5.0" />
+	<arg name="width" default="2.0" />
+	<arg name="height" default="2.5" />
+
+	<node pkg="points_preprocessor" type="footprint_filter" name="footprint_filter">
+		<remap from="/points_raw" to="$(arg input_point_topic)"/>
+		<remap from="/points_clipped" to="$(arg output_point_topic)"/>
+
+		<param name="baselink_frame" value="$(arg baselink_frame)" />
+		<param name="use_vehicle_info_param" value="$(arg use_vehicle_info_param)" />
+		<param name="center_to_base" value="$(arg center_to_base)" />
+		<param name="length" value="$(arg length)" />
+		<param name="width" value="$(arg width)" />
+		<param name="height" value="$(arg height)" />
+	</node>
+
+</launch>
