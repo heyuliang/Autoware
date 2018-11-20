@@ -247,6 +247,15 @@ NdtLocalizer::localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
 }
 
 
+Pose
+NdtLocalizer::solveFromEstimation
+(const Pose &poseEstimation, pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan)
+{
+	putEstimation(poseEstimation);
+	return localize(scan);
+}
+
+
 bool
 NdtLocalizer::isPointInsideMap (const Vector3d &pt) const
 {

@@ -50,6 +50,8 @@ public:
 
 	Pose localize (pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan);
 
+	Pose solveFromEstimation (const Pose &poseEstimation, pcl::PointCloud<pcl::PointXYZ>::ConstPtr scan);
+
 	virtual ~NdtLocalizer();
 
 	Eigen::Vector3d getMinPoint() const

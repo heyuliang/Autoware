@@ -97,7 +97,6 @@ set(REQUIRED_LIBS
 add_library(
 	vmml STATIC
 		src/VMap.cpp
-#		src/MapBuilder.cpp
 		src/MapBuilder2.cpp
 		src/KeyFrame.cpp
 		src/MapPoint.cpp
