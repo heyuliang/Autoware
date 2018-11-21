@@ -13,7 +13,7 @@ from python_qt_binding.QtWidgets import QFileDialog
 from python_qt_binding.QtWidgets import QHBoxLayout
 from python_qt_binding.QtWidgets import QVBoxLayout
 
-from profile import AwConfigNode
+from config import AwConfigTree
 
 class AwMainFrame(QWidget):
 
@@ -35,7 +35,7 @@ class AwMainFrame(QWidget):
 
     def select_profile(self):
         path = QFileDialog.getExistingDirectory(self, "Select Config", os.path.expanduser("~/.autoware/profiles"))
-        self.profile_selected.emit(path + "/")'
+        self.profile_selected.emit(path + "/")
 
 class AwMainWidget(QWidget):
 
@@ -80,7 +80,8 @@ class AwMainWidget(QWidget):
 
     @QtSlot(str)
     def on_profile_selected(self, path):
-        self.profile = AwConfigNode.load(path)
+        self.profile = AwConfigTree(path)
+        self.profile.load()
         self.profile.dump()
         
 
