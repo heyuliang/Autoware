@@ -51,6 +51,7 @@ public:
 		ngelock.unlock();
 	}
 
+
 protected:
 	std::mutex ngelock;
 };
@@ -61,7 +62,27 @@ class map : public std::map<K,V>
 {
 public:
 
+	typedef std::map<K,V> MtMapBase;
+
 	// insert
+	std::pair<typename MtMapBase::iterator, bool>
+	insert(const typename MtMapBase::value_type &val)
+	{
+		ngelock.lock();
+		auto rt = MtMapBase::insert(val);
+		ngelock.unlock();
+		return rt;
+	}
+
+	// delete
+	typename MtMapBase::size_type
+	erase(const typename MtMapBase::key_type &k)
+	{
+		ngelock.lock();
+		auto sz = MtMapBase::erase(k);
+		ngelock.unlock();
+		return sz;
+	}
 
 	// key access
 
@@ -69,7 +90,7 @@ public:
 
 protected:
 
-	std::mutex cLock;
+	std::mutex ngelock;
 };
 
 

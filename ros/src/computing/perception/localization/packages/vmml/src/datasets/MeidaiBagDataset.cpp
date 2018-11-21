@@ -590,6 +590,7 @@ MeidaiDataItem::getTimestamp() const
 PoseTimestamp
 PoseTimestamp::operator* (const Pose &transform)
 {
+//	Pose me = Pose::from_Pos_Quat(this->position(), this->orientation());
 	Pose P = static_cast<Pose&>(*this) * transform;
 	return PoseTimestamp(P, this->timestamp);
 }

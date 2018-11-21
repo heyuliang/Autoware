@@ -19,6 +19,7 @@
 
 #include "DatasetBrowser.h"
 #include "BaseFrame.h"
+
 #include "datasets/MeidaiBagDataset.h"
 
 
@@ -124,7 +125,7 @@ DatasetBrowser::setImageOnPosition (int v)
 
 				uint32_t pcIdx = meidaiPointClouds->getPositionAtTime(imageTime);
 				auto pointCloud = meidaiPointClouds->at(pcIdx);
-				vector<cv::Point2f> projections = projectScan(pointCloud);
+				auto projections = projectScan(pointCloud);
 
 				drawPoints(image, projections);
 			}
@@ -192,12 +193,12 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 }
 
 
-std::vector<cv::Point2f>
+Mt::vector<cv::Point2f>
 DatasetBrowser::projectScan
 (pcl::PointCloud<pcl::PointXYZ>::ConstPtr lidarScan)
 const
 {
-	vector<cv::Point2f> projections;
+	Mt::vector<cv::Point2f> projections;
 
 	// Create fake frame
 	BaseFrame frame;
@@ -219,7 +220,7 @@ const cv::Scalar projectionColor (255,0,0);
 
 void
 DatasetBrowser::drawPoints
-(cv::Mat &target, const std::vector<cv::Point2f> &pointList)
+(cv::Mat &target, const Mt::vector<cv::Point2f> &pointList)
 {
 	for (auto &pt2d: pointList) {
 		if ((pt2d.x>=0 and pt2d.x<target.cols) and (pt2d.y>=0 and pt2d.y<target.rows)) {

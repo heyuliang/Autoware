@@ -414,6 +414,7 @@ private:
 			if (useNdt==false)
 				debug ("Not using NDT; camera positions are estimated from GNSS");
 
+			meidaiNdtParameters.lidarToCamera = defaultLidarToCameraTransform;
 			nuDataset->setLidarParameters(meidaiNdtParameters.velodyneCalibrationPath, meidaiNdtParameters.pcdMapPath, meidaiNdtParameters.lidarToCamera);
 			nuDataset->forceCreateCache(resetSubset, useNdt);
 		}
