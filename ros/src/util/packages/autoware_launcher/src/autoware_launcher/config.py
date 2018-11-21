@@ -8,59 +8,79 @@ import yaml
 
 class AwConfigNode(object):
 
-    def __init__(self):
-        self.nodepath = ""
+    def __init__(self, parent, nodepath):
+        self.parent   = parent
+        self.nodepath = nodepath
         self.children = []
-        self.info = False
-        self.title = "[No information]"
+        self.info = {"nodetype":"unknown", "title":"No Title"}
+
+    def isInnerNode(self):
+        return self.info["nodetype"] == "node"
+
+    def getNodeName(self):
+        return os.path.basename(self.nodepath)
 
     def dump(self, indent = 0):
         print((" " * indent) + "--------")
-        print((" " * indent) + "Title : " + self.title)
         print((" " * indent) + "Path  : " + self.nodepath)
+        print((" " * indent) + "Type  : " + self.info["nodetype"])
+        print((" " * indent) + "Title : " + self.info["title"])
         for child in self.children:
             child.dump(indent + 2)
 
-class AwConfigTree(object):
-
-    def __init__(self, treepath):
-        self.rootnode = None
-        self.treepath = treepath
-
-    def dump(self):
-        if self.rootnode is not None:
-            self.rootnode.dump()
-
-    def load(self):
-        self.rootnode = self.load_node("root")
-
-    def load_node(self, nodepath):
-
-        node = AwConfigNode()
-        node.nodepath = nodepath
-
-        # Read information file
+    def load_yaml(self, tree):
+        fullpath = os.path.join(tree.getTreePath(), self.nodepath + ".yaml")
         try:
-            fullpath = self.treepath + nodepath + ".yaml"
             if os.path.isfile(fullpath):
                 with open(fullpath) as file:
-                    info = yaml.safe_load(file)
-                    node.info = True
-                    node.title = info["title"]
+                    self.info.update(yaml.safe_load(file))
         except:
-            print("yaml open error")
-            pass
+            print("load yaml error: " + fullpath)
 
-        # Read launch file
-        if node.info:
-            fullpath = self.treepath + nodepath + ".launch"
+    def load_launch(self, tree):
+        fullpath = os.path.join(tree.getTreePath(), self.nodepath + ".launch")
+        try:
             root_xml = ET.parse(fullpath).getroot()
             for child_xml in root_xml:
                 if child_xml.tag == "include":
                     child_name, child_ext = os.path.splitext(os.path.basename(child_xml.attrib.get("file")))
-                    node.children.append( self.load_node(nodepath + os.path.sep + child_name) )
+                    child_node = AwConfigNode(self, os.path.join(self.nodepath, child_name))
+                    child_node.load(tree)
+                    self.children.append( child_node )
+        except:
+            print("load launch error: " + fullpath)
+    
 
-        return node
+    def load(self, tree):
+        self.load_yaml(tree)
+        if self.isInnerNode():
+            self.load_launch(tree)
+
+
+
+class AwConfigTree(object):
+
+    def __init__(self, treepath):
+        self.__rootnode = None
+        self.__treepath = treepath
+
+    def getTreePath(self):
+        return self.__treepath
+
+    def getRootNode(self):
+        return self.__rootnode
+
+    def dump(self):
+        print("--------")
+        print("Config : " + self.__treepath)
+        if self.__rootnode is not None:
+            self.__rootnode.dump()
+
+    def load(self):
+        self.__rootnode = AwConfigNode(self, "root")
+        self.__rootnode.load(self)
+        self.dump()
+
 
 
 if __name__ == "__main__":

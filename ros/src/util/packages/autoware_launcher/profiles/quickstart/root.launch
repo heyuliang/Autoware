@@ -1,3 +1,6 @@
 <launch>
-    <include file="root/map.launch"/>
+    <arg name="ROOT_PATH" default="$(env PWD)"/>
+    <include pass_all_args="false" file="$(arg ROOT_PATH)/root/map.launch"/> 
+    <include pass_all_args="false" file="$(arg ROOT_PATH)/root/sensors.launch"/>
+    <include pass_all_args="true"  file="$(arg ROOT_PATH)/root/rviz.launch"/>
 </launch>

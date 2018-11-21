@@ -1,11 +1,13 @@
 import os
-import subprocess
 
 
 from python_qt_binding.QtCore import Signal as QtSignal
 from python_qt_binding.QtCore import Slot   as QtSlot
-from python_qt_binding.QtWidgets import QApplication as AwApplication
+from python_qt_binding.QtCore import QProcess
+from python_qt_binding.QtGui import QPainter
 from python_qt_binding.QtWidgets import QSizePolicy
+from python_qt_binding.QtWidgets import QStyle
+from python_qt_binding.QtWidgets import QStyleOption
 from python_qt_binding.QtWidgets import QWidget
 from python_qt_binding.QtWidgets import QLabel
 from python_qt_binding.QtWidgets import QPushButton
@@ -15,33 +17,138 @@ from python_qt_binding.QtWidgets import QVBoxLayout
 
 from config import AwConfigTree
 
-class AwMainFrame(QWidget):
+class AwBasicFrameMenu(QWidget):
 
-    profile_selected = QtSignal(str)
+    def __init__(self, title = "[No Title]"):
+
+    	super(AwBasicFrameMenu, self).__init__()
+        self.mylayout = QHBoxLayout()
+        self.setLayout(self.mylayout)
+
+        label = QLabel(title)
+        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.mylayout.addWidget(label)
+
+    def addMenuButton(self, button):
+
+        self.mylayout.addWidget(button)
+
+    def paintEvent(self, event):
+        style_option = QStyleOption()
+        style_option.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, style_option, painter, self)
+
+
+
+class AwBasicFrame(QWidget):
 
     def __init__(self):
 
-    	super(AwMainFrame, self).__init__()
-        hlayout = QHBoxLayout()
-        self.setLayout(hlayout)
+    	super(AwBasicFrame, self).__init__()
+        self.mylayout = QVBoxLayout()
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
+        self.mylayout.setSpacing(0)
+        self.setLayout(self.mylayout)
 
-        profile_label = QLabel("Profile")
-        profile_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        hlayout.addWidget(profile_label)
+    def setFrameWidgets(self, menu, body):
+
+        self.setObjectName("FrameWidget")
+        menu.setObjectName("FrameMenu")
+        body.setObjectName("FrameBody")
+        self.setStyleSheet("#FrameWidget { border: 1px solid; } #FrameMenu { padding: 3px; border-bottom: 1px solid; } #FrameBody { padding: 3px; }")
+        self.mylayout.addWidget(menu)
+        self.mylayout.addWidget(body)
+        
+    def paintEvent(self, event):
+
+        style_option = QStyleOption()
+        style_option.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, style_option, painter, self)
+
+
+
+class AwMapConfigFrame(AwBasicFrame):
+
+    def __init__(self):
+    	super(AwMapConfigFrame, self).__init__()
+        config_button = QPushButton("Config")
+        config_button.setEnabled(False)
+        menu = AwBasicFrameMenu("Map")
+        menu.addMenuButton(config_button)
+        self.body = QLabel("[No Data]")
+        self.setFrameWidgets(menu, self.body)
+
+    def loadConfig(self, config):
+        self.body.setText(config.info["title"])
+
+class AwSensorsConfigFrame(AwBasicFrame):
+
+    def __init__(self):
+    	super(AwSensorsConfigFrame, self).__init__()
+        config_button = QPushButton("Config")
+        config_button.setEnabled(False)
+        menu = AwBasicFrameMenu("Sensors")
+        menu.addMenuButton(config_button)
+        self.body = QLabel("[No Data]")
+        self.setFrameWidgets(menu, self.body)
+
+    def loadConfig(self, config):
+        self.body.setText(config.info["title"])
+
+class AwRvizConfigFrame(AwBasicFrame):
+
+    def __init__(self):
+    	super(AwRvizConfigFrame, self).__init__()
+        config_button = QPushButton("Config")
+        config_button.setEnabled(False)
+        menu = AwBasicFrameMenu("Rviz")
+        menu.addMenuButton(config_button)
+        self.body = QLabel("[No Data]")
+        self.setFrameWidgets(menu, self.body)
+
+    def loadConfig(self, config):
+        self.body.setText(config.info["title"])
+
+
+
+class AwRootConfigFrame(AwBasicFrame):
+
+    profileSelected = QtSignal(AwConfigTree)
+
+    def __init__(self):
+
+    	super(AwRootConfigFrame, self).__init__()
 
         select_button = QPushButton("Select")
-        select_button.clicked.connect(self.select_profile)
-        hlayout.addWidget(select_button)
+        select_button.clicked.connect(self.selectProfile)
 
-    def select_profile(self):
-        path = QFileDialog.getExistingDirectory(self, "Select Config", os.path.expanduser("~/.autoware/profiles"))
-        self.profile_selected.emit(path + "/")
+        menu = AwBasicFrameMenu("Profile")
+        menu.addMenuButton(select_button)
 
-class AwMainWidget(QWidget):
+        self.body = QLabel("[No Data]")
+        
+        self.setFrameWidgets(menu, self.body)
+
+    def selectProfile(self):
+        path = QFileDialog.getExistingDirectory(self, "Select Profile", os.path.expanduser("~/.autoware/profiles"))
+        if path:
+            self.profile = AwConfigTree(path)
+            self.profile.load()
+            self.profileSelected.emit(self.profile)
+
+    def loadConfig(self, config):
+        self.body.setText(config.getTreePath())
+
+
+
+class AwRootConfigWidget(QWidget):
 
     def __init__(self):
-    	super(AwMainWidget, self).__init__()
+    	super(AwRootConfigWidget, self).__init__()
         self.profile = None
+        self.frames = {}
 
         button_root = QPushButton("Launch")
         button_root.setCheckable(True)
@@ -56,43 +163,47 @@ class AwMainWidget(QWidget):
         hlayout.addWidget(button_root)
         hlayout.addWidget(button_rviz)
 
-        frame_main = AwMainFrame()
-        frame_main.profile_selected.connect(self.on_profile_selected)
+        self.frames["root"] = AwRootConfigFrame()
+        self.frames["root"] .profileSelected.connect(self.loadConfig)
+
+        self.frames["map"]     = AwMapConfigFrame()
+        self.frames["sensors"] = AwSensorsConfigFrame()
+        self.frames["rviz"]    = AwRvizConfigFrame()
 
         vlayout = QVBoxLayout()
-        vlayout.addWidget(frame_main)
-        vlayout.addWidget(AwMapFrame())
+        vlayout.addWidget(self.frames["root"])
+        vlayout.addWidget(self.frames["map"])
+        vlayout.addWidget(self.frames["sensors"])
+        vlayout.addWidget(self.frames["rviz"])
+        vlayout.addStretch()
         vlayout.addLayout(hlayout)
         self.setLayout(vlayout)
 
     def launch_root(self, checked):
-        if checked:
-            if self.profile is not None:
-                self.proc_root = subprocess.Popen(["roslaunch", "root.launch"], cwd = profile.rootpath)
-        else:
+        if self.profile is not None:
+            if checked:
+                proc = os.path.join(self.profile.getTreePath(), "root.launch")
+                args = " ROOT_PATH:=" + self.profile.getTreePath()
+                self.proc_root = QProcess()
+                print "roslaunch " + proc + args
+                self.proc_root.start("roslaunch " + proc + args)
+            else:
                 self.proc_root.terminate()
 
     def launch_rviz(self, checked):
         if checked:
-            self.proc_rviz = subprocess.Popen(["rosrun", "rviz", "rviz"])
+            self.proc_rviz = QProcess()
+            self.proc_rviz.start("roslaunch /home/isamu-takagi/rviz.launch")
         else:
             self.proc_rviz.terminate()
 
-    @QtSlot(str)
-    def on_profile_selected(self, path):
-        self.profile = AwConfigTree(path)
-        self.profile.load()
-        self.profile.dump()
-        
+    @QtSlot(AwConfigTree)
+    def loadConfig(self, profile):
 
-class AwMapFrame(QLabel):
+        #self
+        self.profile = profile
+        self.frames["root"].loadConfig(profile)
 
-    def __init__(self):
-
-    	super(AwMapFrame, self).__init__()
-        self.setText("Map Config")
-        self.setStyleSheet("border: 1px solid;")
-
-if __name__ == "__main__":
-    path = "/home/isamu-takagi/AutowareWork/autoware-launcher-py/ros/src/util/packages/autoware_launcher/profiles/default/"
-    profile.load(path).dump()
+        #children
+        for child in self.profile.getRootNode().children:
+            self.frames[child.getNodeName()].loadConfig(child)

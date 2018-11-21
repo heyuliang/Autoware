@@ -2,10 +2,10 @@
 
 import sys
 from autoware_launcher import AwApplication
-from autoware_launcher import AwMainWidget
+from autoware_launcher import AwMainWindow
+from autoware_launcher import AwRootConfigWidget
 
 application = AwApplication(sys.argv)
-widget = AwMainWidget()
-widget.show()
+window = AwMainWindow(AwRootConfigWidget)
+window.show()
 sys.exit(application.exec_())
-

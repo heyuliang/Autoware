@@ -1,2 +1,4 @@
-from main import AwApplication
-from main import AwMainWidget
+from widgets import AwApplication
+from widgets import AwMainWindow
+
+from main import AwRootConfigWidget
