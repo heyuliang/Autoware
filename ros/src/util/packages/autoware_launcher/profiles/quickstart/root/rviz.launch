@@ -1,8 +1,6 @@
 <launch>
 
-    <arg name="ROOT_PATH" default="$(env PWD)"/>
-
-    <arg name="config" value="root/rviz/default.rviz"/>
-    <node name="$(anon rviz)" pkg="rviz" type="rviz" args="-d $(arg ROOT_PATH)/$(arg config)"/>
+    <arg name="config" value="$(find autoware_launcher)/profiles/quickstart/root/rviz/default.rviz"/>
+    <node name="$(anon rviz)" pkg="rviz" type="rviz" args="-d $(arg config)"/>
 
 </launch>

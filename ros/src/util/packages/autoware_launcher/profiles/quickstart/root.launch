@@ -1,6 +1,5 @@
 <launch>
-    <arg name="ROOT_PATH" default="$(env PWD)"/>
-    <include pass_all_args="false" file="$(arg ROOT_PATH)/root/map.launch"/> 
-    <include pass_all_args="false" file="$(arg ROOT_PATH)/root/sensors.launch"/>
-    <include pass_all_args="true"  file="$(arg ROOT_PATH)/root/rviz.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/map.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/sensors.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/rviz.launch"/>
 </launch>
