@@ -11,8 +11,14 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>python_qt_binding</build_depend>
+  <build_depend>python-rospkg</build_depend>
+  <build_depend>rospy</build_depend>
   <build_export_depend>python_qt_binding</build_export_depend>
+  <build_export_depend>python-rospkg</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
   <exec_depend>python_qt_binding</exec_depend>
+  <exec_depend>python-rospkg</exec_depend>
+  <exec_depend>rospy</exec_depend>
 
   <export></export>
 

@@ -1,0 +1,3 @@
+<launch>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root.xml"/>
+</launch>

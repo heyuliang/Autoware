@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/scripts/my_localization.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/scripts/my_detection.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/scripts/my_mission_planning.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/scripts/my_motion_planning.launch"/>
+</launch>

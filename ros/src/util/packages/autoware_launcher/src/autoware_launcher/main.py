@@ -1,6 +1,5 @@
 import os
 
-
 from python_qt_binding.QtCore import Signal as QtSignal
 from python_qt_binding.QtCore import Slot   as QtSlot
 from python_qt_binding.QtCore import QProcess
@@ -14,7 +13,7 @@ from python_qt_binding.QtWidgets import QPushButton
 from python_qt_binding.QtWidgets import QFileDialog
 from python_qt_binding.QtWidgets import QHBoxLayout
 from python_qt_binding.QtWidgets import QVBoxLayout
-
+from rospkg import RosPack
 from config import AwConfigTree
 
 class AwBasicFrameMenu(QWidget):
@@ -132,7 +131,8 @@ class AwRootConfigFrame(AwBasicFrame):
         self.setFrameWidgets(menu, self.body)
 
     def selectProfile(self):
-        path = QFileDialog.getExistingDirectory(self, "Select Profile", os.path.expanduser("~/.autoware/profiles"))
+        default_path = os.path.join( RosPack().get_path("autoware_launcher"), "profiles")
+        path = QFileDialog.getExistingDirectory(self, "Select Profile", default_path)
         if path:
             self.profile = AwConfigTree(path)
             self.profile.load()
@@ -155,6 +155,7 @@ class AwRootConfigWidget(QWidget):
         button_root.toggled.connect(self.launch_root)
 
         button_rviz = QPushButton("Rviz")
+        button_rviz.setEnabled(False)
         button_rviz.setCheckable(True)
         button_rviz.toggled.connect(self.launch_rviz)
 
@@ -207,3 +208,6 @@ class AwRootConfigWidget(QWidget):
         #children
         for child in self.profile.getRootNode().children:
             self.frames[child.getNodeName()].loadConfig(child)
+
+if __name__ == "__main__":
+    pass
