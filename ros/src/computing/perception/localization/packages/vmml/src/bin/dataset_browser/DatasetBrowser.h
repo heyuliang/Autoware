@@ -62,11 +62,11 @@ private:
 	void stopPlayBag();
 	void disableControlsOnPlaying (bool state);
 
-	Mt::vector<cv::Point2f> projectScan
+	std::vector<cv::Point2f> projectScan
 	(pcl::PointCloud<pcl::PointXYZ>::ConstPtr lidarScan)
 	const;
 
-	static void drawPoints (cv::Mat &target, const Mt::vector<cv::Point2f> &pointList);
+	static void drawPoints (cv::Mat &target, const std::vector<cv::Point2f> &pointList);
 
 	GenericDataItem::ConstPtr dataItem0;
 

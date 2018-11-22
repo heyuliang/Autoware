@@ -34,13 +34,12 @@ public:
 	vector () : MtVecBase()
 	{}
 
-	// Copy constructor
-	vector (const MtVecBase &vc) noexcept:
-		MtVecBase(vc)
+	// Move constructor
+	vector (vector &&vm) :
+		MtVecBase (vm)
 	{}
 
-	// Move constructor
-	vector (MtVecBase &&vm) noexcept:
+	vector (MtVecBase &&vm) :
 		MtVecBase (vm)
 	{}
 
@@ -53,6 +52,7 @@ public:
 
 
 protected:
+	// mutexes are not copy-or-movable
 	std::mutex ngelock;
 };
 
@@ -63,6 +63,18 @@ class map : public std::map<K,V>
 public:
 
 	typedef std::map<K,V> MtMapBase;
+
+	map() : MtMapBase()
+	{}
+
+	// Move constructor
+	map (map &&M) :
+		MtMapBase(M)
+	{}
+
+	map (MtMapBase &&M) :
+		MtMapBase(M)
+	{}
 
 	// insert
 	std::pair<typename MtMapBase::iterator, bool>
