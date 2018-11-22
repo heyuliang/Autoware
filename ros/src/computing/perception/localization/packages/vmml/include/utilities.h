@@ -294,6 +294,9 @@ inline ptime getCurrentTime ()
 inline double td_seconds (const tduration &td)
 { return (double(td.total_microseconds()) / 1e6); }
 
+double toSeconds (const ptime &pt);
+
+
 void debugMsg(const std::string &s, double is_error=false);
 
 

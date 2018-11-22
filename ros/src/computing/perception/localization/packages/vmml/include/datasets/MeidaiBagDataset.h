@@ -146,6 +146,8 @@ public:
 
 	cv::Mat getImage() const;
 
+	Pose getPose() const;
+
 	Eigen::Vector3d getPosition() const;
 
 	Eigen::Quaterniond getOrientation() const;

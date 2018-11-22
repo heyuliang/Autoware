@@ -98,6 +98,9 @@ struct OxfordDataItem : public GenericDataItem
 	cv::Mat getImage () const
 	{ return getImage(StereoImageT::StereoCenter); }
 
+	inline Pose getPose() const
+	{ return groundTruth; }
+
 	inline Eigen::Vector3d getPosition() const
 	{ return groundTruth.position(); }
 

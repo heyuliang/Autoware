@@ -233,3 +233,11 @@ void debugMsg(const string &s, double is_error)
 	else
 		cout << s << endl << flush;
 }
+
+
+double toSeconds (const ptime &pt)
+{
+	ptime epoch(boost::gregorian::date(1970,1,1));
+	tduration td = pt - epoch;
+	return td_seconds(td);
+}

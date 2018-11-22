@@ -23,6 +23,8 @@ const string oxfordModelDir = "/home/sujiwo/Sources/robotcar-dataset-sdk/models"
 
 int main (int argc, char *argv[])
 {
+	cout << fixed << setprecision(6);
+
 	QApplication mainApp(argc, argv);
 	DatasetBrowser dbs;
 

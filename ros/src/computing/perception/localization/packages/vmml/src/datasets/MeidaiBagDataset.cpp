@@ -550,6 +550,15 @@ MeidaiDataItem::init()
 }
 
 
+Pose
+MeidaiDataItem::getPose()
+const
+{
+	auto &p = parent.cameraTrack[pId];
+	return p;
+}
+
+
 Vector3d
 MeidaiDataItem::getPosition() const
 {

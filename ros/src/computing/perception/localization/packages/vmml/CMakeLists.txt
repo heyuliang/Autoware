@@ -183,12 +183,12 @@ add_executable(test_tf
 	src/bin/temporaries/test_tf.cpp
 )
 
-#target_link_libraries(
-#	test_tf
-#		vmml
-#		${REQUIRED_LIBS}
-#		${catkin_LIBRARIES}
-#)
+target_link_libraries(
+	test_tf
+		vmml
+		${REQUIRED_LIBS}
+		${catkin_LIBRARIES}
+)
 
 
 

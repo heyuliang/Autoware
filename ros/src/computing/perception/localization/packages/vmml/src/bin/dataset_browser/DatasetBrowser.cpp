@@ -11,6 +11,7 @@
 #include <chrono>
 #include <thread>
 #include <functional>
+#include <boost/filesystem.hpp>
 
 #include <opencv2/core.hpp>
 #include <SequenceSLAM.h>
@@ -24,6 +25,8 @@
 
 
 using namespace std;
+
+using Path = boost::filesystem::path;
 
 
 // XXX: Find a way to specify these values from external input
@@ -62,6 +65,7 @@ DatasetBrowser::on_timelineSlider_sliderMoved(int v)
 }
 
 
+/*
 void
 DatasetBrowser::on_saveImageButton_clicked(bool checked)
 {
@@ -70,6 +74,39 @@ DatasetBrowser::on_saveImageButton_clicked(bool checked)
 		return;
 	cv::Mat image = openDs->get(timelineSlider->value())->getImage();
 	cv::imwrite(fname.toStdString(), image);
+}
+*/
+
+
+std::string dPoseLean (const Pose &frame)
+{
+	stringstream ss;
+	ss << fixed << setprecision(6);
+	auto P = frame.position();
+	auto Q = frame.orientation();
+
+	ss << P.x() << ' ' << P.y() << ' ' << P.z() << ' ';
+	ss << Q.x() << ' ' << Q.y() << ' ' << Q.z() << ' ' << Q.w();
+
+	return ss.str();
+}
+
+const string defaultImageExtension = "png";
+
+void DatasetBrowser::on_saveImageButton_clicked(bool checked)
+{
+	Path cwd = boost::filesystem::current_path();
+	int currentId = timelineSlider->value();
+	string imageName = to_string(currentId) + '.' + defaultImageExtension;
+	Path fullName = cwd / Path(imageName);
+
+	auto cDataItem = openDs->get(currentId);
+	cv::Mat image = cDataItem->getImage();
+	cv::imwrite(fullName.string(), image);
+
+	// write camera coordinate to STDOUT
+	Pose fp = cDataItem->getPose();
+	cout << cDataItem->getId() << ' ' << toSeconds(cDataItem->getTimestamp()) << ' ' << dPoseLean(fp) <<  endl << flush;
 }
 
 
@@ -125,7 +162,7 @@ DatasetBrowser::setImageOnPosition (int v)
 
 				uint32_t pcIdx = meidaiPointClouds->getPositionAtTime(imageTime);
 				auto pointCloud = meidaiPointClouds->at(pcIdx);
-				std::vector<cv::Point2f> projections = projectScan(pointCloud);
+				auto projections = projectScan(pointCloud);
 
 				drawPoints(image, projections);
 			}
@@ -177,13 +214,11 @@ DatasetBrowser::on_playButton_clicked(bool checked)
 	};
 
 	if (checked==true) {
-		cout << "Play\n";
 		playStarted = true;
 		playerThread = new std::thread(playThreadFn);
 	}
 
 	else {
-		cout << "Stop\n";
 		playStarted = false;
 		playerThread->join();
 		delete(playerThread);
@@ -205,11 +240,18 @@ const
 	frame.setPose(defaultLidarToCameraTransform);
 	frame.setCameraParam(&meidaiCamera1Params);
 
+	projections.resize(lidarScan->size());
+	int i=0;
 	for (auto it=lidarScan->begin(); it!=lidarScan->end(); ++it) {
 		auto &pts = *it;
 		Vector3d pt3d (pts.x, pts.y, pts.z);
-		auto p2d = frame.project(pt3d);
-		projections.push_back(cv::Point2f(p2d.x(), p2d.y()));
+
+		auto p3cam = frame.externalParamMatrix4() * pt3d.homogeneous();
+		if (p3cam.z() >= 0) {
+			auto p2d = frame.project(pt3d);
+			projections[i] = cv::Point2f(p2d.x(), p2d.y());
+			++i;
+		}
 	}
 
 	return projections;

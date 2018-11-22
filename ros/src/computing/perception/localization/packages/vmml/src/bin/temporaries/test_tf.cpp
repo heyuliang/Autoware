@@ -6,51 +6,17 @@
  */
 
 #include <iostream>
-#include <sstream>
-#include <cstdio>
-#include <string>
-#include <cmath>
-#include <algorithm>
 
-#include "MTContainers.h"
-
-
-using namespace std;
-
-#define PI_2 M_PI/2
-
-
-vector<double> createRandom (int N)
-{
-	vector<double> rndlist;
-
-	for (int i=0; i<N; ++i)
-		rndlist.push_back(double(i) * 2);
-
-	return rndlist;
-}
-
-
-Mt::map<int, double> createRandomMap (int N)
-{
-	Mt::map<int,double> nMap;
-
-	for (int i=0; i<N; ++i) {
-		nMap[i] = double(N) * PI_2;
-	}
-
-	return nMap;
-}
+#include "datasets/GenericDataset.h"
+#include "datasets/MeidaiBagDataset.h"
 
 
 int main (int argc, char *argv[])
 {
-	Mt::vector<double> myfloats = createRandom(7);
+	GenericDataset::Ptr loadedDataset = MeidaiBagDataset::load("/home/sujiwo/Data/sample-mapping.bag");
 
-	cout << myfloats[2] << endl;
+	auto item100 = loadedDataset->get(100);
+	auto pose100 = item100->getPose();
 
-	Mt::map<int, double> keyvalues = createRandomMap(7);
-	keyvalues[0] = -1;
-
-	cout << keyvalues.at(5) << endl;
+	return 0;
 }

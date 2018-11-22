@@ -39,6 +39,8 @@ public:
 
 	virtual cv::Mat getImage() const = 0;
 
+	virtual Pose getPose() const = 0;
+
 	virtual Eigen::Vector3d getPosition() const = 0;
 
 	virtual Eigen::Quaterniond getOrientation() const = 0;
