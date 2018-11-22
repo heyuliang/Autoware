@@ -38,7 +38,7 @@ class AwConfigNode(object):
             print("load yaml error: " + fullpath)
 
     def load_launch(self, tree):
-        fullpath = os.path.join(tree.getTreePath(), self.nodepath + ".launch")
+        fullpath = os.path.join(tree.getTreePath(), self.nodepath + ".xml")
         try:
             root_xml = ET.parse(fullpath).getroot()
             for child_xml in root_xml:

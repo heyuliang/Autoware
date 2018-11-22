@@ -1,6 +1,6 @@
 <launch>
-    <include file="$(find autoware_launcher)/profiles/quickstart/root/map.launch"/>
-    <include file="$(find autoware_launcher)/profiles/quickstart/root/sensors.launch"/>
-    <include file="$(find autoware_launcher)/profiles/quickstart/root/scripts.launch"/>
-    <include file="$(find autoware_launcher)/profiles/quickstart/root/rviz.launch"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/map.xml"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/sensors.xml"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/scripts.xml"/>
+    <include file="$(find autoware_launcher)/profiles/quickstart/root/rviz.xml"/>
 </launch>

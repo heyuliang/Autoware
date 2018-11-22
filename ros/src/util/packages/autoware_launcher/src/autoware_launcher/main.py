@@ -183,11 +183,10 @@ class AwRootConfigWidget(QWidget):
     def launch_root(self, checked):
         if self.profile is not None:
             if checked:
-                proc = os.path.join(self.profile.getTreePath(), "root.launch")
-                args = " ROOT_PATH:=" + self.profile.getTreePath()
+                command = "roslaunch " + os.path.join(self.profile.getTreePath(), "root.xml")
+                print(command)
                 self.proc_root = QProcess()
-                print "roslaunch " + proc + args
-                self.proc_root.start("roslaunch " + proc + args)
+                self.proc_root.start(command)
             else:
                 self.proc_root.terminate()
 
@@ -207,7 +206,8 @@ class AwRootConfigWidget(QWidget):
 
         #children
         for child in self.profile.getRootNode().children:
-            self.frames[child.getNodeName()].loadConfig(child)
+            if child.getNodeName() in self.frames.keys():
+                self.frames[child.getNodeName()].loadConfig(child)
 
 if __name__ == "__main__":
     pass
