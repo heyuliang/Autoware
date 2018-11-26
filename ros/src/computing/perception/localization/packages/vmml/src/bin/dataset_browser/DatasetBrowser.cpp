@@ -114,7 +114,7 @@ void DatasetBrowser::on_saveImageButton_clicked(bool checked)
 const string lidarCalibrationParams("/home/sujiwo/Autoware/ros/src/computing/perception/localization/packages/vmml/params/64e-S2.yaml");
 
 void
-DatasetBrowser::changeDataset(GenericDataset *ds, datasetType ty)
+DatasetBrowser::changeDataset(GenericDataset::Ptr ds, datasetType ty)
 {
 	openDs = ds;
 	timelineSlider->setRange(0, ds->size()-1);

@@ -36,7 +36,7 @@ public:
 		MeidaiType
 	};
 
-	void changeDataset(GenericDataset *ds, datasetType t);
+	void changeDataset(GenericDataset::Ptr ds, datasetType t);
 
 public slots:
 	void on_timelineSlider_sliderMoved(int value);
@@ -46,7 +46,7 @@ public slots:
 private:
 	Ui::DatasetBrowser_frm ui;
 
-	GenericDataset *openDs;
+	GenericDataset::Ptr openDs;
 
 	QSlider *timelineSlider;
 	RatioLayoutedFrame *frame;
