@@ -296,6 +296,44 @@ bool AutowareMap::hasSubscribed(category_t category) const
     }
     return true;
 }
+category_t AutowareMap::hasSubscribed() const
+{
+    category_t category=NONE;
+    if (!lane_.empty())
+        category |= LANE;
+    if (!lane_attr_relation_.empty())
+        category |= LANE_ATTR_RELATION;
+    if (!lane_relation_.empty())
+        category |= LANE_RELATION;
+    if (!lane_signal_light_relation_.empty())
+        category |= LANE_SIGNAL_LIGHT_RELATION;
+    if (!lane_change_relation_.empty())
+        category |= LANE_CHANGE_RELATION;
+    if (!opposite_lane_relation_.empty())
+        category |= OPPOSITE_LANE_RELATION;
+    if (!point_.empty())
+        category |= POINT;
+    if (!area_.empty())
+        category |= AREA;
+    if (!route_.empty())
+        category |= ROUTE;
+    if (!signal_.empty())
+        category |= SIGNAL;
+    if (!signal_light_.empty())
+        category |= SIGNAL_LIGHT;
+    if (!wayarea_.empty())
+        category |= WAYAREA;
+    if (!waypoint_.empty())
+        category |= WAYPOINT;
+    if (!waypoint_lane_relation_.empty())
+        category |= WAYPOINT_LANE_RELATION;
+    if (!waypoint_relation_.empty())
+        category |= WAYPOINT_RELATION;
+    if (!waypoint_signal_relation_.empty())
+        category |= WAYPOINT_SIGNAL_RELATION;
+
+    return category;
+}
 
 void AutowareMap::registerSubscriber(ros::NodeHandle& nh, category_t category)
 {

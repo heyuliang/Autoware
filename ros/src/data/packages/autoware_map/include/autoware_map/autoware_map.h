@@ -183,7 +183,10 @@ public:
 
   void registerSubscriber(ros::NodeHandle& nh, const std::string& topic_name)
   {
-    sub_ = nh.subscribe(topic_name, 1, &Handle<T, U>::subscribe, this);
+    if(topic_name != std::string(sub_.getTopic()) )
+    {
+        sub_ = nh.subscribe(topic_name, 1, &Handle<T, U>::subscribe, this);
+    }
   }
 
   void registerUpdater(const Updater<T, U>& update)
@@ -260,11 +263,10 @@ private:
     autoware_map::Handle<WaypointRelation, WaypointRelationArray> waypoint_relation_;
     autoware_map::Handle<WaypointSignalRelation, WaypointSignalRelationArray> waypoint_signal_relation_;
 
-    void registerSubscriber(ros::NodeHandle& nh, category_t category);
 
 public:
     AutowareMap();
-
+    void registerSubscriber(ros::NodeHandle& nh, category_t category);
     void subscribe(ros::NodeHandle& nh, category_t category);
     void subscribe(ros::NodeHandle& nh, category_t category, const ros::Duration& timeout);
     void subscribe(ros::NodeHandle& nh, category_t category, const size_t max_retries);
@@ -304,6 +306,7 @@ public:
     std::vector<WaypointSignalRelation> findByFilter(const Filter<WaypointSignalRelation>& filter) const;
 
     bool hasSubscribed(category_t category) const;
+    category_t hasSubscribed() const;
 
     void registerCallback(const Callback<Lane>& cb);
     void registerCallback(const Callback<LaneAttrRelation>& cb);

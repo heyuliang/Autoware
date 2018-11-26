@@ -237,33 +237,7 @@ visualization_msgs::MarkerArray createCrossRoadMarkerArray(const VectorMap& vmap
     }
     return marker_array;
 }
-// visualization_msgs::MarkerArray createRailCrossingMarkerArray(const VectorMap& vmap, Color color)
-// {
-//   visualization_msgs::MarkerArray marker_array;
-//   int id = 0;
-//   for (const auto& rail_crossing : vmap.findByFilter([](const vector_map_msgs::RailCrossing& rail_crossing){return true;}))
-//   {
-//     if (rail_crossing.aid == 0)
-//     {
-//       ROS_ERROR_STREAM("[createRailCrossingMarkerArray] invalid rail_crossing: " << rail_crossing);
-//       continue;
-//     }
-//
-//     vector_map_msgs::Area area = vmap.findByKey(vector_map::Key<vector_map_msgs::Area>(rail_crossing.aid));
-//     if (area.aid == 0)
-//     {
-//       ROS_ERROR_STREAM("[createRailCrossingMarkerArray] invalid area: " << area);
-//       continue;
-//     }
-//
-//     visualization_msgs::Marker marker = createAreaMarker("rail_crossing", id++, color, vmap, area);
-//     if (isValidMarker(marker))
-//       marker_array.markers.push_back(marker);
-//     else
-//       ROS_ERROR_STREAM("[createRailCrossingMarkerArray] failed createAreaMarker: " << area);
-//   }
-//   return marker_array;
-// }
+
 void createAreas(std::vector<autoware_map_msgs::Area> awm_areas, std::vector<vector_map_msgs::Area> &vmap_areas, std::vector<vector_map_msgs::Line> &vmap_lines)
 {
     int line_id = vmap_lines.size() + 1;
@@ -307,7 +281,7 @@ void createAreas(std::vector<autoware_map_msgs::Area> awm_areas, std::vector<vec
         vmap_areas.push_back(vmap_area);
     }
 }
-//
+
 void createCrossRoads(std::vector<autoware_map_msgs::LaneAttrRelation> awm_lane_attr_relations, std::vector<vector_map_msgs::CrossRoad> &vmap_cross_roads)
 {
     unsigned int id = 1;
@@ -398,7 +372,6 @@ void createNodes(std::vector<autoware_map_msgs::Waypoint> awm_waypoints, std::ve
 std::vector<int> findBranchingIdx(const std::vector<autoware_map_msgs::WaypointRelation> relation, int root_index)
 {
     std::vector<int> branching_indices;
-
     for(auto itr = relation.begin(); itr != relation.end(); itr++)
     {
         if(itr->waypoint_id == root_index)
@@ -408,7 +381,6 @@ std::vector<int> findBranchingIdx(const std::vector<autoware_map_msgs::WaypointR
     }
     return branching_indices;
 }
-
 std::vector<int> findMergingIdx(const std::vector<autoware_map_msgs::WaypointRelation> relation, int merged_index)
 {
     std::vector<int> merging_indices;
@@ -459,6 +431,7 @@ int getJunctionType(const std::vector<autoware_map_msgs::WaypointRelation> awm_w
             right_merging_cnt++;
         }
     }
+
     if( branching_idx.size() >= 3 || merging_idx.size() >= 3 || (branching_idx.size() >= 2 && merging_idx.size() >= 2) )
     {
         return vector_map_msgs::Lane::COMPOSITION;
@@ -481,6 +454,7 @@ int getJunctionType(const std::vector<autoware_map_msgs::WaypointRelation> awm_w
     }
 
     ROS_ERROR_STREAM("could not find appropriate junction type!!!!!!!");
+
     return vector_map_msgs::Lane::NORMAL;
 }
 
@@ -576,24 +550,6 @@ void createDTLanes(const std::vector<autoware_map_msgs::WaypointRelation> awm_wa
     }
 }
 
-// void createRailCrossings(std::vector<autoware_map_msgs::LaneAttrRelation> awm_lane_attr_relations, std::vector<vector_map_msgs::RailCrossing> &vmap_rail_crossings){
-//     unsigned int id = 1;
-//     for ( auto awm_relation : awm_lane_attr_relations)
-//     {
-//         if( awm_relation.attribute_type == autoware_map::LaneAttrRelation::RAILROAD ) {
-//             if(std::find_if(vmap_rail_crossings.begin(), vmap_rail_crossings.end(), [&](vector_map_msgs::RailCrossing rc){return rc.aid == awm_relation.area_id;}) != vmap_rail_crossings.end()){
-//               continue;
-//             }
-//             vector_map_msgs::RailCrossing rail_crossing;
-//             rail_crossing.id = id++;
-//             rail_crossing.aid = awm_relation.area_id;
-//             rail_crossing.linkid = 0;
-//
-//             vmap_rail_crossings.push_back(rail_crossing);
-//         }
-//     }
-// }
-
 void createWayAreas(std::vector<autoware_map_msgs::Wayarea> awm_wayareas, std::vector<vector_map_msgs::WayArea> &vmap_way_areas)
 {
     for ( auto awm_area : awm_wayareas)
@@ -649,7 +605,12 @@ void createSignals(     std::vector<autoware_map_msgs::SignalLight> awm_signal_l
         auto lane_signal_itr = std::find_if(   awm_lane_signal_relations.begin(),
                                                awm_lane_signal_relations.end(),
                                                [awm_signal_light](autoware_map_msgs::LaneSignalLightRelation lslr){ return lslr.signal_light_id == awm_signal_light.signal_light_id; });
-        auto awm_lane = awm.findByKey(autoware_map::Key<autoware_map_msgs::Lane>(lane_signal_itr->lane_id));
+
+        autoware_map_msgs::Lane awm_lane;
+        if (lane_signal_itr != awm_lane_signal_relations.end())
+        {
+            awm_lane = awm.findByKey(autoware_map::Key<autoware_map_msgs::Lane>(lane_signal_itr->lane_id));
+        }
 
         int linkid = 0;
         for(auto itr = awm_waypoint_relations.begin(); itr != awm_waypoint_relations.end(); itr++)
@@ -670,6 +631,7 @@ void createSignals(     std::vector<autoware_map_msgs::SignalLight> awm_signal_l
         {
             ROS_ERROR_STREAM("failed to find valid linkid for signal");
         }
+
         vmap_signal.linkid = linkid;
         vmap_signals.push_back(vmap_signal);
     }
@@ -779,48 +741,62 @@ void createDummyRoadSign(std::vector<vector_map_msgs::RoadSign> &vmap_road_signs
     vmap_road_signs.push_back(road_sign);
 }
 
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "awm_vmap_converter");
     ros::NodeHandle nh;
 
     autoware_map::AutowareMap awm;
-    awm.subscribe(nh, autoware_map::Category::ALL, ros::Duration(5));
 
-    std::vector<autoware_map_msgs::Point> awm_points = awm.findByFilter([] (const autoware_map_msgs::Point){return true; });
-    std::vector<vector_map_msgs::Point> vmap_points;
-    createPoints(awm_points, vmap_points);
-    std::vector<autoware_map_msgs::Waypoint> awm_waypoints = awm.findByFilter([] (const autoware_map_msgs::Waypoint){return true; });
-    std::vector<vector_map_msgs::Node> vmap_nodes;
-    createNodes(awm_waypoints, vmap_nodes);
+    autoware_map::category_t awm_required_category =  autoware_map::Category::AREA |
+                                                    autoware_map::Category::POINT |
+                                                    autoware_map::Category::LANE_ATTR_RELATION |
+                                                    autoware_map::Category::LANE_SIGNAL_LIGHT_RELATION |
+                                                    autoware_map::Category::SIGNAL_LIGHT |
+                                                    autoware_map::Category::WAYAREA |
+                                                    autoware_map::Category::WAYPOINT |
+                                                    autoware_map::Category::WAYPOINT_RELATION;
+
+
+    awm.subscribe(nh, awm_required_category , ros::Duration(5));
+    if(awm.hasSubscribed(awm_required_category) == false)
+    {
+        ROS_WARN("Did not subscribe all required category! The converted vector map might lack some data!");
+    }
+
     std::vector<autoware_map_msgs::Area> awm_areas = awm.findByFilter([] (const autoware_map_msgs::Area){return true; });
+    std::vector<autoware_map_msgs::Point> awm_points = awm.findByFilter([] (const autoware_map_msgs::Point){return true; });
+    std::vector<autoware_map_msgs::LaneAttrRelation> awm_lane_attr_relations = awm.findByFilter([] (const autoware_map_msgs::LaneAttrRelation){return true; });
+    std::vector<autoware_map_msgs::LaneSignalLightRelation> awm_lane_signal_relations = awm.findByFilter([] (const autoware_map_msgs::LaneSignalLightRelation){return true; });
+    std::vector<autoware_map_msgs::SignalLight> awm_signal_lights = awm.findByFilter([] (const autoware_map_msgs::SignalLight){return true; });
+    std::vector<autoware_map_msgs::Wayarea> awm_wayareas = awm.findByFilter([] (const autoware_map_msgs::Wayarea){return true; });
+    std::vector<autoware_map_msgs::Waypoint> awm_waypoints = awm.findByFilter([] (const autoware_map_msgs::Waypoint){return true; });
+    std::vector<autoware_map_msgs::WaypointRelation> awm_waypoint_relations = awm.findByFilter([] (const autoware_map_msgs::WaypointRelation){return true; });
+
+    std::vector<vector_map_msgs::Point> vmap_points;
+    std::vector<vector_map_msgs::Node> vmap_nodes;
     std::vector<vector_map_msgs::Area> vmap_areas;
     std::vector<vector_map_msgs::Line> vmap_lines;
-    createAreas(awm_areas, vmap_areas, vmap_lines);
-    std::vector<autoware_map_msgs::WaypointRelation> awm_waypoint_relations = awm.findByFilter([] (const autoware_map_msgs::WaypointRelation){return true; });
     std::vector<vector_map_msgs::DTLane> vmap_dtlanes;
     std::vector<vector_map_msgs::Lane> vmap_lanes;
-    createDTLanes(awm_waypoint_relations, awm, vmap_dtlanes,vmap_lanes);
-    std::vector<autoware_map_msgs::LaneAttrRelation> awm_lane_attr_relations = awm.findByFilter([] (const autoware_map_msgs::LaneAttrRelation){return true; });
     std::vector<vector_map_msgs::CrossRoad> vmap_cross_roads;
-    createCrossRoads(awm_lane_attr_relations, vmap_cross_roads);
     std::vector<vector_map_msgs::CrossWalk> vmap_cross_walks;
-    createCrossWalks(awm_lane_attr_relations, vmap_cross_walks);
-    // std::vector<vector_map_msgs::RailCrossing> vmap_rail_crossings;
-    // createRailCrossings(awm_lane_attr_relations, vmap_rail_crossings);
-    std::vector<autoware_map_msgs::Wayarea> awm_wayareas = awm.findByFilter([] (const autoware_map_msgs::Wayarea){return true; });
     std::vector<vector_map_msgs::WayArea> vmap_way_areas;
-    createWayAreas(awm_wayareas, vmap_way_areas);
-    std::vector<autoware_map_msgs::SignalLight> awm_signal_lights = awm.findByFilter([] (const autoware_map_msgs::SignalLight){return true; });
-    std::vector<autoware_map_msgs::LaneSignalLightRelation> awm_lane_signal_relations = awm.findByFilter([] (const autoware_map_msgs::LaneSignalLightRelation){return true; });
     std::vector<vector_map_msgs::Signal> vmap_signals;
     std::vector<vector_map_msgs::Vector> vmap_vectors;
     std::vector<vector_map_msgs::Pole> vmap_dummy_poles;
-    createSignals(  awm_signal_lights, awm_lane_signal_relations, vmap_signals, vmap_vectors,vmap_dummy_poles, awm_waypoint_relations, awm);
     std::vector<vector_map_msgs::StopLine> vmap_stop_lines;
-    createStopLines( awm_waypoints, awm_points, awm_waypoint_relations, vmap_lines, vmap_points, vmap_stop_lines);
     std::vector<vector_map_msgs::RoadSign> vmap_road_signs;
+
+    createPoints(awm_points, vmap_points);
+    createNodes(awm_waypoints, vmap_nodes);
+    createAreas(awm_areas, vmap_areas, vmap_lines);
+    createCrossRoads(awm_lane_attr_relations, vmap_cross_roads);
+    createDTLanes(awm_waypoint_relations, awm, vmap_dtlanes,vmap_lanes);
+    createCrossWalks(awm_lane_attr_relations, vmap_cross_walks);
+    createWayAreas(awm_wayareas, vmap_way_areas);
+    createSignals(  awm_signal_lights, awm_lane_signal_relations, vmap_signals, vmap_vectors,vmap_dummy_poles, awm_waypoint_relations, awm);
+    createStopLines( awm_waypoints, awm_points, awm_waypoint_relations, vmap_lines, vmap_points, vmap_stop_lines);
     createDummyRoadSign(vmap_road_signs);
 
     ros::Publisher point_pub = nh.advertise<vector_map_msgs::PointArray>("vector_map_info/point", 1, true);
@@ -835,18 +811,18 @@ int main(int argc, char **argv)
     ros::Publisher cross_walk_pub = nh.advertise<vector_map_msgs::CrossWalkArray>("vector_map_info/cross_walk", 1, true);
     ros::Publisher signal_pub = nh.advertise<vector_map_msgs::SignalArray>("vector_map_info/signal", 1, true);
     ros::Publisher pole_pub = nh.advertise<vector_map_msgs::PoleArray>("vector_map_info/pole", 1, true);
-    // ros::Publisher side_walk_pub = nh.advertise<vector_map_msgs::SideWalkArray>("vector_map_info/side_walk", 1, true);
     ros::Publisher cross_road_pub = nh.advertise<vector_map_msgs::CrossRoadArray>("vector_map_info/cross_road", 1, true);
-    // ros::Publisher rail_crossing_pub = nh.advertise<vector_map_msgs::RailCrossingArray>("vector_map_info/rail_crossing", 1, true);
     ros::Publisher road_sign_pub = nh.advertise<vector_map_msgs::RoadSignArray>("vector_map_info/road_sign", 1, true);
 
     ros::Publisher marker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("vector_map", 1, true);
     ros::Publisher stat_pub = nh.advertise<std_msgs::Bool>("vmap_stat", 1, true);
+    // ros::Publisher side_walk_pub = nh.advertise<vector_map_msgs::SideWalkArray>("vector_map_info/side_walk", 1, true);
+    // ros::Publisher rail_crossing_pub = nh.advertise<vector_map_msgs::RailCrossingArray>("vector_map_info/rail_crossing", 1, true);
+
 
     std_msgs::Bool stat;
     stat.data = false;
     stat_pub.publish(stat);
-
 
     vector_map::category_t category = vector_map::Category::NONE;
     if(!vmap_points.empty())
@@ -909,10 +885,6 @@ int main(int argc, char **argv)
         cross_road_pub.publish( createObjectArray<vector_map_msgs::CrossRoad, vector_map_msgs::CrossRoadArray>(vmap_cross_roads));
         category |= vector_map::Category::CROSS_ROAD;
     }
-    // if(!vmap_rail_crossings.empty()){
-    //   rail_crossing_pub.publish( createObjectArray<vector_map_msgs::RailCrossing, vector_map_msgs::RailCrossingArray>(vmap_rail_crossings));
-    //   category |= vector_map::Category::RAIL_CROSSING;
-    // }
     if(!vmap_dummy_poles.empty())
     {
         pole_pub.publish( createObjectArray<vector_map_msgs::Pole, vector_map_msgs::PoleArray>(vmap_dummy_poles));
@@ -929,13 +901,11 @@ int main(int argc, char **argv)
     visualization_msgs::MarkerArray marker_array;
     insertMarkerArray(marker_array, createStopLineMarkerArray(vmap, vector_map::Color::WHITE));
     insertMarkerArray(marker_array, createCrossWalkMarkerArray(vmap, vector_map::Color::WHITE));
-    insertMarkerArray(marker_array, createSignalMarkerArray(vmap, vector_map::Color::RED, vector_map::Color::BLUE, vector_map::Color::YELLOW, vector_map::Color::CYAN,
-                                                            vector_map::Color::GRAY));
+    insertMarkerArray(marker_array, createSignalMarkerArray(vmap, vector_map::Color::RED, vector_map::Color::BLUE, vector_map::Color::YELLOW, vector_map::Color::CYAN, vector_map::Color::GRAY));
     insertMarkerArray(marker_array, createCrossRoadMarkerArray(vmap, vector_map::Color::LIGHT_GREEN));
     // insertMarkerArray(marker_array, createAreaMarkerArray(vmap, vector_map::Color::WHITE));
-    insertMarkerArray(marker_array, createLaneMarkerArray(vmap, vector_map::Color::YELLOW));
+    // insertMarkerArray(marker_array, createLaneMarkerArray(vmap, vector_map::Color::YELLOW));
 
-    // insertMarkerArray(marker_array, createRailCrossingMarkerArray(vmap, vector_map::Color::LIGHT_MAGENTA));
     marker_array_pub.publish(marker_array);
 
     stat.data = true;
