@@ -121,7 +121,7 @@ DatasetBrowser::changeDataset(GenericDataset::Ptr ds, datasetType ty)
 	dataItem0 = ds->get(0);
 
 	if (ty==DatasetBrowser::MeidaiType) {
-		MeidaiBagDataset* meidaiDs = static_cast<MeidaiBagDataset*>(ds);
+		MeidaiBagDataset::Ptr meidaiDs = static_pointer_cast<MeidaiBagDataset>(ds);
 		meidaiDs->setLidarParameters(lidarCalibrationParams, string(), defaultLidarToCameraTransform);
 		meidaiPointClouds = meidaiDs->getLidarScanBag();
 	}

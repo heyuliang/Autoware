@@ -224,7 +224,7 @@ struct TTransform : public Eigen::Affine3d
 	{ return TQuaternion(this->rotation()); }
 
 	std::string
-	str () const;
+	str (bool simple=false) const;
 
 	void
 	displacement (const TTransform &other, double &linear, double &angular) const;

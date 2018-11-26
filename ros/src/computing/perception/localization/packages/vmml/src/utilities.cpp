@@ -114,16 +114,32 @@ TTransform::from_Pos_Quat(const Vector3d &pos, const Quaterniond &orient)
 #include <sstream>
 
 string
-TTransform::str() const
+TTransform::str(bool simple) const
 {
 	stringstream ss;
-	ss << "x=" << position().x()
-		<< " y=" << position().y()
-		<< " z=" << position().z()
-		<< ", qx=" << orientation().x()
-		<< " qy=" << orientation().y()
-		<< " qz=" << orientation().z()
-		<< " qw=" << orientation().w();
+	auto P = position();
+	auto Q = orientation();
+
+	if (simple==false) {
+		ss << "x=" << P.x()
+			<< " y=" << P.y()
+			<< " z=" << P.z()
+			<< ", qx=" << Q.x()
+			<< " qy=" << Q.y()
+			<< " qz=" << Q.z()
+			<< " qw=" << Q.w();
+	}
+	else {
+		ss << "XYZ Q(XYZW): ";
+		ss << P.x() << ' '
+			<< P.y() << ' '
+			<< P.z() << ' ';
+		ss << Q.x() << ' '
+			<< Q.x() << ' '
+			<< Q.x() << ' '
+			<< Q.x() << ' ';
+	}
+
 	return ss.str();
 }
 

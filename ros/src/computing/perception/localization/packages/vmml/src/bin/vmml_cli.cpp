@@ -618,7 +618,7 @@ private:
 		bool gotplace = localizer->detect_mt(img, kmap, computedPose);
 
 		if (gotplace) {
-			debug(computedPose.str());
+			debug(computedPose.str(true));
 			debug("Result: "+to_string(kmap));
 		}
 		else {
